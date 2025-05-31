@@ -11,3 +11,5 @@ Thumbs.db
 # Logs
 *.log
 
+# Firebase admin credentials
+serviceAccountKey.json
