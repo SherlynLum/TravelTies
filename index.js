@@ -1,15 +1,10 @@
 //load environment variables
-require('dotenv').config();
-
-//access environment variables
-const dbUser = process.env.DB_USER;
-const dbPassword = process.env.DB_PASSWORD;
-
-console.log(dbUser, dbPassword); //debug
+require("dotenv").config();
 
 //import libraries
-const express = require('express');
-const mongoose = require('mongoose');
+const express = require("express");
+const mongoose = require("mongoose");
+const userRoute = require("./routes/user.route.js")
 const admin = require("firebase-admin");
 const serviceAccount = require("./serviceAccountKey.json");
 
@@ -26,13 +21,14 @@ app.use(express.json());
 app.use(express.urlencoded({extended: true}));
 
 //connect to database
-mongoose.connect('mongodb+srv://${dbUser}:${dbPassword}@backenddb.gdhkfvp.mongodb.net/Node-API?retryWrites=true&w=majority&appName=BackendDB')
-.then(() => {
+mongoose.connect(process.env.DB_URL).then(() => {
     console.log('Connected to database!');
     app.listen(3000, () => {
         console.log('Server is running on port 3000');
     });
-})
-.catch(() => {
+}).catch(() => {
     console.log('Connection failed!');
 })
+
+//routes
+app.use("/api/user", userRoute);
