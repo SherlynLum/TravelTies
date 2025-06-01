@@ -5,12 +5,16 @@ const isUsernameTaken = async (username) => {
     return !!existingUser;
 }
 
-const createUser = async (uid, username, profilePicUrl) => {
-    const user = await User.create({uid, username, profilePicUrl}); //key and variable names are the same 
-    return user;
+const updateUserProfile = async (uid, username, profilePicUrl) => {
+    const updatedProfile = await User.findOneAndUpdate(
+        {uid}, //key and variable names are the same 
+        {$set: {username, profilePicUrl}}, //key and variable names are the same 
+        {new: true, runValidators: true}
+    )
+    return updatedProfile;
 }
 
 module.exports = {
     isUsernameTaken, 
-    createUser
+    updateUserProfile
 };
