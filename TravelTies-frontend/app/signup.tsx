@@ -8,18 +8,36 @@ import { useRoute } from '@react-navigation/native'
 import { useRouter } from 'expo-router'
 import Loading from '../components/Loading.js'
 import CustomKeyboardView from '../components/CustomKeyboardView.js'
+import { useAuth } from '@/context/authContext.js'
 
 const SignUp = () => {
     const router = useRouter();
+    const {register} = useAuth();
     const [loading, setLoading] = useState(false);
 
     const emailRef = useRef("");
     const passwordRef = useRef("");
+    const repeatPasswordRef = useRef("");
 
     const handleRegister = async () => {
         if (!emailRef.current || !passwordRef.current) {
-            Alert.alert('Sign Up', 'Please fill in all the fields!');
+            Alert.alert('Sign up', 'Please fill in all the fields!');
             return;
+        }
+
+        if (passwordRef.current !== repeatPasswordRef.current) {
+            Alert.alert('Sign up', 'Passwords do not match!');
+            return;
+        }
+
+        setLoading(true);
+
+        let response = await register(emailRef.current, passwordRef.current)
+        setLoading(false);
+
+        console.log('got result: ', response);
+        if (!response.success) {
+            Alert.alert('Sign up', response.message);
         }
     }
   return (
@@ -93,6 +111,7 @@ const SignUp = () => {
                         bg-white border border-black items-center'>
                             <Feather name='repeat' size={hp(2.8)} color='black' />
                             <TextInput
+                                onChangeText={value=> repeatPasswordRef.current=value}
                                 style={{fontSize:hp(2)}}
                                 className='flex-1 font-medium black'
                                 placeholder='Repeat password'
