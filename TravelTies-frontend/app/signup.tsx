@@ -3,8 +3,7 @@ import React, { useRef, useState } from 'react'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import {widthPercentageToDP as wp, heightPercentageToDP as hp} from 'react-native-responsive-screen'
 import { StatusBar } from 'expo-status-bar'
-import { Feather, Ionicons, Octicons } from '@expo/vector-icons'
-import { useRoute } from '@react-navigation/native'
+import { Feather, Octicons } from '@expo/vector-icons'
 import { useRouter } from 'expo-router'
 import Loading from '../components/Loading.js'
 import CustomKeyboardView from '../components/CustomKeyboardView.js'
@@ -14,6 +13,7 @@ const SignUp = () => {
     const router = useRouter();
     const {register} = useAuth();
     const [loading, setLoading] = useState(false);
+    const {googleSignIn} = useAuth();
 
     const emailRef = useRef("");
     const passwordRef = useRef("");
@@ -55,7 +55,7 @@ const SignUp = () => {
         <CustomKeyboardView>
             <View style={{paddingHorizontal: wp(4.07), paddingTop: hp(1.88)}}
             className='flex-1 gap-12 bg-transparent'>
-                <View style={{top: hp(7.04), width: wp(75.8), height: hp(13.7)}}
+                <View style={{top: hp(5.5), width: wp(75.8), height: hp(13.7)}}
                 className='absoulte left-1/2 -translate-x-1/2 bg-transparent 
                 justify-center items-center'>
                     <Image
@@ -69,9 +69,9 @@ const SignUp = () => {
                     </Text> 
                 </View> 
 
-                <View style={{top: hp(5), width: wp(88), height: hp(58), paddingHorizontal: wp(2.5),
+                <View style={{top: hp(5), width: wp(88), height: hp(61), paddingHorizontal: wp(2.5),
                 paddingTop: hp(2.5), paddingBottom: hp(4), borderRadius: 30}}
-                className='flex flex-col left-1/2 -translate-x-1/2 gap-6 bg-white'>
+                className='flex flex-col left-1/2 -translate-x-1/2 gap-5 bg-white'>
                     <View style={{paddingHorizontal: wp(3.8)}}>
                         <Text style={{fontSize: hp(4.11)}} className='font-bold tracking-wider'> 
                             Sign up
@@ -155,6 +155,31 @@ const SignUp = () => {
                                 Sign in
                             </Text>
                         </Pressable>
+                    </View>
+
+                    {/* divider */}
+                    <View className="flex-row items-center">
+                        <View className="flex-1 border-t border-gray-300" />
+                        <Text className="mx-4 text-gray-600">OR</Text>
+                        <View className="flex-1 border-t border-gray-300" />
+                    </View>
+                    
+                    {/* continue with Google button */}
+                    <View>
+                        <TouchableOpacity onPress={googleSignIn} 
+                        style={{height: hp(6.46), width: wp(77.61), borderRadius: 30}} 
+                        className='bg-white left-1/2 -translate-x-1/2 justify-center 
+                        items-center border border-gray flex-row gap-5 shadow-sm'>
+                            <Image
+                                source={require('../assets/images/google-icon.png')}
+                                style={{width: wp(7.63), height: hp(3.52)}}
+                            />
+                            <Text style={{fontSize: hp(2)}} className='text-black font-semibold
+                            tracking-wider'>
+                                Sign in with Google
+                            </Text>
+                        </TouchableOpacity>
+
                     </View>
                 </View>
             </View>

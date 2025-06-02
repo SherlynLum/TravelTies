@@ -1,0 +1,54 @@
+{
+  "project_info": {
+    "project_number": "304571751866",
+    "project_id": "travelties-fce2c",
+    "storage_bucket": "travelties-fce2c.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:304571751866:android:9546e12fbe75e8e06ed183",
+        "android_client_info": {
+          "package_name": "com.travelties.travelties"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "304571751866-ae9qq5i2uiii54j4edmqj8cgg6luvmgs.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.travelties.travelties",
+            "certificate_hash": "8f1d94895715c18a6ca6c8cdbd3d8b7927b5bbbe"
+          }
+        },
+        {
+          "client_id": "304571751866-qeej2t9d8l76kg6e3729q7lou0t035o5.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDV-IvlYVokyXMZiRidziSNX4tAnh9cArA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "304571751866-qeej2t9d8l76kg6e3729q7lou0t035o5.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "304571751866-8khl3376kj5r88h70upf1kfud7470p80.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.travelties.travelties"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
