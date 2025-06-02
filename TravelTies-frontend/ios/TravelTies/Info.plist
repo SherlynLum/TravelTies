@@ -27,7 +27,7 @@
       <dict>
         <key>CFBundleURLSchemes</key>
         <array>
-          <string>travelties</string>
+          <string>com.travelties.travelties</string>
           <string>com.travelties.travelties</string>
         </array>
       </dict>

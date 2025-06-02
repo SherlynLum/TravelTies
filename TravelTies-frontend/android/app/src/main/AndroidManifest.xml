@@ -26,6 +26,7 @@
         <category android:name="android.intent.category.BROWSABLE"/>
         <data android:scheme="travelties"/>
         <data android:scheme="exp+travelties-frontend"/>
+        <data android:scheme="com.travelties.travelties"/>
       </intent-filter>
     </activity>
   </application>

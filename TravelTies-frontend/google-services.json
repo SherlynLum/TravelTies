@@ -22,6 +22,14 @@
           }
         },
         {
+          "client_id": "304571751866-f766dl47v9m3igcm6o2r3ccvjmog78ct.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.travelties.travelties",
+            "certificate_hash": "22ae8e4023e4ec963a6df5b3e31752dc09944175"
+          }
+        },
+        {
           "client_id": "304571751866-qeej2t9d8l76kg6e3729q7lou0t035o5.apps.googleusercontent.com",
           "client_type": 3
         }

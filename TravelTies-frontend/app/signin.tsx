@@ -64,7 +64,7 @@ const SignIn = () => {
                     </Text> 
                 </View> 
 
-                <View style={{top: hp(5), width: wp(88), height: hp(56), paddingHorizontal: wp(2.5),
+                <View style={{top: hp(5), width: wp(88), height: hp(57), paddingHorizontal: wp(2.5),
                 paddingTop: hp(2.5), paddingBottom: hp(4), borderRadius: 30}}
                 className='flex flex-col left-1/2 -translate-x-1/2 gap-5 bg-white'>
                     <Text style={{fontSize: hp(4.11)}} className='font-bold tracking-wider text-center'> 
