@@ -4,7 +4,6 @@ import { createUserWithEmailAndPassword, getIdToken, onAuthStateChanged, signInW
 import { auth } from "../firebaseConfig";
 import * as Google from "expo-auth-session/providers/google";
 import * as WebBrowser from "expo-web-browser";
-// import { GoogleSignin, statusCodes, isErrorWithCode } from '@react-native-google-signin/google-signin';
 
 WebBrowser.maybeCompleteAuthSession();
 
