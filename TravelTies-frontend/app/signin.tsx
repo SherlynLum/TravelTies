@@ -12,8 +12,7 @@ import { useAuth } from '@/context/authContext.js'
 const SignIn = () => {
     const router = useRouter();
     const [loading, setLoading] = useState(false);
-    const {login} = useAuth();
-    const {googleSignIn} = useAuth();
+    const {login, signInWithGoogle} = useAuth();
 
     const emailRef = useRef("");
     const passwordRef = useRef("");
@@ -32,6 +31,18 @@ const SignIn = () => {
         console.log('sign in response: ', response);
         if (!response.success) {
             Alert.alert('Sign in', response.message);
+        }
+    }
+
+    const handleGoogleLogin = async () => {
+        setLoading(true);
+
+        const response = await signInWithGoogle();
+        setLoading(false);
+
+        console.log('Google sigin in response: ', response);
+        if (!response.success) {
+            Alert.alert('Google sign-in', response.message);
         }
     }
     
@@ -154,7 +165,7 @@ const SignIn = () => {
 
                     {/* continue with Google button */}
                     <View>
-                        <TouchableOpacity onPress={googleSignIn} 
+                        <TouchableOpacity onPress={handleGoogleLogin} 
                         style={{height: hp(6.46), width: wp(77.61), borderRadius: 30}} 
                         className='bg-white left-1/2 -translate-x-1/2 justify-center 
                         items-center border border-gray flex-row gap-5 shadow-sm'>

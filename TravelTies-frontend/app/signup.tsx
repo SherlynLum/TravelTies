@@ -11,9 +11,8 @@ import { useAuth } from '@/context/authContext.js'
 
 const SignUp = () => {
     const router = useRouter();
-    const {register} = useAuth();
+    const {register, signInWithGoogle} = useAuth();
     const [loading, setLoading] = useState(false);
-    const {googleSignIn} = useAuth();
 
     const emailRef = useRef("");
     const passwordRef = useRef("");
@@ -40,6 +39,19 @@ const SignUp = () => {
             Alert.alert('Sign up', response.message);
         }
     }
+
+    const handleGoogleLogin = async () => {
+        setLoading(true);
+    
+        const response = await signInWithGoogle();
+        setLoading(false);
+    
+        console.log('Google sigin in response: ', response);
+        if (!response.success) {
+            Alert.alert('Google sign-in', response.message);
+        }
+    }
+    
   return (
     <ImageBackground
         source={require('../assets/images/signup-bg.png')}
@@ -166,7 +178,7 @@ const SignUp = () => {
                     
                     {/* continue with Google button */}
                     <View>
-                        <TouchableOpacity onPress={googleSignIn} 
+                        <TouchableOpacity onPress={handleGoogleLogin} 
                         style={{height: hp(6.46), width: wp(77.61), borderRadius: 30}} 
                         className='bg-white left-1/2 -translate-x-1/2 justify-center 
                         items-center border border-gray flex-row gap-5 shadow-sm'>
@@ -176,7 +188,7 @@ const SignUp = () => {
                             />
                             <Text style={{fontSize: hp(2)}} className='text-black font-semibold
                             tracking-wider'>
-                                Sign in with Google
+                                Continue with Google
                             </Text>
                         </TouchableOpacity>
 

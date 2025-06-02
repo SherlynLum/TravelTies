@@ -1,11 +1,7 @@
 import { createContext, useEffect, useState, useContext } from "react";
-import { Alert } from "react-native";
 import { createUserWithEmailAndPassword, getIdToken, onAuthStateChanged, signInWithEmailAndPassword, signOut, GoogleAuthProvider, signInWithCredential } from "firebase/auth";
 import { auth } from "../firebaseConfig";
-import * as Google from "expo-auth-session/providers/google";
-import * as WebBrowser from "expo-web-browser";
-
-WebBrowser.maybeCompleteAuthSession();
+import { GoogleSignin, isSuccessResponse, isErrorWithCode } from "@react-native-google-signin/google-signin"
 
 export const AuthContext = createContext();
 
@@ -42,37 +38,31 @@ export const AuthContextProvider = ({ children }) => {
         }
     }
 
-    const [request, response, promptAsync] = Google.useAuthRequest({
-        iosClientId: process.env.EXPO_PUBLIC_IOS_CLIENT_ID,
-        androidClientId: process.env.EXPO_PUBLIC_ANDROID_DEBUG_CLIENT_ID,
-    });
-
-    const googleSignIn = () => {
-        if (!request) {
-            Alert.alert('Google sign in not ready', 'Please try again in a moment');
-            return Promise.resolve;
-        }
-        promptAsync();
-    }
-
     useEffect(() => {
-        if (response?.type === "success") {
-            const { id_token } = response.params;
+        GoogleSignin.configure({
+            webClientId: process.env.EXPO_PUBLIC_WEB_CLIENT_ID,
+        });
+    }, [])
 
-            if ( !id_token ) {
-                console.log("No id_token in response");
-                return;
+    const signInWithGoogle = async () => {
+        try {
+            // Google sign-in on Android requires Google Play Services, so check first
+            await GoogleSignin.hasPlayServices({ showPlayServicesUpdateDialog: true});
+            const response = await GoogleSignin.signIn();
+
+            // try both the new style and old style of google sign in result
+            const idToken = response.data?.idToken || response.data.idToken;
+            if (!idToken) {
+                throw new Error('No ID token found')
             }
 
-            const credential = GoogleAuthProvider.credential(id_token);
-            signInWithCredential(auth, credential).then(({ user }) => {
-                setUser(user);
-                setIsAuthenticated(true);
-            }).catch((e) => {
-                console.log("Firebase Google sign-in error: ", e.message);
-            });
+            const googleCredential = GoogleAuthProvider.credential(idToken);
+            const user = await signInWithCredential(auth, googleCredential);
+            return {success: true, data: user};
+        } catch (e) {
+            return {success: false, message: e.message}
         }
-    }, [response]);
+    }
 
     const logout = async () => {
         try {
@@ -116,7 +106,7 @@ export const AuthContextProvider = ({ children }) => {
     }
 
     return (
-        <AuthContext.Provider value = {{ user, isAuthenticated, login, logout, register, googleSignIn}}>
+        <AuthContext.Provider value = {{ user, isAuthenticated, login, logout, register, signInWithGoogle}}>
             {children}
         </AuthContext.Provider>
     )
