@@ -3,6 +3,7 @@ import { Alert } from "react-native";
 import { createUserWithEmailAndPassword, getIdToken, onAuthStateChanged, signInWithEmailAndPassword, signOut, GoogleAuthProvider, signInWithCredential } from "firebase/auth";
 import { auth } from "../firebaseConfig";
 import * as Google from "expo-auth-session/providers/google";
+import { makeRedirectUri } from "expo-auth-session";
 import * as WebBrowser from "expo-web-browser";
 
 WebBrowser.maybeCompleteAuthSession();
@@ -42,9 +43,15 @@ export const AuthContextProvider = ({ children }) => {
         }
     }
 
+    const redirectUri = makeRedirectUri({
+        useProxy: true,
+    })
+
     const [request, response, promptAsync] = Google.useAuthRequest({
         iosClientId: process.env.EXPO_PUBLIC_IOS_CLIENT_ID,
-        androidClientId: process.env.EXPO_PUBLIC_ANDROID_CLIENT_ID
+        androidClientId: process.env.EXPO_PUBLIC_ANDROID_CLIENT_ID,
+        webClientId: process.env.EXPO_PUBLIC_WEB_CLIENT_ID,
+        redirectUri
     })
 
     const googleSignIn = () => {
