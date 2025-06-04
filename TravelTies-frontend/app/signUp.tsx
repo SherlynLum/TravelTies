@@ -13,6 +13,7 @@ const SignUp = () => {
     const router = useRouter();
     const {register, signInWithGoogle} = useAuth();
     const [loading, setLoading] = useState(false);
+    const [googleLoading, setGoogleLoading] = useState(false);
 
     const emailRef = useRef("");
     const passwordRef = useRef("");
@@ -41,10 +42,10 @@ const SignUp = () => {
     }
 
     const handleGoogleLogin = async () => {
-        setLoading(true);
+        setGoogleLoading(true);
     
         const response = await signInWithGoogle();
-        setLoading(false);
+        setGoogleLoading(false);
     
         console.log('Google sigin in response: ', response);
         if (!response.success) {
@@ -178,20 +179,27 @@ const SignUp = () => {
                     
                     {/* continue with Google button */}
                     <View>
-                        <TouchableOpacity onPress={handleGoogleLogin} 
-                        style={{height: hp(6.46), width: wp(77.61), borderRadius: 30}} 
-                        className='bg-white left-1/2 -translate-x-1/2 justify-center 
-                        items-center border border-gray flex-row gap-5 shadow-sm'>
-                            <Image
-                                source={require('../assets/images/google-icon.png')}
-                                style={{width: wp(7.63), height: hp(3.52)}}
-                            />
-                            <Text style={{fontSize: hp(2)}} className='text-black font-semibold
-                            tracking-wider'>
-                                Continue with Google
-                            </Text>
-                        </TouchableOpacity>
-
+                        {
+                            googleLoading ? (
+                                <View className="flex-row justify-center">
+                                    <Loading size={hp(8)} />
+                                </View>
+                            ) : (
+                                <TouchableOpacity onPress={handleGoogleLogin} 
+                                style={{height: hp(6.46), width: wp(77.61), borderRadius: 30}} 
+                                className='bg-white left-1/2 -translate-x-1/2 justify-center 
+                                items-center border border-gray flex-row gap-5 shadow-sm'>
+                                    <Image
+                                        source={require('../assets/images/google-icon.png')}
+                                        style={{width: wp(7.63), height: hp(3.52)}}
+                                    />
+                                    <Text style={{fontSize: hp(2)}} className='text-black font-semibold
+                                    tracking-wider'>
+                                        Continue with Google
+                                    </Text>
+                                </TouchableOpacity>
+                            )
+                        }
                     </View>
                 </View>
             </View>

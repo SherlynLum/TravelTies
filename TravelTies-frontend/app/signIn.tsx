@@ -12,6 +12,7 @@ import { useAuth } from '@/context/authContext.js'
 const SignIn = () => {
     const router = useRouter();
     const [loading, setLoading] = useState(false);
+    const [googleLoading, setGoogleLoading] = useState(false);
     const {login, signInWithGoogle} = useAuth();
 
     const emailRef = useRef("");
@@ -35,17 +36,18 @@ const SignIn = () => {
     }
 
     const handleGoogleLogin = async () => {
-        setLoading(true);
+        setGoogleLoading(true);
 
         const response = await signInWithGoogle();
-        setLoading(false);
+        setGoogleLoading(false);
 
         console.log('Google sigin in response: ', response);
         if (!response.success) {
             Alert.alert('Google sign-in', response.message);
         }
     }
-    
+
+   
   return (
     <ImageBackground
         source={require('../assets/images/signup-bg.png')}
@@ -120,11 +122,10 @@ const SignIn = () => {
                         </View>
                     </View>
 
-                    {/* submit button */}
-                    
+                    {/* submit button */}          
                     <View>
                         {
-                            loading? (
+                            loading ? (
                                 <View className="flex-row justify-center">
                                     <Loading size={hp(8)} />
                                 </View>
@@ -165,19 +166,27 @@ const SignIn = () => {
 
                     {/* continue with Google button */}
                     <View>
-                        <TouchableOpacity onPress={handleGoogleLogin} 
-                        style={{height: hp(6.46), width: wp(77.61), borderRadius: 30}} 
-                        className='bg-white left-1/2 -translate-x-1/2 justify-center 
-                        items-center border border-gray flex-row gap-5 shadow-sm'>
-                            <Image
-                                source={require('../assets/images/google-icon.png')}
-                                style={{width: wp(7.63), height: hp(3.52)}}
-                            />
-                            <Text style={{fontSize: hp(2)}} className='text-black font-semibold
-                            tracking-wider'>
-                                Sign in with Google
-                            </Text>
-                        </TouchableOpacity>
+                        {
+                            googleLoading ? (
+                                <View className="flex-row justify-center">
+                                    <Loading size={hp(8)} />
+                                </View>
+                            ) : (
+                                <TouchableOpacity onPress={handleGoogleLogin} 
+                                style={{height: hp(6.46), width: wp(77.61), borderRadius: 30}} 
+                                className='bg-white left-1/2 -translate-x-1/2 justify-center 
+                                items-center border border-gray flex-row gap-5 shadow-sm'>
+                                    <Image
+                                        source={require('../assets/images/google-icon.png')}
+                                        style={{width: wp(7.63), height: hp(3.52)}}
+                                    />
+                                    <Text style={{fontSize: hp(2)}} className='text-black font-semibold
+                                    tracking-wider'>
+                                        Sign in with Google
+                                    </Text>
+                                </TouchableOpacity>
+                            )
+                        }
                     </View>
                 </View>
             </View>
