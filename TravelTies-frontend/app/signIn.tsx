@@ -91,6 +91,7 @@ const SignIn = () => {
                         border border-black items-center'>
                             <Octicons name='mail' size={hp(2.7)} color='black' />
                             <TextInput
+                                autoCapitalize="none"
                                 onChangeText={value=> emailRef.current=value}
                                 style={{fontSize:hp(2)}}
                                 className='flex-1 font-medium black'
@@ -105,6 +106,7 @@ const SignIn = () => {
                             border border-black items-center'>
                                 <Octicons name='lock' size={hp(2.8)} color='black' />
                                 <TextInput
+                                    autoCapitalize="none"
                                     onChangeText={value=> passwordRef.current=value}
                                     style={{fontSize:hp(2)}}
                                     className='flex-1 font-medium black'

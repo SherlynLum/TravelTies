@@ -59,17 +59,10 @@ export const AuthContextProvider = ({ children }) => {
             return result;
         } catch (e) {
             let message = e.message || "Sign in failed";
-            if (e.code === "auth/invalid-email") {
-                message = "Invalid email";
-            } else if (e.code === "auth/wrong-password") {
-                message = "Wrong password";
-            } else if (e.code === "auth/user-not-found") {
-                const loginMethod = await fetchSignInMethodsForEmail(auth, email);
-                if (!loginMethod.length) {
-                    message = "No user exists with this email";
-                } else if (loginMethod.includes("google.com")) {
-                    message = "This email is registered with Google - please sign in with Google";
-                }
+            if (e.code === "auth/invalid-credential") {
+                message = "Incorrect email or password. If your credentials are correct, try signing in with Google or signing up if you don't have an account.";
+            } else if (e.code === "auth/invalid-email") {
+                message = "Invalid email"
             }
             return {success: false, message};
         }
@@ -86,10 +79,11 @@ export const AuthContextProvider = ({ children }) => {
             // sign in in Google
             await GoogleSignin.hasPlayServices({ showPlayServicesUpdateDialog: true});
             const response = await GoogleSignin.signIn();
+
             // try both the new style and old style of google sign in result
-            const idToken = response.data?.idToken || response.data.idToken;
+            const idToken = response.data?.idToken || response?.idToken;
             if (!idToken) {
-                throw new Error("No ID token found from Google sign-in")
+                throw new Error("Unable to complete Google sign-in")
             }
 
             // sign in in Firebase
@@ -111,7 +105,7 @@ export const AuthContextProvider = ({ children }) => {
                 } else if (e.code === statusCodes.SIGN_IN_CANCELLED) {
                     message = "Sign-in was cancelled";
                 }
-            } else if (e.code === "auth/account-exists-with-different-credential") {
+            } else if (e.code === "auth/account-exists-with-different-credential") { // catch Firebase error
                 message = "This email is registered with email & password - please sign in with email & password"
             }
             return {success: false, message}
@@ -143,14 +137,9 @@ export const AuthContextProvider = ({ children }) => {
             if (e.code === "auth/invalid-email") {
                 message = 'Invalid email';
             } else if (e.code === "auth/weak-password") {
-                message = "Password too short - password must be at least 6 characters long";
+                message = "Password too short - must be at least 6 characters long";
             } else if (e.code === "auth/email-already-in-use") {
-                const loginMethod = await fetchSignInMethodsForEmail(auth, email);
-                if (loginMethod.includes("google.com")) {
-                    message = "This email is already registered - please continue with Google"
-                } else if (loginMethod.includes("password")) {
-                    message = 'This email is already registered - please sign in instead';
-                }
+                message = "This email is already registered - please sign in or continue with Google"
             }
             return {success: false, message};
         }

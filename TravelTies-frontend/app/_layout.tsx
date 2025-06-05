@@ -17,18 +17,15 @@ const MainLayout = () => {
       // redirect to signIn
       router.replace("/signIn");
     } else if (isAuthenticated) {
-      if (typeof hasOnboarded === "undefined") {
-        // redirect to index as it will show loading 
-        router.replace("/");
-      } else if (!hasOnboarded && currentPosition !== "onboard") {
-      // redirect to onboard
-      router.replace("/onboard")
+      if (!hasOnboarded && currentPosition !== "onboard") {
+        // redirect to onboard
+        router.replace("/")
       } else if (hasOnboarded && currentPosition !== "(screens)") {
         router.replace("/home")
       }
     }
   }, [isAuthenticated, hasOnboarded]) // only redirect if isAuthenticated or hasOnboarded changes
-
+  
   return <Stack>
     <Stack.Screen
       name = "index"
