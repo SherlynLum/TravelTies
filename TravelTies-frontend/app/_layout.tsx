@@ -9,7 +9,6 @@ const MainLayout = () => {
   const router = useRouter();
 
   useEffect(() => {
-    // check if user is authenticated or not
     if (typeof isAuthenticated === "undefined") {
       return;
     } 
@@ -17,14 +16,16 @@ const MainLayout = () => {
     if (!isAuthenticated && currentPosition !== "signIn" && currentPosition !== "signUp") {
       // redirect to signIn
       router.replace("/signIn");
-    } else if (typeof hasOnboarded === "undefined") {
-      // redirect to index as it will show loading 
-      router.replace("/");
-    } else if (!hasOnboarded && currentPosition !== "onboard") {
+    } else if (isAuthenticated) {
+      if (typeof hasOnboarded === "undefined") {
+        // redirect to index as it will show loading 
+        router.replace("/");
+      } else if (!hasOnboarded && currentPosition !== "onboard") {
       // redirect to onboard
       router.replace("/onboard")
-    } else if (hasOnboarded && currentPosition !== "(screens)") {
-      router.replace("/home")
+      } else if (hasOnboarded && currentPosition !== "(screens)") {
+        router.replace("/home")
+      }
     }
   }, [isAuthenticated, hasOnboarded]) // only redirect if isAuthenticated or hasOnboarded changes
 

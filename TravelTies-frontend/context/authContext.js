@@ -11,7 +11,7 @@ export const AuthContextProvider = ({ children }) => {
     const [hasOnboarded, setHasOnboarded] = useState(undefined);
 
     useEffect(() => {
-        const unsub = onAuthStateChanged(auth, (user) => {
+        const unsubscribe = onAuthStateChanged(auth, (user) => {
             if (user) {
                 setIsAuthenticated(true);
                 setUser(user)
@@ -20,7 +20,7 @@ export const AuthContextProvider = ({ children }) => {
                 setUser(null)
             }
         })
-        return unsub;
+        return unsubscribe;
     }, [])
 
     const syncWithDatabase = async (user) => {
