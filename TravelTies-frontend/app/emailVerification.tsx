@@ -1,7 +1,8 @@
-import { View, Text, ImageBackground, StatusBar, SafeAreaView, Image, Alert, TouchableOpacity, Pressable } from 'react-native';
+import { View, Text, ImageBackground, SafeAreaView, Image, Alert, TouchableOpacity, Pressable } from 'react-native';
 import React, { useEffect, useState } from 'react';
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
-import { useAuth } from '@/context/authContext.js'
+import { StatusBar } from 'expo-status-bar'
+import { useAuth } from '@/context/authContext.js';
 import { useRouter } from 'expo-router';
 import Loading from '@/components/Loading';
 

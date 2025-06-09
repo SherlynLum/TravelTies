@@ -21,12 +21,10 @@ const SignUp = () => {
 
     const handleRegister = async () => {
         if (!emailRef.current || !passwordRef.current) {
-            Alert.alert('Sign up', 'Please fill in all the fields!');
+            Alert.alert('Sign up', 'Please fill in all the fields');
             return;
-        }
-
-        if (passwordRef.current !== repeatPasswordRef.current) {
-            Alert.alert('Sign up', 'Passwords do not match!');
+        } else if (passwordRef.current !== repeatPasswordRef.current) {
+            Alert.alert('Sign up', 'Passwords do not match');
             return;
         }
 
@@ -97,7 +95,7 @@ const SignUp = () => {
                                 autoCapitalize="none"
                                 onChangeText={value=> emailRef.current=value}
                                 style={{fontSize:hp(2)}}
-                                className='flex-1 font-medium black'
+                                className='flex-1 font-medium text-black'
                                 placeholder='Email address'
                                 placeholderTextColor={'gray'}
                             />
@@ -111,7 +109,7 @@ const SignUp = () => {
                                 autoCapitalize="none"
                                 onChangeText={value=> passwordRef.current=value}
                                 style={{fontSize:hp(2)}}
-                                className='flex-1 font-medium black'
+                                className='flex-1 font-medium text-black'
                                 placeholder='Password'
                                 secureTextEntry
                                 placeholderTextColor={'gray'}
@@ -125,7 +123,7 @@ const SignUp = () => {
                                 autoCapitalize="none"
                                 onChangeText={value=> repeatPasswordRef.current=value}
                                 style={{fontSize:hp(2)}}
-                                className='flex-1 font-medium black'
+                                className='flex-1 font-medium text-black'
                                 placeholder='Repeat password'
                                 secureTextEntry
                                 placeholderTextColor={'gray'}

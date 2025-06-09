@@ -90,7 +90,7 @@ const SignIn = () => {
                                 autoCapitalize="none"
                                 onChangeText={value=> emailRef.current=value}
                                 style={{fontSize:hp(2)}}
-                                className="flex-1 font-medium black"
+                                className="flex-1 font-medium text-black"
                                 placeholder="Email address"
                                 placeholderTextColor={"gray"}
                             />
@@ -105,7 +105,7 @@ const SignIn = () => {
                                     autoCapitalize="none"
                                     onChangeText={value=> passwordRef.current=value}
                                     style={{fontSize:hp(2)}}
-                                    className="flex-1 font-medium black"
+                                    className="flex-1 font-medium text-black"
                                     placeholder="Password"
                                     secureTextEntry
                                     placeholderTextColor={"gray"}
@@ -113,7 +113,7 @@ const SignIn = () => {
                             </View>
                             <View style={{paddingHorizontal: wp(2.5), paddingVertical: hp(0.3)}}>
                                 <Pressable onPress={() => router.push('/forgotPassword')} hitSlop={14}>
-                                    <Text style={{fontSize: hp(1.8)}} className="font-semibold text-right
+                                    <Text style={{fontSize: hp(1.8)}} className="font-bold text-right
                                     text-blue-500">
                                         Forgot password?
                                     </Text>

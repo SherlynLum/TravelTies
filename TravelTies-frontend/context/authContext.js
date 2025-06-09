@@ -1,7 +1,7 @@
 import { createContext, useEffect, useState, useContext } from "react";
 import { createUserWithEmailAndPassword, getIdToken, onAuthStateChanged, 
     signInWithEmailAndPassword, signOut, GoogleAuthProvider, signInWithCredential, 
-    sendEmailVerification } from "firebase/auth";
+    sendEmailVerification, sendPasswordResetEmail } from "firebase/auth";
 import { auth } from "../firebaseConfig";
 // import { GoogleSignin, isErrorWithCode, statusCodes } from "@react-native-google-signin/google-signin"
 
@@ -144,7 +144,7 @@ export const AuthContextProvider = ({ children }) => {
         } catch(e) {
             let message = e.message || "Sign up failed";
             if (e.code === "auth/invalid-email") {
-                message = 'Invalid email';
+                message = "Invalid email";
             } else if (e.code === "auth/weak-password") {
                 message = "Password too short - must be at least 6 characters long";
             } else if (e.code === "auth/email-already-in-use") {
@@ -163,14 +163,32 @@ export const AuthContextProvider = ({ children }) => {
             await sendEmailVerification(user, actionCodeSettings);
             return {success: true};
         } catch (e) {
+            
             return {success: false, message: "Failed to send verification email - please try clicking the Resend email button",
             error: e.message};
         }
     }
 
+    const resetPassword = async (email) => {
+        try {
+            await sendPasswordResetEmail(auth, email);
+            return {success: true};
+        } catch (e) {
+            let message = e.message || "Failed to send reset password email";
+            if (e.code === "auth/invalid-email") {
+                message = "Invalid email";
+            } else if (e.code === "auth/too-many-requests") {
+                message = "Too many requests have been sent - please wait before trying again"
+            } else if (e.code === "auth/network-request-failed") {
+                message = "No Internet connection detected - please check your network"
+            }
+            return {success: false, message};
+        }
+    }
+
     return (
         <AuthContext.Provider value = {{ user, isAuthenticated, emailVerified, hasOnboarded, 
-        login, logout, register, signInWithGoogle, verifyEmail}}>
+        login, logout, register, signInWithGoogle, verifyEmail, resetPassword}}>
             {children}
         </AuthContext.Provider>
     )
