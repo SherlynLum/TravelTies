@@ -67,24 +67,20 @@ const SignUp = () => {
     <SafeAreaView className='flex-1'>
         <CustomKeyboardView>
             <View style={{paddingHorizontal: wp(4.07), paddingTop: hp(1.88)}}
-            className='flex-1 gap-12 bg-transparent'>
+            className="flex-1 gap-12 bg-transparent items-center">
                 <View style={{top: hp(5.5), width: wp(75.8), height: hp(13.7)}}
-                className='absoulte left-1/2 -translate-x-1/2 bg-transparent 
-                justify-center items-center'>
-                    <Image
-                        source={require('../assets/images/plane-pic.png')}
-                        className="absolute"
-                        style={{width: wp(31.8), height: hp(14.7), left: wp(45), top: 0}}
-                    />
-                    <Text style={{fontSize: hp(2.8)}} className='font-medium text-center
-                    text-black'>
+                className="bg-transparent justify-center items-center">
+                    <Image source={require("../assets/images/plane-pic.png")} className="absolute"
+                    style={{width: wp(31.8), height: hp(14.7), left: wp(45), top: 0}}/>
+                    <Text style={{fontSize: hp(2.8)}} className="font-medium text-center
+                    text-black">
                         Your All-in-One App for Group Travelling
                     </Text> 
                 </View> 
 
                 <View style={{top: hp(5), width: wp(88), height: hp(62), paddingHorizontal: wp(2.5),
                 paddingTop: hp(2.5), paddingBottom: hp(4), borderRadius: 30}}
-                className='flex flex-col left-1/2 -translate-x-1/2 gap-5 bg-white'>
+                className='flex flex-col justify-center item-center gap-6 bg-white'>
                     <View style={{paddingHorizontal: wp(3.8)}}>
                         <Text style={{fontSize: hp(4.11)}} className='font-bold tracking-wider'> 
                             Sign up
@@ -137,8 +133,7 @@ const SignUp = () => {
                         </View>
                     </View>
 
-                    {/* submit button */}
-                    
+                    {/* sign up button */}
                     <View>
                         {
                             loading? (
@@ -149,7 +144,7 @@ const SignUp = () => {
                                 <TouchableOpacity onPress={handleRegister} 
                                 style={{height: hp(6.46), width: wp(77.61), borderRadius: 30}} 
                                 className='bg-blue-500 left-1/2 -translate-x-1/2 justify-center 
-                                items-center border border-blue-600'>
+                                items-center border border-blue-600 shadow-sm'>
                                     <Text style={{fontSize: hp(2.7)}} className='text-white font-semibold
                                     tracking-wider'>
                                         Sign up
@@ -159,13 +154,13 @@ const SignUp = () => {
                         }
                     </View>
 
-                    {/* sign up text */}
+                    {/* sign in text */}
                     <View className="flex-row justify-center gap-2">
                         <Text style={{fontSize: hp(1.8)}} className="text-black 
                         font-medium">
                             Already have an account?
                         </Text>
-                        <Pressable onPress={() => router.push('/signIn')}>
+                        <Pressable onPress={() => router.push('/signIn')} hitSlop={14}>
                             <Text style={{fontSize: hp(1.8)}} className="font-bold 
                             text-blue-500">
                                 Sign in

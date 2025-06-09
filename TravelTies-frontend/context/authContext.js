@@ -1,23 +1,28 @@
 import { createContext, useEffect, useState, useContext } from "react";
-import { createUserWithEmailAndPassword, getIdToken, onAuthStateChanged, signInWithEmailAndPassword, signOut, GoogleAuthProvider, signInWithCredential, fetchSignInMethodsForEmail } from "firebase/auth";
+import { createUserWithEmailAndPassword, getIdToken, onAuthStateChanged, 
+    signInWithEmailAndPassword, signOut, GoogleAuthProvider, signInWithCredential, 
+    sendEmailVerification } from "firebase/auth";
 import { auth } from "../firebaseConfig";
-import { GoogleSignin, isErrorWithCode, statusCodes } from "@react-native-google-signin/google-signin"
+// import { GoogleSignin, isErrorWithCode, statusCodes } from "@react-native-google-signin/google-signin"
 
 export const AuthContext = createContext();
 
 export const AuthContextProvider = ({ children }) => {
     const [user, setUser] = useState(null);
-    const [isAuthenticated, setIsAuthenticated] = useState(undefined);
-    const [hasOnboarded, setHasOnboarded] = useState(undefined);
+    const [isAuthenticated, setIsAuthenticated] = useState(null);
+    const [emailVerified, setEmailVerified] = useState(null);
+    const [hasOnboarded, setHasOnboarded] = useState(null);
 
     useEffect(() => {
         const unsubscribe = onAuthStateChanged(auth, (user) => {
             if (user) {
                 setIsAuthenticated(true);
-                setUser(user)
+                setUser(user);
+                setEmailVerified(user.emailVerified);
             } else {
                 setIsAuthenticated(false);
-                setUser(null)
+                setUser(null);
+                setEmailVerified(null);
             }
         })
         return unsubscribe;
@@ -25,7 +30,7 @@ export const AuthContextProvider = ({ children }) => {
 
     const syncWithDatabase = async (user) => {
         const token = await getIdToken(user);
-        const backendRes = await fetch("http://localhost:3000/api/user/sync", {
+        const backendRes = await fetch(`${process.env.EXPO_PUBLIC_BACKEND_URL}/api/user/sync`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
@@ -67,14 +72,16 @@ export const AuthContextProvider = ({ children }) => {
             return {success: false, message};
         }
     }
-
+/* to code using expo go:
     useEffect(() => {
         GoogleSignin.configure({
             webClientId: process.env.EXPO_PUBLIC_WEB_CLIENT_ID,
         });
     }, [])
+*/
 
     const signInWithGoogle = async () => {
+        /* to code using expo go:
         try {
             // sign in in Google
             await GoogleSignin.hasPlayServices({ showPlayServicesUpdateDialog: true});
@@ -110,6 +117,8 @@ export const AuthContextProvider = ({ children }) => {
             }
             return {success: false, message}
         }
+        */
+       return;
     }
 
     const logout = async () => {
@@ -145,8 +154,23 @@ export const AuthContextProvider = ({ children }) => {
         }
     }
 
+    const verifyEmail = async (user) => {
+        try {
+            const actionCodeSettings = {
+                url: "https://travelties-fce2c.web.app",
+                handleCodeInApp: true
+            };
+            await sendEmailVerification(user, actionCodeSettings);
+            return {success: true};
+        } catch (e) {
+            return {success: false, message: "Failed to send verification email - please try clicking the Resend email button",
+            error: e.message};
+        }
+    }
+
     return (
-        <AuthContext.Provider value = {{ user, isAuthenticated, hasOnboarded, login, logout, register, signInWithGoogle}}>
+        <AuthContext.Provider value = {{ user, isAuthenticated, emailVerified, hasOnboarded, 
+        login, logout, register, signInWithGoogle, verifyEmail}}>
             {children}
         </AuthContext.Provider>
     )
