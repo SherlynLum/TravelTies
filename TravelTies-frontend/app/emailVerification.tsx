@@ -9,12 +9,32 @@ import Loading from '@/components/Loading';
 const EmailVerification = () => {
   const {user, verifyEmail, logout} = useAuth();
   const [loading, setLoading] = useState(false);
+  const [cooldown, setCooldown] = useState(0);
   const router = useRouter();
+
+  // cooldown to prevent users keep pressing resend button
+  useEffect(() => {
+      if (cooldown === 0) {
+        return; // stop counting down when cooldown equals 0
+      } else {
+        // every 1000ms cooldown decrease by 1
+        const countdown = setTimeout(() => {
+          setCooldown(old => old - 1);
+        }, 1000)
+  
+        // clean up countdown if useEffect is called in between countdown
+        return () => clearTimeout(countdown)
+      }
+    }, [cooldown])
 
   // handle verifyEmail
   const handleEmailVerification = async () => {
     if (!user) { // although unlikely, check whether user exists in case _layout fail to check
       router.replace("/signIn");
+    } else if (cooldown > 0) {
+      Alert.alert("Please wait", "We have just sent a verification email" +
+        `and please try again in ${cooldown} seconds`);
+      return;
     } else {
       setLoading(true);
 
@@ -23,7 +43,8 @@ const EmailVerification = () => {
 
       if (!response.success) {
         Alert.alert("Email verification", response.message);
-        console.log("Email verification error: " + response.error)
+      } else {
+        setCooldown(60);
       }
     }
   }
@@ -39,7 +60,6 @@ const EmailVerification = () => {
     const logOutRes = await logout();
     if (!logOutRes.success) {
       Alert.alert("Back to Sign up failed", logOutRes.message);
-      console.log(logOutRes.error);
     } else {
       router.replace("/signUp");
     }

@@ -10,6 +10,7 @@ export const AuthContext = createContext();
 export const AuthContextProvider = ({ children }) => {
     const [user, setUser] = useState(null);
     const [isAuthenticated, setIsAuthenticated] = useState(null);
+    const [isSynced, setIsSynced] = useState(null);
     const [emailVerified, setEmailVerified] = useState(null);
     const [hasOnboarded, setHasOnboarded] = useState(null);
 
@@ -22,7 +23,9 @@ export const AuthContextProvider = ({ children }) => {
             } else {
                 setIsAuthenticated(false);
                 setUser(null);
+                setIsSynced(null);
                 setEmailVerified(null);
+                setHasOnboarded(null);
             }
         })
         return unsubscribe;
@@ -41,15 +44,16 @@ export const AuthContextProvider = ({ children }) => {
         const backendResJson = await backendRes.json();
 
         // return based on database result
-        if (!backendRes.ok) {
-            throw new Error("Failed to load data: " + backendResJson.message);
-        } else if (!backendResJson?.data) {
-            throw new Error("Failed to load data")
+        if (!backendRes.ok || !backendResJson?.data) {
+            setIsSynced(false);
+            await signOut(auth); // sign-in succeeded but database sync failed so sign out to keep state atomic
+            throw new Error(backendResJson.message || "Failed to load data");
         } else if (backendResJson.onboard) {
             setHasOnboarded(true);
         } else if (!backendResJson.onboard) {
             setHasOnboarded(false);
         }
+        setIsSynced(true);
         return {success: true, data: backendResJson.data};
     }
 
@@ -57,7 +61,10 @@ export const AuthContextProvider = ({ children }) => {
         try {
             // sign in with Firebase
             const response = await signInWithEmailAndPassword(auth, email, password);
-            const user = response.user;
+            const user = response?.user;
+            if (!user) {
+                throw new Error("Sign in failed");
+            }
 
             // sync with database
             const result = await syncWithDatabase(user);
@@ -68,6 +75,10 @@ export const AuthContextProvider = ({ children }) => {
                 message = "Incorrect email or password. If your credentials are correct, try signing in with Google or signing up if you don't have an account.";
             } else if (e.code === "auth/invalid-email") {
                 message = "Invalid email"
+            } else if (e.code === "auth/too-many-requests") {
+                message = "Too many requests have been sent - please wait before trying again"
+            } else if (e.code === "auth/network-request-failed") {
+                message = "No Internet connection detected - please check your network"
             }
             return {success: false, message};
         }
@@ -96,7 +107,10 @@ export const AuthContextProvider = ({ children }) => {
             // sign in in Firebase
             const googleCredential = GoogleAuthProvider.credential(idToken);
             const data = await signInWithCredential(auth, googleCredential);
-            const user = data.user;
+            const user = data?.user;
+            if (!user) {
+                throw new Error("Google sign-in failed")
+            }
 
             // sync with database
             const result = await syncWithDatabase(user);
@@ -114,6 +128,10 @@ export const AuthContextProvider = ({ children }) => {
                 }
             } else if (e.code === "auth/account-exists-with-different-credential") { // catch Firebase error
                 message = "This email is registered with email & password - please sign in with email & password"
+            } else if (e.code === "auth/too-many-requests") {
+                message = "Too many requests have been sent - please wait before trying again"
+            } else if (e.code === "auth/network-request-failed") {
+                message = "No Internet connection detected - please check your network"
             }
             return {success: false, message}
         }
@@ -126,7 +144,7 @@ export const AuthContextProvider = ({ children }) => {
             await signOut(auth);
             return {success: true};
         } catch (e) {
-            return {success: false, message: e.message, error: e};
+            return {success: false, message: e.message};
         }
     }
 
@@ -149,6 +167,10 @@ export const AuthContextProvider = ({ children }) => {
                 message = "Password too short - must be at least 6 characters long";
             } else if (e.code === "auth/email-already-in-use") {
                 message = "This email is already registered - please sign in or continue with Google"
+            } else if (e.code === "auth/too-many-requests") {
+                message = "Too many requests have been sent - please wait before trying again"
+            } else if (e.code === "auth/network-request-failed") {
+                message = "No Internet connection detected - please check your network"
             }
             return {success: false, message};
         }
@@ -163,9 +185,13 @@ export const AuthContextProvider = ({ children }) => {
             await sendEmailVerification(user, actionCodeSettings);
             return {success: true};
         } catch (e) {
-            
-            return {success: false, message: "Failed to send verification email - please try clicking the Resend email button",
-            error: e.message};
+            let message = e.message || "Failed to send verification email";
+            if (e.code === "auth/too-many-requests") {
+                message = "Too many requests have been sent - please wait before trying again"
+            } else if (e.code === "auth/network-request-failed") {
+                message = "No Internet connection detected - please check your network"
+            }
+            return {success: false, message};
         }
     }
 
@@ -187,8 +213,8 @@ export const AuthContextProvider = ({ children }) => {
     }
 
     return (
-        <AuthContext.Provider value = {{ user, isAuthenticated, emailVerified, hasOnboarded, 
-        login, logout, register, signInWithGoogle, verifyEmail, resetPassword}}>
+        <AuthContext.Provider value = {{ user, isAuthenticated, isSynced, emailVerified, 
+        hasOnboarded, login, logout, register, signInWithGoogle, verifyEmail, resetPassword}}>
             {children}
         </AuthContext.Provider>
     )

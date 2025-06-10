@@ -4,10 +4,10 @@ import { AuthContextProvider, useAuth } from "../context/authContext";
 import { useEffect } from "react";
 
 const MainLayout = () => {
-  const {isAuthenticated, emailVerified, hasOnboarded} = useAuth();
+  const {isAuthenticated, isSynced, emailVerified, hasOnboarded} = useAuth();
   const segments = useSegments();
   const router = useRouter();
-/*
+
   useEffect(() => {
     if (isAuthenticated === null) {
       return;
@@ -16,7 +16,7 @@ const MainLayout = () => {
     if (!isAuthenticated && currentPosition !== "signIn" && currentPosition !== "signUp") {
       // redirect to signIn
       router.replace("/signIn");
-    } else if (isAuthenticated) {
+    } else if (isAuthenticated && isSynced) { // if isSynced is false or null, isAuthenticated will always be false or null, so no need to check !isAuthenticated && !isSynced
       if (emailVerified === null) {
         return;
       } else if (!emailVerified && currentPosition !== "emailVerification") {
@@ -31,10 +31,10 @@ const MainLayout = () => {
           router.replace("/home");
         }
       }
-    }
-  }, [isAuthenticated, emailVerified, hasOnboarded]) // only redirect if isAuthenticated/emailVerified/hasOnboarded changes
-*/
-/* for convenience in coding specific page: */
+    } // only redirect if isAuthenticated/isSynced/emailVerified/hasOnboarded changes
+  }, [isAuthenticated, isSynced, emailVerified, hasOnboarded]) 
+
+/* for convenience in coding specific page: 
   useEffect(() => {
     // delay redirect a tiny bit to avoid navigating too early
     const timeout = setTimeout(() => {
@@ -43,7 +43,7 @@ const MainLayout = () => {
 
     return () => clearTimeout(timeout);
   }, []);
-/**/
+*/
   
   return <Stack>
     <Stack.Screen
