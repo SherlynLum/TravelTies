@@ -69,7 +69,7 @@ const userSchema = new mongoose.Schema(
             match: /^(?!_+$)[a-zA-Z0-9_]+$/
         },
 
-        profilePicUrl: {
+        profilePicKey: {
             type: String,
             required: false
         },

@@ -1,9 +1,16 @@
 const validateUsername = require("../validators/username.validator.js");
-const {signUpOrSignIn, isUsernameTaken, updateUserProfile} = require("../services/user.service.js");
+const {signUpOrSignIn, checkUsernameUniqueness, updateUsername, updateProfilePic} = require("../services/user.service.js");
+const generateUrl = require("../services/awss3.service.js");
+
+const ALLOWED_TYPES = new Set(["image/jpeg", "image/png", "image/webp", "image/heic", 
+    "image/heif"]);
 
 const syncUser = async (req, res) => {
     const uid = req.user.uid;
     // for testing without middleware: const {uid} = req.body; 
+    if (!uid) {
+        return res.status(400).json({message: "Missing uid"})
+    }
 
     try {
         const response = await signUpOrSignIn(uid);
@@ -14,15 +21,44 @@ const syncUser = async (req, res) => {
         } else { // existing user with username, direct to home screen
         return res.status(200).json({onboard: true, data: response.user});
         }
-    } catch (error) {
-        return res.status(500).json({message: error.message});
+    } catch (e) {
+        return res.status(500).json({message: e.message});
     }
 }
 
-const updateUserProfileController = async (req, res) => {
+const getProfilePicUrl = async (req, res) => {
+    const mimeType = req.query.type;
+
+    if (!mimeType || typeof mimeType !== "string") {
+        return res.status(400).json({message: "Missing or invalid file type"});
+    }
+
+    // ensure mimeType is all lowercase
+    const mimeTypeLc = mimeType.toLowerCase();
+    if (ALLOWED_TYPES.has(mimeTypeLc)) {
+        try {
+            const {key, url} = await generateUrl(mimeTypeLc, "user-profile-pics");
+            return res.status(200).json({key, url});
+        } catch (e) {
+            return res.status(500).json({message: e.message});
+        }
+    } else {
+        return res.status(415).json({message: "Unsupported file type"});
+    }
+}
+
+const updateUsernameController = async (req, res) => {
     const uid = req.user.uid;
-    const {username, profilePicUrl} = req.body;
-    // for testung without middleware: const {uid, username, profilePicUrl} = req.body;
+    const {username} = req.body;
+    // for testung without middleware: const {uid, username} = req.body;
+
+    if (!uid) {
+        return res.status(400).json({message: "Missing uid"});
+    }
+
+    if (!username) {
+        return res.status(400).json({message: "Missing username"});
+    }
 
     const validationError = validateUsername(username);
     if (validationError) {
@@ -30,22 +66,48 @@ const updateUserProfileController = async (req, res) => {
     }
 
     try {
-        const nameTaken = await isUsernameTaken(username);
-        if (nameTaken) {
-            return res.status(400).json({message: "Username is taken"});
+        const uniquenessError = await checkUsernameUniqueness(uid, username);
+        if (uniquenessError) {
+            return res.status(400).json({message: uniquenessError});
         }
         
-        const updatedProfile = await updateUserProfile(uid, username, profilePicUrl);
+        const updatedProfile = await updateUsername(uid, username);
         if (!updatedProfile) {
             return res.status(404).json({message: 'User not found'});
         }
         return res.status(201).json(updatedProfile);
-    } catch (error) {
-        return res.status(500).json({message: error.message});
+    } catch (e) {
+        return res.status(500).json({message: e.message});
+    }
+}
+
+const updateProfilePicController = async (req, res) => {
+    const uid = req.user.uid;
+    const {profilePicKey} = req.body;
+    // for testung without middleware: const {uid, profilePicKey} = req.body;
+
+    if (!uid) {
+        return res.status(400).json({message: "Missing uid"});
+    }
+
+    if (!profilePicKey) {
+        return res.status(400).json({message: "Missing profile picture key"});
+    }
+
+    try {
+        const updatedProfile = await updateProfilePic(uid, profilePicKey);
+        if (!updatedProfile) {
+            return res.status(404).json({message: 'User not found'});
+        }
+        return res.status(201).json(updatedProfile);
+    } catch (e) {
+        return res.status(500).json({message: e.message});
     }
 }
 
 module.exports = {
     syncUser,
-    updateUserProfileController
+    getProfilePicUrl,
+    updateUsernameController,
+    updateProfilePicController
 };

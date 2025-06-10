@@ -12,31 +12,38 @@ const signUpOrSignIn = async (uid) => {
     }
 }
 
-const isUsernameTaken = async (username) => {
+const checkUsernameUniqueness = async (uid, username) => {
     const existingUser = await User.findOne({username}); //key and variable names are the same 
-    return !!existingUser;
-}
-
-const updateUserProfile = async (uid, username, profilePicUrl) => {
-    if (!profilePicUrl) {
-        const updatedProfile = await User.findOneAndUpdate(
-            {uid}, //key and variable names are the same 
-            {$set: {username}}, //key and variable names are the same 
-            {new: true, runValidators: true}
-        )
-        return updatedProfile;
+    if (!existingUser) {
+        return;
+    } else if (existingUser.uid === uid) {
+        return "No changes detected";
     } else {
-        const updatedProfile = await User.findOneAndUpdate(
-            {uid}, //key and variable names are the same 
-            {$set: {username, profilePicUrl}}, //key and variable names are the same 
-            {new: true, runValidators: true}
-        )
-        return updatedProfile
+        return "Username is taken";
     }
 }
 
+const updateUsername = async (uid, username) => {
+    const updatedProfile = await User.findOneAndUpdate(
+        {uid}, //key and variable names are the same 
+        {$set: {username}}, //key and variable names are the same 
+        {new: true, runValidators: true}
+    )
+    return updatedProfile;
+} 
+
+const updateProfilePic = async (uid, profilePicKey) => {
+    const updatedProfile = await User.findOneAndUpdate(
+        {uid}, //key and variable names are the same 
+        {$set: {profilePicKey}}, //key and variable names are the same 
+        {new: true, runValidators: true}
+    )
+    return updatedProfile;
+} 
+
 module.exports = {
     signUpOrSignIn,
-    isUsernameTaken, 
-    updateUserProfile
+    checkUsernameUniqueness, 
+    updateUsername,
+    updateProfilePic
 };

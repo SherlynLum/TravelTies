@@ -20,11 +20,14 @@
   },
   "homepage": "https://github.com/SherlynLum/TravelTies#readme",
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.826.0",
+    "@aws-sdk/s3-request-presigner": "^3.826.0",
     "dotenv": "^16.5.0",
     "express": "^5.1.0",
     "firebase-admin": "^13.4.0",
     "mongodb": "^6.16.0",
-    "mongoose": "^8.15.1"
+    "mongoose": "^8.15.1",
+    "uuid": "^11.1.0"
   },
   "devDependencies": {
     "@eslint/css": "^0.8.1",
