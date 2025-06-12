@@ -4,6 +4,7 @@ import { createUserWithEmailAndPassword, getIdToken, onAuthStateChanged,
     sendEmailVerification, sendPasswordResetEmail } from "firebase/auth";
 import { auth } from "../firebaseConfig";
 // import { GoogleSignin, isErrorWithCode, statusCodes } from "@react-native-google-signin/google-signin"
+import axios from "axios";
 
 export const AuthContext = createContext();
 
@@ -32,29 +33,33 @@ export const AuthContextProvider = ({ children }) => {
     }, [])
 
     const syncWithDatabase = async (user) => {
-        const token = await getIdToken(user);
-        const backendRes = await fetch(`${process.env.EXPO_PUBLIC_BACKEND_URL}/api/user/sync`, {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                "Authorization": `Bearer ${token}`
-            },
-            body: JSON.stringify({})
-        })
-        const backendResJson = await backendRes.json();
+        try {
+            const token = await getIdToken(user);
+            const backendRes = await axios.post(
+                `${process.env.EXPO_PUBLIC_BACKEND_URL}/api/user/sync`, 
+                {}, 
+                {
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${token}`
+                    }
+                }
+            );
+            const backendResJson = backendRes?.data; // get the json response
 
-        // return based on database result
-        if (!backendRes.ok || !backendResJson?.data) {
+            if (!backendResJson || backendResJson.data === undefined || 
+                backendResJson.onboard === undefined) {
+                throw new Error("Failed to load data")
+            }
+
+            setHasOnboarded(backendResJson.onboard);
+            setIsSynced(true)
+            return {success: true, data: backendResJson.data}
+        } catch (e) {
             setIsSynced(false);
             await signOut(auth); // sign-in succeeded but database sync failed so sign out to keep state atomic
-            throw new Error(backendResJson.message || "Failed to load data");
-        } else if (backendResJson.onboard) {
-            setHasOnboarded(true);
-        } else if (!backendResJson.onboard) {
-            setHasOnboarded(false);
+            throw new Error(e.response?.data.message || "Failed to load data"); // get the message field in response
         }
-        setIsSynced(true);
-        return {success: true, data: backendResJson.data};
     }
 
     const login = async (email, password) => {

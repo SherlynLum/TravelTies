@@ -7,46 +7,48 @@ import { Octicons } from '@expo/vector-icons'
 import { useRouter } from 'expo-router'
 import Loading from '../components/Loading.js'
 import CustomKeyboardView from '../components/CustomKeyboardView.js'
-import { useAuth } from '@/context/authContext.js'
+import { pickOnePic } from '@/utils/imagePicker.js'
 
 const Onboard = () => {
     const router = useRouter();
+    const [picUri, setPicUri] = useState("");
+    const [picWidth, setPicWidth] = useState(0);
+    const [picHeight, setPicHeight] = useState(0);
+    const [modalOpen, setModalOpen] = useState(false);
     const [loading, setLoading] = useState(false);
-    const [googleLoading, setGoogleLoading] = useState(false);
-    const {login, signInWithGoogle} = useAuth();
 
-    const emailRef = useRef("");
-    const passwordRef = useRef("");
+    // pick profile pic
+    const pickProfilePic = async (source: "camera" | "gallery") => {
+        try {
+            const response = await pickOnePic(source);
+            if (response.success) {
+                setPicUri(response.uri);
+                Image.getSize(response.uri, (width, height) => {
+                    setPicWidth(width);
+                    setPicHeight(height);
+                    setModalOpen(true);
+                });
+            } else if (response.message) {
+                Alert.alert("Pick profile picture", response.message);
+            }
+        } catch (e) {
+            console.log(e);
+            Alert.alert("Pick profile picture", "Failed to select profile picture - please try again");
+        }
+    }
 
-    const handleLogin = async () => {
-        if (!emailRef.current || !passwordRef.current) {
-            Alert.alert('Sign in', 'Please fill in all the fields!');
+    const usernameRef = useRef("");
+
+    const handleSubmit = async () => {
+        if (!usernameRef.current) {
+            Alert.alert('Sign in', 'Please fill in username');
             return;
         }
 
         setLoading(true);
 
-        const response = await login(emailRef.current, passwordRef.current);
         setLoading(false);
-
-        console.log('sign in response: ', response);
-        if (!response.success) {
-            Alert.alert('Sign in', response.message);
-        }
     }
-
-    const handleGoogleLogin = async () => {
-        setGoogleLoading(true);
-
-        const response = await signInWithGoogle();
-        setGoogleLoading(false);
-
-        console.log('Google sigin in response: ', response);
-        if (!response.success) {
-            Alert.alert('Google sign-in', response.message);
-        }
-    }
-
    
   return (
     <ImageBackground

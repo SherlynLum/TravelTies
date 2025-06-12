@@ -11,7 +11,11 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.travelties.travelties",
-      "googleServicesFile": "./GoogleService-Info.plist"
+      "googleServicesFile": "./GoogleService-Info.plist",
+      "infoPlist": {
+        "NSCameraUsageDescription": "TravelTies need access to your camera to take profile pictures",
+        "NSPhotoLibraryUsageDescription": "TravelTies need access to your photo library to select photos"
+      }
     },
     "android": {
       "adaptiveIcon": {
