@@ -8,13 +8,20 @@ import { useRouter } from 'expo-router'
 import Loading from '../components/Loading.js'
 import CustomKeyboardView from '../components/CustomKeyboardView.js'
 import { pickOnePic } from '@/utils/imagePicker.js'
+import AdjustPicModal from '@/components/AdjustPicModal.js';
+import DisplayPicModal from '@/components/DisplayPicModal.js';
+import axios from "axios";
+import { useAuth } from '@/context/authContext.js';
 
 const Onboard = () => {
     const router = useRouter();
+    const {user, setHasOnboarded, getUserIdToken} = useAuth();
     const [picUri, setPicUri] = useState("");
+    const [croppedPicUri, setCroppedPicUri] = useState("");
     const [picWidth, setPicWidth] = useState(0);
     const [picHeight, setPicHeight] = useState(0);
-    const [modalOpen, setModalOpen] = useState(false);
+    const [adjustModalOpen, setAdjustModalOpen] = useState(false);
+    const [displayModalOpen, setDisplayModalOpen] = useState(false);
     const [loading, setLoading] = useState(false);
 
     // pick profile pic
@@ -26,7 +33,7 @@ const Onboard = () => {
                 Image.getSize(response.uri, (width, height) => {
                     setPicWidth(width);
                     setPicHeight(height);
-                    setModalOpen(true);
+                    setAdjustModalOpen(true);
                 });
             } else if (response.message) {
                 Alert.alert("Pick profile picture", response.message);
@@ -35,6 +42,19 @@ const Onboard = () => {
             console.log(e);
             Alert.alert("Pick profile picture", "Failed to select profile picture - please try again");
         }
+    }
+
+    const closeAdjustModal = () => {
+        setAdjustModalOpen(false);
+    }
+
+    const completeAdjustPic = (croppedUri: string) => {
+        setAdjustModalOpen(false);
+        setCroppedPicUri(croppedUri);
+    }
+
+    const closeDisplayModal = () => {
+        setDisplayModalOpen(false);
     }
 
     const usernameRef = useRef("");
@@ -46,6 +66,34 @@ const Onboard = () => {
         }
 
         setLoading(true);
+        try {
+            const token = await getUserIdToken(user);
+
+            // get presigned url 
+            const urlRes = await axios.get(
+                `${process.env.EXPO_PUBLIC_BACKEND_URL}/api/user/profile-pic-url`, {
+                    params: {type: "image/jpeg"}, 
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${token}`
+                    }
+                });
+            const {key, url} = urlRes?.data;
+            if (!key || !url) {
+                throw new Error("")
+            }
+
+            // convert cropped pic uri into binary format to upload
+            const resource = await fetch(croppedPicUri);
+            const blob = await resource.blob();
+
+            // upload to presigned uri
+            const uploadRes = await axios.put(url, blob, {
+                headers: {
+                    "Content-Type": "image/jpeg"
+                }
+            });
+        }
 
         setLoading(false);
     }

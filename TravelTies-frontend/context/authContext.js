@@ -16,11 +16,16 @@ export const AuthContextProvider = ({ children }) => {
     const [hasOnboarded, setHasOnboarded] = useState(null);
 
     useEffect(() => {
-        const unsubscribe = onAuthStateChanged(auth, (user) => {
+        const unsubscribe = onAuthStateChanged(auth, async (user) => {
             if (user) {
                 setIsAuthenticated(true);
                 setUser(user);
                 setEmailVerified(user.emailVerified);
+                try {
+                    await syncWithDatabase(user); // sync with database every time the app reloads or user logs in
+                } catch (e) {
+                    console.log(e.message);
+                }
             } else {
                 setIsAuthenticated(false);
                 setUser(null);
@@ -32,9 +37,13 @@ export const AuthContextProvider = ({ children }) => {
         return unsubscribe;
     }, [])
 
+    const getUserIdToken = async (user) => { // mainly for usage outside Auth context 
+        return await getIdToken(user);
+    }
+
     const syncWithDatabase = async (user) => {
         try {
-            const token = await getIdToken(user);
+            const token = await getUserIdToken(user);
             const backendRes = await axios.post(
                 `${process.env.EXPO_PUBLIC_BACKEND_URL}/api/user/sync`, 
                 {}, 
@@ -219,7 +228,8 @@ export const AuthContextProvider = ({ children }) => {
 
     return (
         <AuthContext.Provider value = {{ user, isAuthenticated, isSynced, emailVerified, 
-        hasOnboarded, login, logout, register, signInWithGoogle, verifyEmail, resetPassword}}>
+        hasOnboarded, setHasOnboarded, login, logout, register, signInWithGoogle, verifyEmail, 
+        resetPassword, getUserIdToken}}>
             {children}
         </AuthContext.Provider>
     )

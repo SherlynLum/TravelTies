@@ -2,10 +2,10 @@ import {requestCameraPermissionsAsync, requestMediaLibraryPermissionsAsync, laun
     launchImageLibraryAsync} from "expo-image-picker";
 
 // specify res type
-type PickPicRes = | {success: true; uri: string} | {success: false; message?: string};
+type pickPicRes = | {success: true; uri: string} | {success: false; message?: string};
 
 // pick one pic by taking photo or select one photo from gallery
-export const pickOnePic = async (source: "camera" | "gallery"): Promise<PickPicRes> => {
+export const pickOnePic = async (source: "camera" | "gallery"): Promise<pickPicRes> => {
     let pic;
     if (source === "camera") {
         const permission = await requestCameraPermissionsAsync();
@@ -32,6 +32,6 @@ export const pickOnePic = async (source: "camera" | "gallery"): Promise<PickPicR
     if (!pic.canceled) {
         return {success: true, uri: pic.assets[0].uri};
     } else {
-        return {success: false};
+        return {success: false, message: "No picture was selected"};
     }
 }
