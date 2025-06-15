@@ -3,7 +3,7 @@ import { createUserWithEmailAndPassword, getIdToken, onAuthStateChanged,
     signInWithEmailAndPassword, signOut, GoogleAuthProvider, signInWithCredential, 
     sendEmailVerification, sendPasswordResetEmail } from "firebase/auth";
 import { auth } from "../firebaseConfig";
-// import { GoogleSignin, isErrorWithCode, statusCodes } from "@react-native-google-signin/google-signin"
+import { GoogleSignin, isErrorWithCode, statusCodes } from "@react-native-google-signin/google-signin"
 import axios from "axios";
 
 export const AuthContext = createContext();
@@ -97,16 +97,16 @@ export const AuthContextProvider = ({ children }) => {
             return {success: false, message};
         }
     }
-/* to code using expo go:
+/* to code using expo go: */
     useEffect(() => {
         GoogleSignin.configure({
             webClientId: process.env.EXPO_PUBLIC_WEB_CLIENT_ID,
         });
     }, [])
-*/
+/**/
 
     const signInWithGoogle = async () => {
-        /* to code using expo go:
+        /* to code using expo go: */
         try {
             // sign in in Google
             await GoogleSignin.hasPlayServices({ showPlayServicesUpdateDialog: true});
@@ -149,8 +149,8 @@ export const AuthContextProvider = ({ children }) => {
             }
             return {success: false, message}
         }
-        */
-       return;
+        
+        /* return; */
     }
 
     const logout = async () => {

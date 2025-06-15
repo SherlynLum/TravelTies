@@ -72,7 +72,7 @@ const updateUsernameController = async (req, res) => {
         if (!updatedProfile) {
             return res.status(404).json({message: 'User not found'});
         }
-        return res.status(201).json(updatedProfile);
+        return res.status(201).json({user: updatedProfile});
     } catch (e) {
         return res.status(500).json({message: e.message});
     }
@@ -96,7 +96,7 @@ const updateProfilePicController = async (req, res) => {
         if (!updatedProfile) {
             return res.status(404).json({message: 'User not found'});
         }
-        return res.status(201).json(updatedProfile);
+        return res.status(201).json({user: updatedProfile});
     } catch (e) {
         return res.status(500).json({message: e.message});
     }

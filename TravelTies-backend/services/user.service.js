@@ -19,7 +19,7 @@ const checkUsernameUniqueness = async (uid, username) => {
     } else if (existingUser.uid === uid) {
         return "No changes detected";
     } else {
-        return "Username is taken";
+        return "This username is already taken";
     }
 }
 

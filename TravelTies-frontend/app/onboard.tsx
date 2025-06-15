@@ -7,22 +7,26 @@ import { Octicons } from '@expo/vector-icons'
 import { useRouter } from 'expo-router'
 import Loading from '../components/Loading.js'
 import CustomKeyboardView from '../components/CustomKeyboardView.js'
-import { pickOnePic } from '@/utils/imagePicker.js'
+import { pickOnePic } from '@/utils/imagePicker'
 import AdjustPicModal from '@/components/AdjustPicModal.js';
 import DisplayPicModal from '@/components/DisplayPicModal.js';
-import axios from "axios";
+import axios, { isAxiosError } from "axios";
 import { useAuth } from '@/context/authContext.js';
 
 const Onboard = () => {
     const router = useRouter();
     const {user, setHasOnboarded, getUserIdToken} = useAuth();
     const [picUri, setPicUri] = useState("");
-    const [croppedPicUri, setCroppedPicUri] = useState("");
     const [picWidth, setPicWidth] = useState(0);
     const [picHeight, setPicHeight] = useState(0);
+    const [croppedPicUri, setCroppedPicUri] = useState("");
     const [adjustModalOpen, setAdjustModalOpen] = useState(false);
     const [displayModalOpen, setDisplayModalOpen] = useState(false);
     const [loading, setLoading] = useState(false);
+    const [uploadSuccess, setUploadSuccess] = useState(false);
+    const [picKey, setPicKey] = useState("");
+    const [usernameErr, setUsernameErr] = useState("");
+    const usernameRef = useRef("");
 
     // pick profile pic
     const pickProfilePic = async (source: "camera" | "gallery") => {
@@ -30,6 +34,8 @@ const Onboard = () => {
             const response = await pickOnePic(source);
             if (response.success) {
                 setPicUri(response.uri);
+                setCroppedPicUri(""); // reset croppedPicUri since the selected picture is changed
+                setUploadSuccess(false); // similarly, reset uploadSuccesss
                 Image.getSize(response.uri, (width, height) => {
                     setPicWidth(width);
                     setPicHeight(height);
@@ -57,15 +63,7 @@ const Onboard = () => {
         setDisplayModalOpen(false);
     }
 
-    const usernameRef = useRef("");
-
-    const handleSubmit = async () => {
-        if (!usernameRef.current) {
-            Alert.alert('Sign in', 'Please fill in username');
-            return;
-        }
-
-        setLoading(true);
+    const uploadCroppedPic = async () => {
         try {
             const token = await getUserIdToken(user);
 
@@ -80,21 +78,127 @@ const Onboard = () => {
                 });
             const {key, url} = urlRes?.data;
             if (!key || !url) {
-                throw new Error("")
+                throw new Error("Failed to retrieve upload link for AWS S3");
             }
+            setPicKey(key);
 
             // convert cropped pic uri into binary format to upload
+            if (!croppedPicUri) {
+                throw new Error("No profile picture was found");
+            }
             const resource = await fetch(croppedPicUri);
             const blob = await resource.blob();
 
             // upload to presigned uri
-            const uploadRes = await axios.put(url, blob, {
+            await axios.put(url, blob, {
                 headers: {
                     "Content-Type": "image/jpeg"
                 }
             });
-        }
 
+            setUploadSuccess(true);
+            return true; // for checking this time upload success or not 
+        } catch (e) {
+            setPicKey("");
+            if (isAxiosError(e)) { // deal with axios request errors 
+                // if error comes from get presigned url, there will be a message field in res
+                // if error comes from upload to url i.e. from AWS S3, res will be raw XML string without a message field
+                console.log(e.response?.data?.message || e.response?.data || "Failed to get presigned url or failed to upload to AWS S3");
+            } else { // deal with error in fetch and blob
+                console.log("Failed to fetch or convert pic: ", e);
+            }
+            Alert.alert("Failed to upload profile picture");
+            return false; // for checking this time upload success or not 
+        }
+    }
+
+    const validateUsername = () => {
+        if (/\s/.test(usernameRef.current)) {
+            setUsernameErr("Username cannot contain space(s)");
+        }
+        if (usernameRef.current.length < 3) {
+            setUsernameErr("Username is too short");
+        }
+        if (usernameRef.current.length > 20) {
+            setUsernameErr("Username is too long");
+        }
+        if (!/^[a-zA-Z0-9_]*$/.test(usernameRef.current)) {
+            setUsernameErr("Username contains invalid character(s)");
+        }
+    }
+
+    const updateDb = async () => {
+        try {
+            const token = await getUserIdToken(user);
+
+            if (!picKey) {
+                throw new Error("Missing AWS S3 key for profile picture")
+            }
+
+            // update profile pic key to db
+            const picRes = await axios.patch(
+                `${process.env.EXPO_PUBLIC_BACKEND_URL}/api/user/profile-pic`, 
+                { profilePicKey: picKey },
+                { 
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${token}`
+                    }
+                }
+            )
+            if (!picRes?.data?.user) {
+                throw new Error("Failed to update profile picture key to database");
+            }
+
+            // update username to db 
+            const usernameRes = await axios.patch(
+                `${process.env.EXPO_PUBLIC_BACKEND_URL}/api/user/username`, 
+                { username: usernameRef.current },
+                { 
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${token}`
+                    }
+                }
+            )
+            if (!usernameRes?.data?.user) {
+                throw new Error("Failed to update username to database");
+            }
+            return true; // for checking update db success
+        } catch (e) {
+            if (isAxiosError(e) && e?.response?.status === 400) { // handle backend bad request error separately
+                const message = e.response?.data?.message;
+                if (message && message !== "Missing uid") { // Missing uid is not an username error that need to be exposed to user side
+                    setUsernameErr(e.response.data.message);
+                    return;
+                }
+            }
+            console.log(e);
+            Alert.alert("Onboard", "Failed to update username and profile picture");
+            return false; // for checking update db success
+        }
+    }
+
+    const handleSubmit = async () => {
+        if (!usernameRef.current) {
+            Alert.alert('Sign in', 'Please fill in username');
+            return;
+        }
+        validateUsername(); // check username one more time in case user never on blur
+
+        setLoading(true);
+        if (!uploadSuccess) {
+            const uploadRes = await uploadCroppedPic();
+            if (!uploadRes) {
+                return; // early exit if fail to upload profile picture 
+            }
+        } else {
+            const updateRes = await updateDb();
+            if (!updateRes) {
+                return; // early exit if fail to update database
+            }
+        }
+        setHasOnboarded(true) // if reach here, means both upload and update is successful, onboard is thus complete now 
         setLoading(false);
     }
    
@@ -132,19 +236,6 @@ const Onboard = () => {
 
                     {/* inputs */}
                     <View className="gap-5">
-                        <View style={{borderRadius: 5, width: wp(77.61), height: hp(6.46)}}
-                        className="flex-row gap-4 px-4 left-1/2 -translate-x-1/2 bg-white 
-                        border border-black items-center">
-                            <Octicons name="mail" size={hp(2.7)} color="black" />
-                            <TextInput
-                                autoCapitalize="none"
-                                onChangeText={value=> emailRef.current=value}
-                                style={{fontSize:hp(2)}}
-                                className="flex-1 font-medium text-black"
-                                placeholder="Email address"
-                                placeholderTextColor={"gray"}
-                            />
-                        </View>
                         <View className="gap-4">
                             <View style={{borderRadius: 5, width: wp(77.61), height: hp(6.46),
                             paddingHorizontal:wp(4), gap: wp(3.8)}}
@@ -153,7 +244,7 @@ const Onboard = () => {
                                 <Octicons name="lock" size={hp(2.8)} color="black" />
                                 <TextInput
                                     autoCapitalize="none"
-                                    onChangeText={value=> passwordRef.current=value}
+                                    onChangeText={value=> usernameRef.current=value}
                                     style={{fontSize:hp(2)}}
                                     className="flex-1 font-medium text-black"
                                     placeholder="Password"
@@ -180,7 +271,7 @@ const Onboard = () => {
                                     <Loading size={hp(8)} />
                                 </View>
                             ) : (
-                                <TouchableOpacity onPress={handleLogin} 
+                                <TouchableOpacity onPress={handleSubmit} 
                                 style={{height: hp(6.46), width: wp(77.61), borderRadius: 30}} 
                                 className='bg-blue-500 left-1/2 -translate-x-1/2 justify-center 
                                 items-center border border-blue-600 shadow-sm'>
@@ -193,50 +284,11 @@ const Onboard = () => {
                         }
                     </View>
 
-                    {/* sign up text */}
-                    <View className="flex-row justify-center gap-2">
-                        <Text style={{fontSize: hp(1.8)}} className="text-black 
-                        font-medium">
-                            Don't have an account? 
-                        </Text>
-                        <Pressable onPress={() => router.push('/signUp')} hitSlop={14}>
-                            <Text style={{fontSize: hp(1.8)}} className="font-bold 
-                            text-blue-500">
-                                Sign up
-                            </Text>
-                        </Pressable>
-                    </View>
-
                     {/* divider */}
                     <View className="flex-row items-center">
                         <View className="flex-1 border-t border-gray-300" />
                         <Text className="mx-4 text-gray-600">OR</Text>
                         <View className="flex-1 border-t border-gray-300" />
-                    </View>
-
-                    {/* continue with Google button */}
-                    <View>
-                        {
-                            googleLoading ? (
-                                <View className="flex-row justify-center">
-                                    <Loading size={hp(8)} />
-                                </View>
-                            ) : (
-                                <TouchableOpacity onPress={handleGoogleLogin} 
-                                style={{height: hp(6.46), width: wp(77.61), borderRadius: 30}} 
-                                className='bg-white left-1/2 -translate-x-1/2 justify-center 
-                                items-center border border-gray flex-row gap-5 shadow-sm'>
-                                    <Image
-                                        source={require('../assets/images/google-icon.png')}
-                                        style={{width: wp(7.63), height: hp(3.52)}}
-                                    />
-                                    <Text style={{fontSize: hp(2)}} className='text-black font-semibold
-                                    tracking-wider'>
-                                        Sign in with Google
-                                    </Text>
-                                </TouchableOpacity>
-                            )
-                        }
                     </View>
                 </View>
             </View>
