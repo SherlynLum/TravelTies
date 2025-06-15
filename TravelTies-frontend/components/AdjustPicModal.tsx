@@ -10,6 +10,7 @@ import Svg, { Circle, Defs, Mask, Rect } from "react-native-svg";
 import Loading from './Loading';
 
 type AdjustPicModalProps = {
+    isVisible: boolean,
     picUri: string,
     width: number,
     height: number,
@@ -17,7 +18,7 @@ type AdjustPicModalProps = {
     completeCrop: (croppedUri: string ) => void;
 }
 
-const AdjustPicModal : React.FC<AdjustPicModalProps> = ({picUri, width, height, closeModal, completeCrop}) => {
+const AdjustPicModal : React.FC<AdjustPicModalProps> = ({isVisible, picUri, width, height, closeModal, completeCrop}) => {
     const [loading, setLoading] = useState(false);
 
     const screenWidth = Dimensions.get("window").width;
@@ -119,7 +120,7 @@ const AdjustPicModal : React.FC<AdjustPicModalProps> = ({picUri, width, height, 
                 backgroundColor="transparent"
                 style="dark"
         />
-        <Modal visible={true} animationType="slide">
+        <Modal visible={isVisible} animationType="slide">
             <View className="absolute top-0 bottom-0 left-0 right-0 bg-black">
                 <SafeAreaView className="flex-1">
                     {/* header */}
@@ -132,7 +133,7 @@ const AdjustPicModal : React.FC<AdjustPicModalProps> = ({picUri, width, height, 
                         </Pressable>
 
                         <Text style={{fontSize: hp(1.8)}} className="font-medium text-white">
-                            Adjust and scale your profile picture 
+                            Adjust and scale
                         </Text>
 
                         <Pressable onPress={cropPic} hitSlop={14}>

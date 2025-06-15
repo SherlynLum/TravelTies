@@ -6,11 +6,12 @@ import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-nat
 import Ionicons from '@expo/vector-icons/Ionicons';
 
 type AdjustPicModalProps = {
+    isVisible: boolean,
     picUri: string,
     closeModal: () => void,
 }
 
-const DisplayPicModal : React.FC<AdjustPicModalProps> = ({picUri, closeModal}) => {
+const DisplayPicModal : React.FC<AdjustPicModalProps> = ({isVisible, picUri, closeModal}) => {
     const screenWidth = Dimensions.get("window").width;
 
   return (
@@ -20,7 +21,7 @@ const DisplayPicModal : React.FC<AdjustPicModalProps> = ({picUri, closeModal}) =
                 backgroundColor="transparent"
                 style="dark"
         />
-        <Modal visible={true} animationType="slide">
+        <Modal visible={isVisible} animationType="slide">
             <View className="absolute top-0 bottom-0 left-0 right-0 bg-black">
                 <SafeAreaView className="flex-1">
                     {/* header */}
@@ -37,7 +38,9 @@ const DisplayPicModal : React.FC<AdjustPicModalProps> = ({picUri, closeModal}) =
                     </View>
 
                     <View className="flex-1 justify-center items-center">
-                        <Image source={{uri: picUri}} style={{width: screenWidth, height: screenWidth}} />
+                        <Image source={picUri ? ({uri: picUri}) : 
+                        require("../assets/images/default-user-profile-pic.png")} 
+                        style={{width: screenWidth, height: screenWidth}} />
                     </View>
                 </SafeAreaView>
             </View>

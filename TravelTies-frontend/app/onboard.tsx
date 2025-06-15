@@ -3,19 +3,19 @@ import React, { useRef, useState } from 'react'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen'
 import { StatusBar } from 'expo-status-bar'
-import { Octicons } from '@expo/vector-icons'
-import { useRouter } from 'expo-router'
 import Loading from '../components/Loading.js'
 import CustomKeyboardView from '../components/CustomKeyboardView.js'
 import { pickOnePic } from '@/utils/imagePicker'
-import AdjustPicModal from '@/components/AdjustPicModal.js';
-import DisplayPicModal from '@/components/DisplayPicModal.js';
+import AdjustPicModal from '@/components/AdjustPicModal';
+import DisplayPicModal from '@/components/DisplayPicModal';
 import axios, { isAxiosError } from "axios";
 import { useAuth } from '@/context/authContext.js';
+import { Divider, Menu } from 'react-native-paper';
+import Entypo from "@expo/vector-icons/Entypo";
 
 const Onboard = () => {
-    const router = useRouter();
     const {user, setHasOnboarded, getUserIdToken} = useAuth();
+    const [menuOpen, setMenuOpen] = useState(false);
     const [picUri, setPicUri] = useState("");
     const [picWidth, setPicWidth] = useState(0);
     const [picHeight, setPicHeight] = useState(0);
@@ -30,6 +30,7 @@ const Onboard = () => {
 
     // pick profile pic
     const pickProfilePic = async (source: "camera" | "gallery") => {
+        setMenuOpen(false);
         try {
             const response = await pickOnePic(source);
             if (response.success) {
@@ -115,16 +116,21 @@ const Onboard = () => {
     const validateUsername = () => {
         if (/\s/.test(usernameRef.current)) {
             setUsernameErr("Username cannot contain space(s)");
+            return;
         }
         if (usernameRef.current.length < 3) {
             setUsernameErr("Username is too short");
+            return;
         }
         if (usernameRef.current.length > 20) {
             setUsernameErr("Username is too long");
+            return;
         }
         if (!/^[a-zA-Z0-9_]*$/.test(usernameRef.current)) {
             setUsernameErr("Username contains invalid character(s)");
+            return;
         }
+        setUsernameErr(""); // clear username error if valid
     }
 
     const updateDb = async () => {
@@ -190,11 +196,13 @@ const Onboard = () => {
         if (!uploadSuccess) {
             const uploadRes = await uploadCroppedPic();
             if (!uploadRes) {
+                setLoading(false);
                 return; // early exit if fail to upload profile picture 
             }
         } else {
             const updateRes = await updateDb();
             if (!updateRes) {
+                setLoading(false);
                 return; // early exit if fail to update database
             }
         }
@@ -229,41 +237,78 @@ const Onboard = () => {
 
                 <View style={{top: hp(5), width: wp(88), height: hp(59), paddingHorizontal: wp(2.5),
                 paddingTop: hp(2.5), paddingBottom: hp(4), borderRadius: 30}}
-                className="flex flex-col justify-center item-center gap-6 bg-white">
-                    <Text style={{fontSize: hp(4.11)}} className="font-bold tracking-wider text-center"> 
-                        Welcome back
-                    </Text>   
+                className="flex flex-col justify-center items-center gap-7 bg-white">
 
-                    {/* inputs */}
-                    <View className="gap-5">
-                        <View className="gap-4">
+                    {/* display profile pic */}
+                    <Pressable onPress={() => setDisplayModalOpen(true)}>
+                        <Image source={croppedPicUri ? ({uri: croppedPicUri}) : 
+                            require("../assets/images/default-user-profile-pic.png")}
+                            style={{width: wp(35), height: wp(35), borderRadius: wp(35) / 2}}
+                            className="border-neutral-400 border-2" />
+                    </Pressable>
+
+                    {/* choose a different profile pic text */}
+                    <Menu visible={menuOpen} onDismiss={() => setMenuOpen(false)}
+                    anchor={
+                        <Pressable onPress={() => setMenuOpen(true)} hitSlop={14}>
+                            <Text style={{fontSize: hp(1.8)}} className="font-bold text-blue-500">
+                                Choose a different profile picture
+                            </Text>
+                        </Pressable>
+                    }
+                    contentStyle={{borderRadius: 10, backgroundColor: "white", elevation: 3}}>
+                        <Menu.Item title="Take photo" onPress={() => pickProfilePic("camera")} />
+                        <Divider />
+                        <Menu.Item title="Choose from Gallery" onPress={() => pickProfilePic("gallery")} />
+                    </Menu>
+
+                    {/* username input */}
+                    <View className="gap-4">
+                        <View style={{paddingHorizontal: wp(2.5)}}>
+                            <Text style={{fontSize: hp(2.4)}} className="font-semibold text-black">
+                                Username
+                            </Text>
+                        </View>
+                        <View className="gap-3 justify-center items-center">
                             <View style={{borderRadius: 5, width: wp(77.61), height: hp(6.46),
-                            paddingHorizontal:wp(4), gap: wp(3.8)}}
-                            className="flex-row left-1/2 -translate-x-1/2 bg-white 
-                            border border-black items-center">
-                                <Octicons name="lock" size={hp(2.8)} color="black" />
+                            paddingHorizontal:wp(4), gap: wp(3.8), 
+                            borderColor: usernameErr ? "red" : "black"}}
+                            className="flex-row bg-white border justify-center items-center">
                                 <TextInput
                                     autoCapitalize="none"
                                     onChangeText={value=> usernameRef.current=value}
                                     style={{fontSize:hp(2)}}
                                     className="flex-1 font-medium text-black"
-                                    placeholder="Password"
-                                    secureTextEntry
+                                    placeholder="Enter a username"
                                     placeholderTextColor={"gray"}
+                                    onBlur={validateUsername}
                                 />
                             </View>
-                            <View style={{paddingHorizontal: wp(2.5), paddingVertical: hp(0.3)}}>
-                                <Pressable onPress={() => router.push('/forgotPassword')} hitSlop={14}>
-                                    <Text style={{fontSize: hp(1.8)}} className="font-bold text-right
-                                    text-blue-500">
-                                        Forgot password?
-                                    </Text>
-                                </Pressable>
+
+                            {/* instruction message */}
+                            <View style={{paddingHorizontal: wp(2.5)}}>
+                                <Text style={{fontSize: hp(1.5)}} className="font-medium italic
+                                text-gray-400">
+                                    3–20 characters. Letters, numbers, and _ only. 
+                                    No spaces or other special characters. 
+                                </Text>
+                            </View>
+
+                            {/* error message */}
+                            <View style={{paddingHorizontal: wp(2)}} className="h-5 w-full 
+                            items-start">
+                                {usernameErr && (
+                                    <View className="flex-row gap-1.5 items-center">
+                                        <Entypo name="cross" size={18} color="red" />
+                                        <Text style={{fontSize: hp(1.5)}} className="font-medium 
+                                        text-red-500">{usernameErr}</Text>
+                                    </View>
+                                )}
                             </View>
                         </View>
                     </View>
 
-                    {/* sign in button */}          
+                    {/* finish setup button */}          
                     <View>
                         {
                             loading ? (
@@ -272,26 +317,25 @@ const Onboard = () => {
                                 </View>
                             ) : (
                                 <TouchableOpacity onPress={handleSubmit} 
-                                style={{height: hp(6.46), width: wp(77.61), borderRadius: 30}} 
-                                className='bg-blue-500 left-1/2 -translate-x-1/2 justify-center 
-                                items-center border border-blue-600 shadow-sm'>
+                                style={{height: hp(6.46), width: wp(60), borderRadius: 30}} 
+                                className='bg-blue-500 justify-center items-center border 
+                                border-blue-600 shadow-sm'>
                                     <Text style={{fontSize: hp(2.7)}} className='text-white font-semibold
                                     tracking-wider'>
-                                        Sign in
+                                        Finish setup
                                     </Text>
                                 </TouchableOpacity>
                             )
                         }
                     </View>
-
-                    {/* divider */}
-                    <View className="flex-row items-center">
-                        <View className="flex-1 border-t border-gray-300" />
-                        <Text className="mx-4 text-gray-600">OR</Text>
-                        <View className="flex-1 border-t border-gray-300" />
-                    </View>
                 </View>
             </View>
+
+            <DisplayPicModal isVisible={displayModalOpen} picUri={croppedPicUri} 
+            closeModal={closeDisplayModal} />
+            
+            <AdjustPicModal isVisible={adjustModalOpen} picUri={picUri} width={picWidth}
+            height={picHeight} closeModal={closeAdjustModal} completeCrop={completeAdjustPic} />
         </CustomKeyboardView>
     </SafeAreaView>
     </ImageBackground>

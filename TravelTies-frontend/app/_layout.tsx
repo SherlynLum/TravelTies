@@ -2,6 +2,8 @@ import { Stack, useRouter, useSegments } from "expo-router";
 import "./global.css";
 import { AuthContextProvider, useAuth } from "../context/authContext";
 import { useEffect } from "react";
+import { PaperProvider } from "react-native-paper";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
 
 const MainLayout = () => {
   const {isAuthenticated, isSynced, emailVerified, hasOnboarded} = useAuth();
@@ -75,8 +77,12 @@ const MainLayout = () => {
 
 export default function RootLayout() {
   return (
-    <AuthContextProvider>
-      <MainLayout />
-    </AuthContextProvider>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <AuthContextProvider>
+        <PaperProvider>
+          <MainLayout /> 
+        </PaperProvider>
+      </AuthContextProvider>
+    </GestureHandlerRootView>
   )
 }
