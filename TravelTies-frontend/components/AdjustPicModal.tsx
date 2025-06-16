@@ -23,24 +23,27 @@ const AdjustPicModal : React.FC<AdjustPicModalProps> = ({isVisible, picUri, widt
 
     const screenWidth = Dimensions.get("window").width;
 
-    // find the min between w and h so that later can get a maximum square area
-    const minSide = Math.min(width, height);
-    const initialScale = screenWidth / minSide;
+    // find the max between width-based and height-based scaling to get the max possible square 
+    const initialScale = Math.max(screenWidth / width, screenWidth / height);
 
     // centralise the square area, assume crop area start from the top left corner
     // initially, crop area will just shift down or right
     // crop area shift right means image shift left, initialX should be negative
     // crop area shift down means image shift up, initialX should be negative
     // initialPos should be based on the original pixel coordinate 
-    const initialX = (minSide - width) / 2;
-    const initialY = (minSide - height) / 2;
+    const scaledWidth = width * initialScale;
+    const scaledHeight = height * initialScale;
+    // scaledWidth and scaledHeight are always bigger than or equals to screenWidth 
+    const initialX = (screenWidth - scaledWidth) / 2;
+    const initialY = (screenWidth - scaledHeight) / 2;
+    console.log(scaledWidth, scaledHeight,screenWidth, initialX, initialY)
 
-    const startScale = useSharedValue(0);
-    const offsetScale = useSharedValue(0);
-    startScale.value = initialScale;
-    offsetScale.value = initialScale;
+    const startScale = useSharedValue(1);
+    const offsetScale = useSharedValue(1);
     const startPos = useSharedValue({x: initialX, y: initialY});
     const offsetPos = useSharedValue({x: initialX, y: initialY});
+    // const startPos = useSharedValue({x: 0, y: 0});
+    // const offsetPos = useSharedValue({x: 0, y: 0});
 
     const clamp = (val: number, min: number, max: number) => {
         return Math.max(min, Math.min(val, max));
@@ -52,8 +55,8 @@ const AdjustPicModal : React.FC<AdjustPicModalProps> = ({isVisible, picUri, widt
             // translation always adjust to scale 1
             const newX = startPos.value.x + e.translationX / offsetScale.value;
             const newY = startPos.value.y + e.translationY / offsetScale.value;
-            const lowerBoundX = minSide - width * offsetScale.value;
-            const lowerBoundY = minSide - height * offsetScale.value;
+            const lowerBoundX = screenWidth / offsetScale.value - width;
+            const lowerBoundY = screenWidth / offsetScale.value - height;
             offsetPos.value = { 
                 x: clamp(newX, lowerBoundX, 0),
                 y: clamp(newY, lowerBoundY, 0),
@@ -78,11 +81,12 @@ const AdjustPicModal : React.FC<AdjustPicModalProps> = ({isVisible, picUri, widt
 
     const animatedStyle = useAnimatedStyle(() => ({
         transform: [
-            {scale: offsetScale.value},
             {translateX: offsetPos.value.x},
-            {translateY: offsetPos.value.y}
+            {translateY: offsetPos.value.y},
+            {scale: offsetScale.value}
         ]
     }))
+    console.log(offsetScale.value, offsetPos.value.x, offsetPos.value.y)
     
     const cropPic = async () => {
         try{
@@ -91,8 +95,8 @@ const AdjustPicModal : React.FC<AdjustPicModalProps> = ({isVisible, picUri, widt
                 .crop({
                     originX: offsetPos.value.x,
                     originY: offsetPos.value.y,
-                    height: minSide / offsetScale.value,
-                    width: minSide / offsetScale.value
+                    height: Math.min(width, height) / offsetScale.value,
+                    width: Math.min(width, height) / offsetScale.value
                 })
                 .resize({ // resize to framse size after cropped to get the square part selected
                     height: screenWidth,
@@ -156,9 +160,9 @@ const AdjustPicModal : React.FC<AdjustPicModalProps> = ({isVisible, picUri, widt
                                 height: screenWidth}}>
                                     <GestureDetector gesture={Gesture.Simultaneous(panGesture, pinchGesture)}>
                                         <Animated.Image source={{uri: picUri}}
-                                        style={[{width: screenWidth, height: screenWidth}, animatedStyle]}
+                                        style={[{width: scaledWidth, height: scaledHeight}, animatedStyle]}
                                         resizeMode="cover" />
-                                    </GestureDetector>
+                                    </GestureDetector> 
 
                                     {/* circular mask */}
                                     <Svg width={screenWidth} height={screenWidth} 
