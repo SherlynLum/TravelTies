@@ -9,7 +9,8 @@ const MainLayout = () => {
   const {isAuthenticated, isSynced, emailVerified, hasOnboarded} = useAuth();
   const segments = useSegments();
   const router = useRouter();
-  
+
+  /*
   useEffect(() => {
     if (isAuthenticated === null) {
       return;
@@ -34,9 +35,9 @@ const MainLayout = () => {
         }
       }
     } // only redirect if isAuthenticated/isSynced/emailVerified/hasOnboarded changes
-  }, [isAuthenticated, isSynced, emailVerified, hasOnboarded]) 
+  }, [isAuthenticated, isSynced, emailVerified, hasOnboarded]) */
 
-/* for convenience in coding specific page: 
+/* for convenience in coding specific page: */
   useEffect(() => {
     // delay redirect a tiny bit to avoid navigating too early
     const timeout = setTimeout(() => {
@@ -45,7 +46,7 @@ const MainLayout = () => {
 
     return () => clearTimeout(timeout);
   }, []);
-*/
+/**/
   
   return <Stack>
     <Stack.Screen
