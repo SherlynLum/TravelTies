@@ -9,7 +9,7 @@ const friendSchema = new mongoose.Schema(
 
         status: {
             type: String,
-            enum: ["friends", "equest_sent", "request_received"],
+            enum: ["friends", "request_sent", "request_received"],
             required: true
         },
 
