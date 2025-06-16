@@ -1,7 +1,7 @@
 import { createContext, useEffect, useState, useContext } from "react";
 import { createUserWithEmailAndPassword, getIdToken, onAuthStateChanged, 
     signInWithEmailAndPassword, signOut, GoogleAuthProvider, signInWithCredential, 
-    sendEmailVerification, sendPasswordResetEmail } from "firebase/auth";
+    sendEmailVerification, sendPasswordResetEmail, reload } from "firebase/auth";
 import { auth } from "../firebaseConfig";
 import { GoogleSignin, isErrorWithCode, statusCodes } from "@react-native-google-signin/google-signin"
 import axios from "axios";
@@ -193,7 +193,7 @@ export const AuthContextProvider = ({ children }) => {
     const verifyEmail = async (user) => {
         try {
             const actionCodeSettings = {
-                url: "https://travelties-fce2c.web.app",
+                url: "https://travelties-fce2c.firebaseapp.com",
                 handleCodeInApp: true
             };
             await sendEmailVerification(user, actionCodeSettings);
@@ -206,6 +206,27 @@ export const AuthContextProvider = ({ children }) => {
                 message = "No Internet connection detected - please check your network"
             }
             return {success: false, message};
+        }
+    }
+
+    const validateEmailVerification = async () => {
+        if (!user) { // if there is no user, although highly unlikely as if no user, they should not even be on email verification page
+            setIsAuthenticated(false); // immediately redirect away
+            setUser(null);
+            setIsSynced(null);
+            setEmailVerified(null);
+            setHasOnboarded(null);
+        } 
+        try{
+            await reload(user); 
+            setEmailVerified(user.emailVerified);
+            if (user.emailVerified) {
+                return {success: true};
+            } else {
+                return {success: false, message: "Email is not yet verified - please try again"}
+            }
+        } catch (e) {
+            return {success:false, message: e.message};
         }
     }
 
@@ -229,7 +250,7 @@ export const AuthContextProvider = ({ children }) => {
     return (
         <AuthContext.Provider value = {{ user, isAuthenticated, isSynced, emailVerified, 
         hasOnboarded, setHasOnboarded, login, logout, register, signInWithGoogle, verifyEmail, 
-        resetPassword, getUserIdToken}}>
+        validateEmailVerification, resetPassword, getUserIdToken}}>
             {children}
         </AuthContext.Provider>
     )

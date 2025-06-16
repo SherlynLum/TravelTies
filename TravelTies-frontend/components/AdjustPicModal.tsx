@@ -1,4 +1,4 @@
-import { View, Text, Alert, Modal, Dimensions, Pressable } from 'react-native';
+import { View, Text, Alert, Modal, Dimensions, Pressable, Image } from 'react-native';
 import React, { useState } from 'react';
 import Animated, { useAnimatedStyle, useSharedValue } from 'react-native-reanimated';
 import { Gesture, GestureDetector } from "react-native-gesture-handler";
@@ -25,7 +25,8 @@ const AdjustPicModal : React.FC<AdjustPicModalProps> = ({isVisible, picUri, widt
 
     // find the min between w and h so that later can get a maximum square area
     const minSide = Math.min(width, height);
-    const initialScale = screenWidth / minSide ;
+    const initialScale = screenWidth / minSide;
+
     // centralise the square area, assume crop area start from the top left corner
     // initially, crop area will just shift down or right
     // crop area shift right means image shift left, initialX should be negative
@@ -34,8 +35,10 @@ const AdjustPicModal : React.FC<AdjustPicModalProps> = ({isVisible, picUri, widt
     const initialX = (minSide - width) / 2;
     const initialY = (minSide - height) / 2;
 
-    const startScale = useSharedValue(initialScale);
-    const offsetScale = useSharedValue(initialScale);
+    const startScale = useSharedValue(0);
+    const offsetScale = useSharedValue(0);
+    startScale.value = initialScale;
+    offsetScale.value = initialScale;
     const startPos = useSharedValue({x: initialX, y: initialY});
     const offsetPos = useSharedValue({x: initialX, y: initialY});
 
@@ -66,8 +69,8 @@ const AdjustPicModal : React.FC<AdjustPicModalProps> = ({isVisible, picUri, widt
     // handle zooming
     const pinchGesture = Gesture.Pinch()
         .onUpdate((e) => {
-            // min scale is initialScale, max scale is 3
-            offsetScale.value = clamp(startScale.value * e.scale, initialScale, 3);
+            // min scale is initialScale, max scale is 3 times initialScale
+            offsetScale.value = clamp(startScale.value * e.scale, initialScale, initialScale * 3);
         })
         .onEnd(() => {
             startScale.value = offsetScale.value;

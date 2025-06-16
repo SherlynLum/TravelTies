@@ -334,8 +334,10 @@ const Onboard = () => {
             <DisplayPicModal isVisible={displayModalOpen} picUri={croppedPicUri} 
             closeModal={closeDisplayModal} />
             
-            <AdjustPicModal isVisible={adjustModalOpen} picUri={picUri} width={picWidth}
-            height={picHeight} closeModal={closeAdjustModal} completeCrop={completeAdjustPic} />
+            {picUri && picWidth > 0 && picHeight > 0 && (
+                <AdjustPicModal isVisible={adjustModalOpen} picUri={picUri} width={picWidth}
+                height={picHeight} closeModal={closeAdjustModal} completeCrop={completeAdjustPic} />
+            )}
         </CustomKeyboardView>
     </SafeAreaView>
     </ImageBackground>
