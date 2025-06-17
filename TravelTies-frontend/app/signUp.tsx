@@ -1,4 +1,4 @@
-import { View, Text, ImageBackground, Image, TextInput, TouchableOpacity, Pressable, Alert } from 'react-native'
+import { View, Text, ImageBackground, Image, TextInput, TouchableOpacity, Pressable, Alert, TouchableWithoutFeedback, Keyboard } from 'react-native'
 import React, { useRef, useState } from 'react'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import {widthPercentageToDP as wp, heightPercentageToDP as hp} from 'react-native-responsive-screen'
@@ -87,48 +87,56 @@ const SignUp = () => {
 
                     {/* inputs */}
                     <View className='gap-5'>
-                        <View style={{borderRadius: 5, width: wp(77.61), height: hp(6.46)}}
-                        className='flex-row gap-4 px-4 left-1/2 -translate-x-1/2 bg-white 
-                        border border-black items-center'>
-                            <Octicons name='mail' size={hp(2.7)} color='black' />
-                            <TextInput
-                                autoCapitalize="none"
-                                onChangeText={value=> emailRef.current=value}
-                                style={{fontSize:hp(2)}}
-                                className='flex-1 font-medium text-black'
-                                placeholder='Email address'
-                                placeholderTextColor={'gray'}
-                            />
-                        </View>
-                        <View style={{borderRadius: 5, width: wp(77.61), height: hp(6.46),
-                        paddingHorizontal:wp(4), gap: wp(3.8)}}
-                        className='flex-row left-1/2 -translate-x-1/2 bg-white 
-                        border border-black items-center'>
-                            <Octicons name='lock' size={hp(2.8)} color='black' />
-                            <TextInput 
-                                autoCapitalize="none"
-                                onChangeText={value=> passwordRef.current=value}
-                                style={{fontSize:hp(2)}}
-                                className='flex-1 font-medium text-black'
-                                placeholder='Password'
-                                secureTextEntry
-                                placeholderTextColor={'gray'}
-                            />
-                        </View>
-                        <View style={{borderRadius: 5, width: wp(77.61), height: hp(6.46),
-                        gap: wp(3.2)}} className='flex-row px-4 left-1/2 -translate-x-1/2 
-                        bg-white border border-black items-center'>
-                            <Feather name='repeat' size={hp(2.8)} color='black' />
-                            <TextInput
-                                autoCapitalize="none"
-                                onChangeText={value=> repeatPasswordRef.current=value}
-                                style={{fontSize:hp(2)}}
-                                className='flex-1 font-medium text-black'
-                                placeholder='Repeat password'
-                                secureTextEntry
-                                placeholderTextColor={'gray'}
-                            />
-                        </View>
+                        <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+                            <View style={{borderRadius: 5, width: wp(77.61), height: hp(6.46)}}
+                            className='flex-row gap-4 px-4 left-1/2 -translate-x-1/2 bg-white 
+                            border border-black items-center'>
+                                <Octicons name='mail' size={hp(2.7)} color='black' />
+                                <TextInput
+                                    autoCapitalize="none"
+                                    onChangeText={value=> emailRef.current=value}
+                                    style={{fontSize:hp(2)}}
+                                    className='flex-1 font-medium text-black'
+                                    placeholder='Email address'
+                                    placeholderTextColor={'gray'}
+                                />
+                            </View>
+                        </TouchableWithoutFeedback>
+
+                        <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+                            <View style={{borderRadius: 5, width: wp(77.61), height: hp(6.46),
+                            paddingHorizontal:wp(4), gap: wp(3.8)}}
+                            className='flex-row left-1/2 -translate-x-1/2 bg-white 
+                            border border-black items-center'>
+                                <Octicons name='lock' size={hp(2.8)} color='black' />
+                                <TextInput 
+                                    autoCapitalize="none"
+                                    onChangeText={value=> passwordRef.current=value}
+                                    style={{fontSize:hp(2)}}
+                                    className='flex-1 font-medium text-black'
+                                    placeholder='Password'
+                                    secureTextEntry
+                                    placeholderTextColor={'gray'}
+                                />
+                            </View>
+                        </TouchableWithoutFeedback>
+    
+                        <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+                            <View style={{borderRadius: 5, width: wp(77.61), height: hp(6.46),
+                            gap: wp(3.2)}} className='flex-row px-4 left-1/2 -translate-x-1/2 
+                            bg-white border border-black items-center'>
+                                <Feather name='repeat' size={hp(2.8)} color='black' />
+                                <TextInput
+                                    autoCapitalize="none"
+                                    onChangeText={value=> repeatPasswordRef.current=value}
+                                    style={{fontSize:hp(2)}}
+                                    className='flex-1 font-medium text-black'
+                                    placeholder='Repeat password'
+                                    secureTextEntry
+                                    placeholderTextColor={'gray'}
+                                />
+                            </View>
+                        </TouchableWithoutFeedback>
                     </View>
 
                     {/* sign up button */}

@@ -1,4 +1,4 @@
-import { View, Text, ImageBackground, Image, TextInput, TouchableOpacity, Pressable, Alert } from 'react-native'
+import { View, Text, ImageBackground, Image, TextInput, TouchableOpacity, Pressable, Alert, TouchableWithoutFeedback, Keyboard } from 'react-native'
 import React, { useRef, useState } from 'react'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen'
@@ -82,38 +82,44 @@ const SignIn = () => {
 
                     {/* inputs */}
                     <View className="gap-5">
-                        <View style={{borderRadius: 5, width: wp(77.61), height: hp(6.46)}}
-                        className="flex-row gap-4 px-4 left-1/2 -translate-x-1/2 bg-white 
-                        border border-black items-center">
-                            <Octicons name="mail" size={hp(2.7)} color="black" />
-                            <TextInput
-                                autoCapitalize="none"
-                                onChangeText={value=> emailRef.current=value}
-                                style={{fontSize:hp(2)}}
-                                className="flex-1 font-medium text-black"
-                                placeholder="Email address"
-                                placeholderTextColor={"gray"}
-                            />
-                        </View>
-                        <View className="gap-4">
-                            <View style={{borderRadius: 5, width: wp(77.61), height: hp(6.46),
-                            paddingHorizontal:wp(4), gap: wp(3.8)}}
-                            className="flex-row left-1/2 -translate-x-1/2 bg-white 
+                        <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+                            <View style={{borderRadius: 5, width: wp(77.61), height: hp(6.46)}}
+                            className="flex-row gap-4 px-4 left-1/2 -translate-x-1/2 bg-white 
                             border border-black items-center">
-                                <Octicons name="lock" size={hp(2.8)} color="black" />
+                                <Octicons name="mail" size={hp(2.7)} color="black" />
                                 <TextInput
                                     autoCapitalize="none"
-                                    onChangeText={value=> passwordRef.current=value}
+                                    onChangeText={value=> emailRef.current=value}
                                     style={{fontSize:hp(2)}}
                                     className="flex-1 font-medium text-black"
-                                    placeholder="Password"
-                                    secureTextEntry
+                                    placeholder="Email address"
                                     placeholderTextColor={"gray"}
                                 />
                             </View>
-                            <View style={{paddingHorizontal: wp(2.5), paddingVertical: hp(0.3)}}>
+                        </TouchableWithoutFeedback>
+
+                        <View className="gap-4">
+                            <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+                                <View style={{borderRadius: 5, width: wp(77.61), height: hp(6.46),
+                                paddingHorizontal:wp(4), gap: wp(3.8)}}
+                                className="flex-row left-1/2 -translate-x-1/2 bg-white 
+                                border border-black items-center">
+                                    <Octicons name="lock" size={hp(2.8)} color="black" />
+                                    <TextInput
+                                        autoCapitalize="none"
+                                        onChangeText={value=> passwordRef.current=value}
+                                        style={{fontSize:hp(2)}}
+                                        className="flex-1 font-medium text-black"
+                                        placeholder="Password"
+                                        secureTextEntry
+                                        placeholderTextColor={"gray"}
+                                    />
+                                </View>
+                            </TouchableWithoutFeedback>
+                            <View style={{paddingHorizontal: wp(2.5), paddingVertical: hp(0.3)}}
+                            className="items-end">
                                 <Pressable onPress={() => router.push('/forgotPassword')} hitSlop={14}>
-                                    <Text style={{fontSize: hp(1.8)}} className="font-bold text-right
+                                    <Text style={{fontSize: hp(1.8)}} className="font-bold
                                     text-blue-500">
                                         Forgot password?
                                     </Text>

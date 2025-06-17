@@ -1,4 +1,4 @@
-import { View, Text, ImageBackground, SafeAreaView, Image, Alert, TouchableOpacity, Pressable, TextInput } from 'react-native';
+import { View, Text, ImageBackground, SafeAreaView, Image, Alert, TouchableOpacity, Pressable, TextInput, TouchableWithoutFeedback, Keyboard } from 'react-native';
 import React, { useEffect, useRef, useState } from 'react';
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
 import { StatusBar } from 'expo-status-bar'
@@ -99,20 +99,23 @@ const ForgotPassword = () => {
                 Please enter the email address you used during sign-up. 
                 We will send password reset instructions to that address.
               </Text> 
-              <View className="flex flex-col items-center justify-center gap-4">   
-                <View style={{borderRadius: 5, width: wp(77.61), height: hp(6.46)}}
-                className='flex-row gap-4 px-4 bg-white border border-black 
-                items-center justify-center'>
-                  <Octicons name='mail' size={hp(2.7)} color='black'/>
-                  <TextInput
-                    autoCapitalize="none"
-                    onChangeText={value => emailRef.current=value}
-                    style={{fontSize:hp(2)}}
-                    className='flex-1 font-medium text-black'
-                    placeholder='Email address'
-                    placeholderTextColor={'gray'}
-                  />
-                </View>
+
+              <View className="flex flex-col items-center justify-center gap-4">  
+                <TouchableWithoutFeedback onPress={Keyboard.dismiss}> 
+                  <View style={{borderRadius: 5, width: wp(77.61), height: hp(6.46)}}
+                  className='flex-row gap-4 px-4 bg-white border border-black 
+                  items-center justify-center'>
+                    <Octicons name='mail' size={hp(2.7)} color='black'/>
+                    <TextInput
+                      autoCapitalize="none"
+                      onChangeText={value => emailRef.current=value}
+                      style={{fontSize:hp(2)}}
+                      className='flex-1 font-medium text-black'
+                      placeholder='Email address'
+                      placeholderTextColor={'gray'}
+                    />
+                  </View>
+                </TouchableWithoutFeedback>
 
                 {/* submit button */}
                 <View>

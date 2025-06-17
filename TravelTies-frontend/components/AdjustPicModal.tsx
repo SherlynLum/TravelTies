@@ -1,4 +1,4 @@
-import { View, Text, Alert, Modal, Dimensions, Pressable, Image } from 'react-native';
+import { View, Text, Alert, Modal, Dimensions, Pressable } from 'react-native';
 import React, { useState } from 'react';
 import Animated, { useAnimatedStyle, useSharedValue } from 'react-native-reanimated';
 import { Gesture, GestureDetector } from "react-native-gesture-handler";
@@ -23,82 +23,103 @@ const AdjustPicModal : React.FC<AdjustPicModalProps> = ({isVisible, picUri, widt
 
     const screenWidth = Dimensions.get("window").width;
 
-    // find the max between width-based and height-based scaling to get the max possible square 
+    // find the max between width-based and height-based scaling to get the max possible square
+    // this scale will be used to resize the image initially, before even applying animated style
+    // get the width and height after scaling 
     const initialScale = Math.max(screenWidth / width, screenWidth / height);
+    const scaledWidth = width * initialScale;
+    const scaledHeight = height * initialScale;
+
+    // initiate startScale and offsetScale to 1 for animated style
+    const startScale = useSharedValue(1);
+    const offsetScale = useSharedValue(1);
 
     // centralise the square area, assume crop area start from the top left corner
     // initially, crop area will just shift down or right
     // crop area shift right means image shift left, initialX should be negative
     // crop area shift down means image shift up, initialX should be negative
     // initialPos should be based on the original pixel coordinate 
-    const scaledWidth = width * initialScale;
-    const scaledHeight = height * initialScale;
     // scaledWidth and scaledHeight are always bigger than or equals to screenWidth 
     const initialX = (screenWidth - scaledWidth) / 2;
     const initialY = (screenWidth - scaledHeight) / 2;
-    console.log(scaledWidth, scaledHeight,screenWidth, initialX, initialY)
 
-    const startScale = useSharedValue(1);
-    const offsetScale = useSharedValue(1);
+    // initiate startPos and offsetPos with initialX and initialY
     const startPos = useSharedValue({x: initialX, y: initialY});
     const offsetPos = useSharedValue({x: initialX, y: initialY});
-    // const startPos = useSharedValue({x: 0, y: 0});
-    // const offsetPos = useSharedValue({x: 0, y: 0});
 
+    // to keep track of the crop area, initiaate cropPos with -initialX and -initialY 
+    // this cropPos is the coordinates of the top left corner of the crop area with respect to the pic
+    // crop area has a size of screenWidth * screenWidth
+    const cropPos = useSharedValue({x: -initialX, y: - initialY});
+
+    // create a clamp helper function to set the min and max for pan and pinch
     const clamp = (val: number, min: number, max: number) => {
         return Math.max(min, Math.min(val, max));
+    }
+
+    // we will scale first then translate 
+    // thus, offsetPos is in terms of the current scale 
+    // however when added to the cropPos, it should be adjusted to the original image pixel
+    
+    // function to recalculate cropPos after pan or pinch gesture
+    const updateCropPos = () => {
+        cropPos.value = {
+            x: -offsetPos.value.x / offsetScale.value,
+            y: -offsetPos.value.y / offsetScale.value
+        }
     }
 
     // handle shifting
     const panGesture = Gesture.Pan()
         .onUpdate((e) => {
-            // translation always adjust to scale 1
-            const newX = startPos.value.x + e.translationX / offsetScale.value;
-            const newY = startPos.value.y + e.translationY / offsetScale.value;
-            const lowerBoundX = screenWidth / offsetScale.value - width;
-            const lowerBoundY = screenWidth / offsetScale.value - height;
+            // update offsetPos
+            const offsetLowerBoundX = -width * offsetScale.value;
+            const offsetLowerBoundY = -height * offsetScale.value;
             offsetPos.value = { 
-                x: clamp(newX, lowerBoundX, 0),
-                y: clamp(newY, lowerBoundY, 0),
+                x: clamp(startPos.value.x + e.translationX, offsetLowerBoundX, 0),
+                y: clamp(startPos.value.y + e.translationY, offsetLowerBoundY, 0),
             };
         })
         .onEnd(() => {
+            // set the startPos to the offsetPos
             startPos.value = {
                 x: offsetPos.value.x,
                 y: offsetPos.value.y,
             };
+
+            // update cropPos when pan finished
+            updateCropPos();
         })
     
     // handle zooming
     const pinchGesture = Gesture.Pinch()
         .onUpdate((e) => {
-            // min scale is initialScale, max scale is 3 times initialScale
-            offsetScale.value = clamp(startScale.value * e.scale, initialScale, initialScale * 3);
+            // min scale is 1, max scale is 3 
+            offsetScale.value = clamp(startScale.value * e.scale, 1, 3);
         })
         .onEnd(() => {
             startScale.value = offsetScale.value;
+
+            // update cropPos when pinch finished
+            updateCropPos();
         })
 
+    // scale first then translate
     const animatedStyle = useAnimatedStyle(() => ({
         transform: [
+            {scale: offsetScale.value},
             {translateX: offsetPos.value.x},
-            {translateY: offsetPos.value.y},
-            {scale: offsetScale.value}
+            {translateY: offsetPos.value.y}
         ]
     }))
-    console.log(offsetScale.value, offsetPos.value.x, offsetPos.value.y)
     
     const cropPic = async () => {
         try{
             setLoading(true);
             const picContext = ImageManipulator.manipulate(picUri)
                 .crop({
-                    originX: offsetPos.value.x,
-                    originY: offsetPos.value.y,
-                    height: Math.min(width, height) / offsetScale.value,
-                    width: Math.min(width, height) / offsetScale.value
-                })
-                .resize({ // resize to framse size after cropped to get the square part selected
+                    originX: cropPos.value.x,
+                    originY: cropPos.value.y,
                     height: screenWidth,
                     width: screenWidth
                 })

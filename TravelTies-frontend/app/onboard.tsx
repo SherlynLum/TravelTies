@@ -1,4 +1,4 @@
-import { View, Text, ImageBackground, Image, TextInput, TouchableOpacity, Pressable, Alert } from 'react-native'
+import { View, Text, ImageBackground, Image, TextInput, TouchableOpacity, Pressable, Alert, TouchableWithoutFeedback, Keyboard } from 'react-native'
 import React, { useRef, useState } from 'react'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen'
@@ -270,20 +270,21 @@ const Onboard = () => {
                             </Text>
                         </View>
                         <View className="gap-3 justify-center items-center">
-                            <View style={{borderRadius: 5, width: wp(77.61), height: hp(6.46),
-                            paddingHorizontal:wp(4), gap: wp(3.8), 
-                            borderColor: usernameErr ? "red" : "black"}}
-                            className="flex-row bg-white border justify-center items-center">
-                                <TextInput
-                                    autoCapitalize="none"
-                                    onChangeText={value=> usernameRef.current=value}
-                                    style={{fontSize:hp(2)}}
-                                    className="flex-1 font-medium text-black"
-                                    placeholder="Enter a username"
-                                    placeholderTextColor={"gray"}
-                                    onBlur={validateUsername}
-                                />
-                            </View>
+                            <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+                                <View style={{borderRadius: 5, width: wp(77.61), height: hp(6.46),
+                                paddingHorizontal:wp(4), gap: wp(3.8), 
+                                borderColor: usernameErr ? "red" : "black"}}
+                                className="flex-row bg-white border justify-center items-center">
+                                    <TextInput
+                                        autoCapitalize="none"
+                                        onChangeText={value=> usernameRef.current=value}
+                                        style={{fontSize:hp(2)}}
+                                        className="flex-1 font-medium text-black"
+                                        placeholder="Enter a username"
+                                        placeholderTextColor={"gray"}
+                                    />
+                                </View>
+                            </TouchableWithoutFeedback>
 
                             {/* instruction message */}
                             <View style={{paddingHorizontal: wp(2.5)}}>
