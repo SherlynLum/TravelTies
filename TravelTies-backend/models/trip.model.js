@@ -6,11 +6,20 @@ const tripParticipantSchema = new mongoose.Schema({
         required: true
     },
     
-    role: {
+    role: { // no role if status === "pending"
         type: String, 
-        enum: ["creator", "admin", "member"],
+        enum: ["creator", "admin", "member"]
+    },
+
+    status: {
+        type: String,
+        enum: ["pending", "accepted"],
         required: true
     },
+
+    requestTimestamp: { // only exists if status === "pending" 
+        type: Date
+    }
 }, {
     _id: false
 })

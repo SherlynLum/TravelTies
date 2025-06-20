@@ -10,6 +10,7 @@ const MainLayout = () => {
   const segments = useSegments();
   const router = useRouter();
 
+  /**/
   useEffect(() => {
     if (isAuthenticated === null) {
       return;
@@ -35,12 +36,13 @@ const MainLayout = () => {
       }
     } // only redirect if isAuthenticated/isSynced/emailVerified/hasOnboarded changes
   }, [isAuthenticated, isSynced, emailVerified, hasOnboarded]) 
+/**/
 
 /* for convenience in coding specific page: 
   useEffect(() => {
     // delay redirect a tiny bit to avoid navigating too early
     const timeout = setTimeout(() => {
-      router.replace("/onboard");
+      router.replace("/emailVerification");
     }, 50); // 50ms delay usually works well
 
     return () => clearTimeout(timeout);

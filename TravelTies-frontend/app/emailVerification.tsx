@@ -7,7 +7,7 @@ import { useRouter } from 'expo-router';
 import Loading from '@/components/Loading';
 
 const EmailVerification = () => {
-  const {user, verifyEmail, logout} = useAuth();
+  const {user, verifyEmail, validateEmailVerification, logout} = useAuth();
   const [loading, setLoading] = useState(false);
   const [cooldown, setCooldown] = useState(0);
   const router = useRouter();
@@ -51,10 +51,18 @@ const EmailVerification = () => {
 
   // send verification email once user land on this page
   useEffect(() => {
-    handleEmailVerification()
+    handleEmailVerification();
   }, [])
 
+
   const userEmail = user?.email || "your email";
+
+  const checkVerification = async () => {
+    const response = await validateEmailVerification();
+    if (!response.success) {
+      Alert.alert("Email verification", response.message);
+    }
+  }
 
   const handleBackToSignUp = async () => {
     const logOutRes = await logout();
@@ -89,12 +97,12 @@ const EmailVerification = () => {
             </Text> 
           </View> 
             
-          <View style={{top: hp(5), width: wp(88), height: hp(57), paddingHorizontal: wp(2.5),
+          <View style={{top: hp(5), width: wp(88), height: hp(60), paddingHorizontal: wp(2.5),
           paddingBottom: hp(1), borderRadius: 30}}
           className="flex flex-col items-center justify-center gap-0 bg-white">
               <Image source={require("../assets/images/email-verification.png")}
               style={{width: wp(23), height: hp(15)}} resizeMode="contain"/>
-              <View className="flex flex-col items-center justify-center gap-6">
+              <View className="flex flex-col items-center justify-center gap-5">
                 <Text style={{fontSize: hp(4.11)}} className="font-bold tracking-wider text-center"> 
                   Verify your email
                 </Text>   
@@ -132,14 +140,26 @@ const EmailVerification = () => {
                 }
                 </View> 
 
-                {/* return to sign up page */}
-                <View className="items-center justify-center">
-                  <Pressable onPress={handleBackToSignUp}
-                  style = {{minHeight: 44, minWidth: 44}}>
-                    <Text style={{fontSize: hp(1.8)}} className="font-bold text-blue-500">
-                      Back to Sign up
-                    </Text>
-                  </Pressable>
+                <View className="flex gap-6">
+
+                  {/* validate email verification */}
+                  <View className="items-center justify-center">
+                    <Pressable onPress={checkVerification} hitSlop={14}>
+                      <Text style={{fontSize: hp(1.8)}} className="font-bold text-blue-500">
+                        I've already verified
+                      </Text>
+                    </Pressable>
+                  </View>
+
+                  {/* return to sign up page */}
+                  <View className="items-center justify-center">
+                    <Pressable onPress={handleBackToSignUp} hitSlop={16}>
+                      <Text style={{fontSize: hp(1.5)}} className="font-bold text-gray-500">
+                        Back to Sign up
+                      </Text>
+                    </Pressable>
+                  </View>
+                  
                 </View>
               </View>
           </View>
