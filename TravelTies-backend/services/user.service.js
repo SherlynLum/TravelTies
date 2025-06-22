@@ -41,9 +41,17 @@ const updateProfilePic = async (uid, profilePicKey) => {
     return updatedProfile;
 } 
 
+const getUsernamePic = async (uid) => {
+    const profile = await User.findOne({uid}, {
+        _id: 0, username: 1, profilePicKey: 1 // explicitly exclude object id 
+    })
+    return profile;
+}
+
 module.exports = {
     signUpOrSignIn,
     checkUsernameUniqueness, 
     updateUsername,
-    updateProfilePic
+    updateProfilePic,
+    getUsernamePic
 };

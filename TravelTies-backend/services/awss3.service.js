@@ -1,7 +1,7 @@
 //load environment variables
 require("dotenv").config();
 
-const {S3Client, PutObjectCommand} = require("@aws-sdk/client-s3")
+const {S3Client, PutObjectCommand, DeleteObjectCommand} = require("@aws-sdk/client-s3")
 const {getSignedUrl} = require("@aws-sdk/s3-request-presigner")
 const {v4: uuidv4} = require('uuid');
 
@@ -29,4 +29,15 @@ const generateUrl = async (mimeType, folder) => {
     return {key, url}
 }
 
-module.exports = generateUrl;
+const deleteObject = async (key) => {
+    const command = new DeleteObjectCommand({
+        Bucket: process.env.AWS_BUCKET_NAME,
+        Key: key
+    });
+    await client.send(command);
+}
+
+module.exports = {
+    generateUrl,
+    deleteObject
+};

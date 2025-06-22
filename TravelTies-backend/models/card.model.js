@@ -22,19 +22,19 @@ const cardSchema = new mongoose.Schema({
         type: String
     },
 
-    startDateTime: {
-        type: Date
-    },
-
-    startTimezone: {
+    startDate: {
         type: String
     },
 
-    endDateTime: {
-        type: Date
+    startTime: {
+        type: String
     },
 
-    endTimezone: {
+    endDate: {
+        type: String
+    },
+
+    endTime: {
         type: String
     },
 
@@ -67,6 +67,11 @@ const cardSchema = new mongoose.Schema({
     },
 
     docKeys: { // array of AWS S3 keys to access uploaded documents
+        type: [String],
+        default: []
+    },
+
+    webUrls: { 
         type: [String],
         default: []
     }

@@ -1,12 +1,13 @@
 const validateUsername = require("../validators/username.validator.js");
-const {signUpOrSignIn, checkUsernameUniqueness, updateUsername, updateProfilePic} = require("../services/user.service.js");
-const generateUrl = require("../services/awss3.service.js");
+const {signUpOrSignIn, checkUsernameUniqueness, updateUsername, updateProfilePic, 
+    getUsernamePic} = require("../services/user.service.js");
+const {generateUrl} = require("../services/awss3.service.js");
 
 const syncUser = async (req, res) => {
     const uid = req.user.uid;
     // for testing without middleware: const {uid} = req.body; 
     if (!uid) {
-        return res.status(400).json({message: "Missing uid"})
+        return res.status(400).json({message: "Missing uid"});
     }
 
     try {
@@ -72,7 +73,7 @@ const updateUsernameController = async (req, res) => {
         if (!updatedProfile) {
             return res.status(404).json({message: 'User not found'});
         }
-        return res.status(201).json({user: updatedProfile});
+        return res.status(200).json({user: updatedProfile});
     } catch (e) {
         return res.status(500).json({message: e.message});
     }
@@ -96,7 +97,20 @@ const updateProfilePicController = async (req, res) => {
         if (!updatedProfile) {
             return res.status(404).json({message: 'User not found'});
         }
-        return res.status(201).json({user: updatedProfile});
+        return res.status(200).json({user: updatedProfile});
+    } catch (e) {
+        return res.status(500).json({message: e.message});
+    }
+}
+
+const getCurrentUserProfile = async (req, res) => {
+    const uid = req.user.uid;
+    try {
+        const profile = await getUsernamePic(uid);
+        if (!profile) {
+            return res.status(404).json({message: "User not found"});
+        }
+        return res.status(200).json({user: profile})
     } catch (e) {
         return res.status(500).json({message: e.message});
     }
@@ -106,5 +120,7 @@ module.exports = {
     syncUser,
     getProfilePicUrl,
     updateUsernameController,
-    updateProfilePicController
+    updateProfilePicController,
+    getCurrentUserProfile
+
 };

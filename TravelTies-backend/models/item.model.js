@@ -30,12 +30,21 @@ const itemSchema = new mongoose.Schema({
         type: String
     },
 
-    dateTime: { // only for type="task"
-        type: Date
+    date: { // only for type="task"
+        type: String
+    },
+
+    time: { // only for type="task"
+        type: String
+    },
+
+
+    earlyReminderDate: { // only for type="task"
+        type: String
     },
 
     earlyReminderTime: { // only for type="task"
-        type: Date
+        type: String
     },
 
     isCompleted: {

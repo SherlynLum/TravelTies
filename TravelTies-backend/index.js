@@ -4,7 +4,9 @@ require("dotenv").config();
 //import libraries
 const express = require("express");
 const mongoose = require("mongoose");
-const userRoute = require("./routes/user.route.js")
+const userRoute = require("./routes/user.route.js");
+const awsRoute = require("./routes/awss3.route.js");
+const tripRoute = require("./routes/trip.route.js");
 const admin = require("firebase-admin");
 const serviceAccount = require("./serviceAccountKey.json");
 
@@ -32,3 +34,5 @@ mongoose.connect(process.env.DB_URL).then(() => {
 
 //routes
 app.use("/api/user", userRoute);
+app.use("/api/aws", awsRoute);
+app.use("/api/trip", tripRoute);

@@ -17,8 +17,12 @@ const pollSchema = new mongoose.Schema({
         required: true
     },
 
-    deadline: {
-        type: Date
+    deadlineDate: {
+        type: String
+    },
+
+    deadlineTime: {
+        type: String
     },
 
     isClosed: {

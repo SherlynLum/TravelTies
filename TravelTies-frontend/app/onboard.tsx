@@ -24,7 +24,9 @@ const Onboard = () => {
     const [displayModalOpen, setDisplayModalOpen] = useState(false);
     const [loading, setLoading] = useState(false);
     const [uploadSuccess, setUploadSuccess] = useState(false);
+    const [oldPicKey, setOldPicKey] = useState("");
     const [picKey, setPicKey] = useState("");
+    const [updatePicSuccess, setUpdatePicSuccess] = useState(false);
     const [usernameErr, setUsernameErr] = useState("");
     const usernameRef = useRef("");
 
@@ -36,7 +38,8 @@ const Onboard = () => {
             if (response.success) {
                 setPicUri(response.uri);
                 setCroppedPicUri(""); // reset croppedPicUri since the selected picture is changed
-                setUploadSuccess(false); // similarly, reset uploadSuccesss
+                setUploadSuccess(false); // similarly, reset uploadSuccess
+                setUpdatePicSuccess(false); // similarly, reset updatePicSSuccess
                 Image.getSize(response.uri, (width, height) => {
                     setPicWidth(width);
                     setPicHeight(height);
@@ -64,10 +67,8 @@ const Onboard = () => {
         setDisplayModalOpen(false);
     }
 
-    const uploadCroppedPic = async () => {
+    const uploadCroppedPic = async (token: string) => {
         try {
-            const token = await getUserIdToken(user);
-
             // get presigned url 
             const urlRes = await axios.get(
                 `${process.env.EXPO_PUBLIC_BACKEND_URL}/api/user/profile-pic-url`, {
@@ -81,7 +82,6 @@ const Onboard = () => {
             if (!key || !url) {
                 throw new Error("Failed to retrieve upload link for AWS S3");
             }
-            setPicKey(key);
 
             // convert cropped pic uri into binary format to upload
             if (!croppedPicUri) {
@@ -98,9 +98,12 @@ const Onboard = () => {
             });
 
             setUploadSuccess(true);
+            if (picKey) { // if there is a previous pic key, store the previous pic key into old pic key to be deleted later from AWS
+                setOldPicKey(picKey);
+            }
+            setPicKey(key);
             return true; // for checking this time upload success or not 
         } catch (e) {
-            setPicKey("");
             if (isAxiosError(e)) { // deal with axios request errors 
                 // if error comes from get presigned url, there will be a message field in res
                 // if error comes from upload to url i.e. from AWS S3, res will be raw XML string without a message field
@@ -133,15 +136,13 @@ const Onboard = () => {
         setUsernameErr(""); // clear username error if valid
     }
 
-    const updateDb = async () => {
+    const updatePicToDb = async (token: string) => {
         try {
-            const token = await getUserIdToken(user);
-
             if (!picKey) {
                 throw new Error("Missing AWS S3 key for profile picture")
             }
 
-            // update profile pic key to db
+            // update profile pic key to db if user upload profile pic
             const picRes = await axios.patch(
                 `${process.env.EXPO_PUBLIC_BACKEND_URL}/api/user/profile-pic`, 
                 { profilePicKey: picKey },
@@ -156,6 +157,30 @@ const Onboard = () => {
                 throw new Error("Failed to update profile picture key to database");
             }
 
+            if (oldPicKey) { // if there is old pic key, remove the object from aws
+                await axios.delete(
+                    `${process.env.EXPO_PUBLIC_BACKEND_URL}/api/aws`, 
+                    { 
+                        data: { key: oldPicKey },
+                        headers: {
+                            "Content-Type": "application/json",
+                            "Authorization": `Bearer ${token}`
+                        }
+                    }
+                )
+                setOldPicKey("") // after successful deletion, reset oldPicKey
+            }
+            setUpdatePicSuccess(true); // if reach here, means update pic key and delete old pic object are successful 
+            return true; // for checking update pic to db success
+        } catch (e) {
+            console.log(e);
+            Alert.alert("Onboard", "Failed to update profile picture");
+            return false; // for checking update pic to db success
+        }
+    }
+
+    const updateUsernameToDb = async (token: String) => {
+        try {
             // update username to db 
             const usernameRes = await axios.patch(
                 `${process.env.EXPO_PUBLIC_BACKEND_URL}/api/user/username`, 
@@ -170,7 +195,7 @@ const Onboard = () => {
             if (!usernameRes?.data?.user) {
                 throw new Error("Failed to update username to database");
             }
-            return true; // for checking update db success
+            return true; // for checking update username to db success
         } catch (e) {
             if (isAxiosError(e) && e?.response?.status === 400) { // handle backend bad request error separately
                 const message = e.response?.data?.message;
@@ -180,7 +205,7 @@ const Onboard = () => {
                 }
             }
             console.log(e);
-            Alert.alert("Onboard", "Failed to update username and profile picture");
+            Alert.alert("Onboard", "Failed to update username");
             return false; // for checking update db success
         }
     }
@@ -191,22 +216,37 @@ const Onboard = () => {
             return;
         }
         validateUsername(); // check username one more time in case user never on blur
+        if (usernameErr) {
+            setLoading(false); // early exit if username is not valid
+            return;
+        }
 
         setLoading(true);
-        if (!uploadSuccess) {
-            const uploadRes = await uploadCroppedPic();
-            if (!uploadRes) {
-                setLoading(false);
-                return; // early exit if fail to upload profile picture 
+        const token = await getUserIdToken(user);
+        
+        if (croppedPicUri) { // if there is a user uploaded pic 
+            if (!uploadSuccess) { // if the pic haven't uploaded to aws yet
+                const uploadRes = await uploadCroppedPic(token);
+                if(!uploadRes) {
+                    setLoading(false);
+                    return; // early exit if fail to upload profile picture
+                }
+            } else if (uploadSuccess && !updatePicSuccess) { // if uploaded successfully but haven't updated pic key to db successfully yet
+                const updatePicRes = await updatePicToDb(token);
+                if (!updatePicRes) {
+                    setLoading(false);
+                    return; // early exit if fail to update new pic key to database
+                }
             }
         } else {
-            const updateRes = await updateDb();
-            if (!updateRes) {
+            const updateUsernameRes = await updateUsernameToDb(token);
+            if (!updateUsernameRes) {
                 setLoading(false);
-                return; // early exit if fail to update database
+                return; // exit if fail to update username to database
             }
         }
-        setHasOnboarded(true) // if reach here, means both upload and update is successful, onboard is thus complete now 
+
+        setHasOnboarded(true) // if reach here, means everything is successful, onboard is thus complete now 
         setLoading(false);
     }
    

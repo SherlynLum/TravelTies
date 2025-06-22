@@ -43,19 +43,19 @@ const accommodationOptionalFieldSchema = new mongoose.Schema({
 })
 
 const transportationOptionalFieldSchema = new mongoose.Schema({
-    departureDateTime: {
-        type: Date
-    },
-
-    departureTimezone: {
+    departureDate: {
         type: String
     },
 
-    arrivalDateTime: {
-        type: Date
+    departureTime: {
+        type: String
     },
 
-    arrivalTimezone: {
+    arrivalDate: {
+        type: String
+    },
+
+    arrivalTime: {
         type: String
     },
 

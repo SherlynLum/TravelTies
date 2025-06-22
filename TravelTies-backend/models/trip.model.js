@@ -9,16 +9,20 @@ const tripParticipantSchema = new mongoose.Schema({
     role: { // no role if status === "pending"
         type: String, 
         enum: ["creator", "admin", "member"]
-    },
+    }
+}, {
+    _id: false
+})
 
-    status: {
+const joinRequestsSchema = new mongoose.Schema({
+    requesterUid: {
         type: String,
-        enum: ["pending", "accepted"],
         required: true
     },
-
-    requestTimestamp: { // only exists if status === "pending" 
-        type: Date
+    
+    requestTimestamp: {
+        type: Date,
+        required: true
     }
 }, {
     _id: false
@@ -42,7 +46,8 @@ const tripSchema = new mongoose.Schema({
     joinCode: {
         type: String,
         required: true,
-        unique: true
+        unique: true,
+        index: true
     },
     
     name: {
@@ -55,18 +60,10 @@ const tripSchema = new mongoose.Schema({
     },
 
     startDate: {
-        type: Date,
-    },
-
-    startDateTimezone: {
         type: String,
     },
 
     endDate: {
-        type: Date,
-    },
-
-    endDateTimezone: {
         type: String,
     },
     
@@ -88,12 +85,6 @@ const tripSchema = new mongoose.Schema({
         }
     },
 
-    status: {
-        type: String,
-        required: true,
-        enum: ["planning", "ongoing", "completed"],
-    },
-
     creatorUid: {
         type: String,
         required: true
@@ -101,6 +92,11 @@ const tripSchema = new mongoose.Schema({
 
     tripParticipants: {
         type: [tripParticipantSchema],
+        default: []
+    },
+
+    joinRequests: {
+        type: [joinRequestsSchema],
         default: []
     },
 
