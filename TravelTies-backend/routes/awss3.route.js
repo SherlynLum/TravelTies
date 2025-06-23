@@ -1,5 +1,5 @@
 const express = require("express");
-const firebaseAuthMiddleware = require("../middlewares/auth.middleware.js");
+const {firebaseAuthMiddleware} = require("../middlewares/auth.middleware.js");
 const {deleteObjectFromAWS} = require("../controllers/awss3.controller.js")
 const router = express.Router();
 

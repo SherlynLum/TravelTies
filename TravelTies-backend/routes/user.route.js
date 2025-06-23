@@ -1,7 +1,9 @@
 const express = require("express");
-const firebaseAuthMiddleware = require("../middlewares/auth.middleware.js");
+const {firebaseAuthMiddleware} = require("../middlewares/auth.middleware.js");
 const {syncUser, getProfilePicUrl, updateUsernameController, updateProfilePicController,
-    getCurrentUserProfile
+    getCurrentUserProfile, getFriendsController,
+    searchFriendsController,
+    searchNonFriends
 } = require("../controllers/user.controller.js")
 const router = express.Router();
 
@@ -19,5 +21,14 @@ router.patch("/profile-pic", firebaseAuthMiddleware, updateProfilePicController)
 
 router.get("/", firebaseAuthMiddleware, getCurrentUserProfile);
 // for testing without middleware: router.get("/test", getCurrentUserProfile);
+
+router.get("/friends", firebaseAuthMiddleware, getFriendsController);
+// for testing without middleware: router.get("/test/friends", getFriendsController);
+
+router.get("/friends/search", firebaseAuthMiddleware, searchFriendsController);
+// for testing without middleware: router.get("/test/friends/search", searchFriendsController);
+
+router.get("/search", firebaseAuthMiddleware, searchNonFriends);
+// for testing without middleware: router.get("/test/search", searchNonFriends);
 
 module.exports = router;

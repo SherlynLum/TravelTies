@@ -10,12 +10,8 @@ const validateTripDates = ({startDate, endDate, noOfDays, noOfNights}) => {
             }
     }
 
-    if (startDate && noOfDays && !endDate) {
-        return "End date is required if start date and number of days are both provided";
-    }
-
-    if (endDate && noOfDays && !startDate) {
-        return "Start date is required if end date and number of days are both provided";
+    if ((startDate && !endDate) || (endDate && !startDate)) {
+        return "Start date and end date must be provided together"
     }
 
     if (startDate && endDate) {
@@ -29,9 +25,9 @@ const validateTripDates = ({startDate, endDate, noOfDays, noOfNights}) => {
         if (!noOfDays) {
             return "Number of days is required if start date and end date are both provided";
         } 
-        
+
         const diffDays = diffMs / (1000 * 60 * 60 * 24) + 1;
-        if (noOfDays !== diffDays) { // convert to Number just in case noOfDays is a string
+        if (noOfDays !== diffDays) { 
             return "Number of days does not match with trip start date and end date";
         }
     }

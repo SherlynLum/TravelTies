@@ -1,6 +1,7 @@
 const validateUsername = require("../validators/username.validator.js");
 const {signUpOrSignIn, checkUsernameUniqueness, updateUsername, updateProfilePic, 
-    getUsernamePic} = require("../services/user.service.js");
+    getUsernamePic, getFriends, searchFriends, searchUsers
+} = require("../services/user.service.js");
 const {generateUrl} = require("../services/awss3.service.js");
 
 const syncUser = async (req, res) => {
@@ -105,6 +106,10 @@ const updateProfilePicController = async (req, res) => {
 
 const getCurrentUserProfile = async (req, res) => {
     const uid = req.user.uid;
+    if (!uid) {
+        return res.status(400).json({message: "Missing uid"});
+    }
+    
     try {
         const profile = await getUsernamePic(uid);
         if (!profile) {
@@ -116,11 +121,63 @@ const getCurrentUserProfile = async (req, res) => {
     }
 }
 
+const getFriendsController = async (req, res) => {
+    const uid = req.user.uid;
+    if (!uid) {
+        return res.status(400).json({message: "Missing uid"});
+    }
+
+    try {
+        const friends = await getFriends(uid);
+        return res.status(200).json({friends});
+    } catch (e) {
+        return res.status(500).json({message: e.message});
+    }
+}
+
+const searchFriendsController = async (req, res) => {
+    const uid = req.user.uid;
+    if (!uid) {
+        return res.status(400).json({message: "Missing uid"});
+    }
+    const searchTerm = req.query.term;
+
+    try {
+        const searchResults = await searchFriends({uid, searchTerm});
+        return res.status(200).json({results: searchResults});
+    } catch (e) {
+        if (e.message === "No user is found") {
+            return res.status(404).json({message: e.message});
+        } 
+        return res.status(500).json({message: e.message});
+    }
+}
+
+const searchNonFriends = async (req, res) => {
+    const uid = req.user.uid;
+    if (!uid) {
+        return res.status(400).json({message: "Missing uid"});
+    }
+    const searchTerm = req.query.term;
+
+    try {
+        const searchResults = await searchUsers({uid, searchTerm});
+        return res.status(200).json({results: searchResults});
+    } catch (e) {
+        if (e.message === "No user is found") {
+            return res.status(404).json({message: e.message});
+        } 
+        return res.status(500).json({message: e.message});
+    }
+}
+
 module.exports = {
     syncUser,
     getProfilePicUrl,
     updateUsernameController,
     updateProfilePicController,
-    getCurrentUserProfile
-
+    getCurrentUserProfile,
+    getFriendsController,
+    searchFriendsController,
+    searchNonFriends
 };

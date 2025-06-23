@@ -1,4 +1,5 @@
 const User = require("../models/user.model.js");
+const SEARCH_RES_LIMIT = 10;
 
 const signUpOrSignIn = async (uid) => {
     const existingUser = await User.findOne({uid}); //key and variable names are the same
@@ -48,10 +49,109 @@ const getUsernamePic = async (uid) => {
     return profile;
 }
 
+const getFriends = async (uid) => {
+    const friends = await User.aggregate([
+        {$match: {uid}},
+        {$unwind: "$friends"},
+        {$match: {"friends.status": "friends"}},
+        {$lookup: {
+            from: "users",
+            localField: "friends.friendUid",
+            foreignField: "uid",
+            as: "friendsProfiles"
+        }},
+        {$unwind: "$friendsProfiles"},
+        {$project: {
+            _id: 0,
+            uid: "$friendsProfiles.uid",
+            username: "$friendsProfiles.username",
+            profilePicKey: "$friendsProfiles.profilePicKey"
+        }},
+        {$sort: {username: 1}}
+    ]).collation({locale: "en", strength: 2});
+    return friends;
+}
+
+const searchFriends = async ({uid, searchTerm}) => {
+    if (!searchTerm) {
+        return [];
+    }
+    const user = await User.findOne({uid}, {_id: 0, "friends.friendUid": 1});
+    if (!user) {
+        throw new Error("No user is found");
+    }
+    const friendsUids = user.friends.map(friend => friend.friendUid);
+    if (friendsUids.length === 0) {
+        return []; // if no friends then no need search already
+    }
+
+    const searchResults = await User.aggregate([
+        {$match: {uid: {$in: friendsUids}}},
+        {$search: {
+            index: "usernameSearch",
+            text: {
+                query: searchTerm,
+                path: "username",
+                fuzzy: {
+                    maxEdits: 2,
+                    prefixLength: 1
+                }
+            }
+        }},
+        {$project: {
+            _id: 0,
+            uid: 1,
+            username: 1,
+            profilePicKey: 1
+        }},
+        {$limit: SEARCH_RES_LIMIT}
+    ]);
+    return searchResults;
+}
+
+// search users who are not yet friends
+const searchUsers = async ({uid, searchTerm}) => {
+    if (!searchTerm) {
+        return [];
+    }
+    const user = await User.findOne({uid}, {_id: 0, "friends.friendUid": 1});
+    if (!user) {
+        throw new Error("No user is found");
+    }
+    const friendsUids = user.friends.map(friend => friend.friendUid);
+    const excludeUids = [...friendsUids, uid]; // exclude themselves as well
+
+    const searchResults = await User.aggregate([
+        {$match: {uid: {$nin: excludeUids}}},
+        {$search: {
+            index: "usernameSearch",
+            text: {
+                query: searchTerm,
+                path: "username",
+                fuzzy: {
+                    maxEdits: 2,
+                    prefixLength: 1
+                }
+            }
+        }},
+        {$project: {
+            _id: 0,
+            uid: 1,
+            username: 1,
+            profilePicKey: 1
+        }},
+        {$limit: SEARCH_RES_LIMIT}
+    ]);
+    return searchResults;
+}
+
 module.exports = {
     signUpOrSignIn,
     checkUsernameUniqueness, 
     updateUsername,
     updateProfilePic,
-    getUsernamePic
+    getUsernamePic,
+    getFriends, 
+    searchFriends, 
+    searchUsers
 };

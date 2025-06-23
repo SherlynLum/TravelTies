@@ -14,7 +14,7 @@ const tripParticipantSchema = new mongoose.Schema({
     _id: false
 })
 
-const joinRequestsSchema = new mongoose.Schema({
+const joinRequestSchema = new mongoose.Schema({
     requesterUid: {
         type: String,
         required: true
@@ -46,8 +46,7 @@ const tripSchema = new mongoose.Schema({
     joinCode: {
         type: String,
         required: true,
-        unique: true,
-        index: true
+        unique: true
     },
     
     name: {
@@ -96,7 +95,7 @@ const tripSchema = new mongoose.Schema({
     },
 
     joinRequests: {
-        type: [joinRequestsSchema],
+        type: [joinRequestSchema],
         default: []
     },
 
