@@ -67,7 +67,8 @@ const getTripsInBin = async (uid) => {
                 noOfDays: 1,
                 noOfNights: 1,
                 noOfParticipants: {$size: "$tripParticipants"},
-                noDates: {$and: [{$eq: ["$startDate", null]}, {$eq: ["$endDate", null]}]} // start date and end date always exist in pairs
+                noDates: {$and: [{$not: {$gt: [{$strLenCP: {$ifNull: ["$startDate", ""]}}, 0]}},
+                    {$not: {$gt: [{$strLenCP: {$ifNull: ["$endDate", ""]}}, 0]}}]} // 1 if no startDate and endDate, 0 if have both startDate and endDate
             }
         },
         {
@@ -175,7 +176,7 @@ const hasAdminRights = async ({uid, tripId}) => {
 const isParticipant = async ({uid, tripId}) => {
     const trip = await Trip.findOne({
         _id: tripId,
-        "tripParticipants.participant": uid
+        "tripParticipants.participantUid": uid
     });
     return !!trip;
 }
@@ -246,20 +247,21 @@ const searchActiveTrips = async ({uid, searchTerm}) => {
     }
 
     const searchResults = await Trip.aggregate([
-        {$match: {
-            "tripParticipants.participantUid": uid,
-            isCancelled: false
-        }},
         {$search: {
             index: "tripNameSearch",
             text: {
                 query: searchTerm,
                 path: "name",
+                analyzer: "searchCaseInsensitive",
                 fuzzy: {
                     maxEdits: 2,
                     prefixLength: 1
                 }
             }
+        }},
+        {$match: {
+            "tripParticipants.participantUid": uid,
+            isCancelled: false
         }},
         {$project: {
             name: 1,
@@ -281,20 +283,21 @@ const searchBinTrips = async ({uid, searchTerm}) => {
     }
 
     const searchResults = await Trip.aggregate([
-        {$match: {
-            creatorUid: uid,
-            isCancelled: true
-        }},
         {$search: {
             index: "tripNameSearch",
             text: {
                 query: searchTerm,
                 path: "name",
+                analyzer: "searchCaseInsensitive",
                 fuzzy: {
                     maxEdits: 2,
                     prefixLength: 1
                 }
             }
+        }},
+        {$match: {
+            creatorUid: uid,
+            isCancelled: true
         }},
         {$project: {
             name: 1,

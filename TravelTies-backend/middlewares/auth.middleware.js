@@ -18,7 +18,9 @@ const firebaseAuthMiddleware = async (req, res, next) => {
 };
 
 const requireCreator = async (req, res, next) => {
-    const uid = req.user.uid;
+    // const uid = req.user.uid;
+    // test without Firebase:
+    const uid = req.body.uid;
     if (!uid) {
         return res.status(400).json({message: "Missing uid"});
     }
@@ -40,7 +42,9 @@ const requireCreator = async (req, res, next) => {
 }
 
 const requireCreatorOrAdmin = async (req, res, next) => {
-    const uid = req.user.uid;
+    // const uid = req.user.uid;
+    // test without Firebase:
+    const uid = req.body.uid;
     if (!uid) {
         return res.status(400).json({message: "Missing uid"});
     }
@@ -62,7 +66,9 @@ const requireCreatorOrAdmin = async (req, res, next) => {
 }
 
 const requireParticipants = async (req, res, next) => {
-    const uid = req.user.uid;
+    // const uid = req.user.uid;
+    // test without Firebase:
+    const uid = req.body.uid;
     if (!uid) {
         return res.status(400).json({message: "Missing uid"});
     }

@@ -86,7 +86,6 @@ const searchFriends = async ({uid, searchTerm}) => {
     }
 
     const searchResults = await User.aggregate([
-        {$match: {uid: {$in: friendsUids}}},
         {$search: {
             index: "usernameSearch",
             text: {
@@ -98,6 +97,7 @@ const searchFriends = async ({uid, searchTerm}) => {
                 }
             }
         }},
+        {$match: {uid: {$in: friendsUids}}},
         {$project: {
             _id: 0,
             uid: 1,
@@ -122,7 +122,6 @@ const searchUsers = async ({uid, searchTerm}) => {
     const excludeUids = [...friendsUids, uid]; // exclude themselves as well
 
     const searchResults = await User.aggregate([
-        {$match: {uid: {$nin: excludeUids}}},
         {$search: {
             index: "usernameSearch",
             text: {
@@ -134,6 +133,7 @@ const searchUsers = async ({uid, searchTerm}) => {
                 }
             }
         }},
+        {$match: {uid: {$nin: excludeUids}}},
         {$project: {
             _id: 0,
             uid: 1,

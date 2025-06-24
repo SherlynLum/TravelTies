@@ -9,7 +9,7 @@ const {getTripProfilePicUrl, createTripController, getCurrentUserActiveTrips,
 const router = express.Router();
 
 router.post("/", firebaseAuthMiddleware, createTripController);
-// for testing without middleware: outer.post("/test", createTripController);
+// for testing without middleware: router.post("/test", createTripController);
 
 router.get("/profile-pic-url", firebaseAuthMiddleware, getTripProfilePicUrl);
 // for testing without middleware: router.get("/test/profile-pic-url", getTripProfilePicUrl);
@@ -30,19 +30,19 @@ router.get("/requests/:id", firebaseAuthMiddleware, getTripJoinRequests);
 // for testing without middleware: router.get("/test/requests/:id", getTripJoinRequests);
 
 router.patch("/overview/:id", firebaseAuthMiddleware, requireParticipants, updateTripOverview);
-// for testing without middleware: router.patch("/test/overview/:id", updateTripOverview);
+// for testing without middleware: router.patch("/test/overview/:id", requireParticipants, updateTripOverview);
 
 router.patch("/participants/:id", firebaseAuthMiddleware, requireCreatorOrAdmin, updateTripParticipants);
-// for testing without middleware: router.patch("/test/participants/:id", updateTripParticipants);
+// for testing without middleware: router.patch("/test/participants/:id", requireCreatorOrAdmin, updateTripParticipants);
 
 router.patch("/requests/:id", firebaseAuthMiddleware, requireCreatorOrAdmin, updateTripJoinRequests);
 // for testing without middleware: router.patch("/test/requests/:id", updateTripJoinRequests);
 
 router.patch("/cancel/:id", firebaseAuthMiddleware, requireCreator, cancelTripController);
-// for testing without middleware: router.patch("/test/cancel/:id", cancelTripController);
+// for testing without middleware: router.patch("/test/cancel/:id", requireCreator, cancelTripController);
 
 router.patch("/restore/:id", firebaseAuthMiddleware, requireCreator, restoreTripController);
-// for testing without middleware: router.patch("/test/restore/:id", restoreTripController);
+// for testing without middleware: router.patch("/test/restore/:id", requireCreator, restoreTripController);
 
 router.delete("/:id", firebaseAuthMiddleware, requireCreator, deleteTripPermanently);
 // for testing without middleware: router.delete("/test/:id", deleteTripPermanently);

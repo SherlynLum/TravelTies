@@ -69,6 +69,7 @@ const getCurrentUserActiveTrips = async (req, res) => {
 
 const getCurrentUserBinTrips = async (req, res) => {
     const uid = req.user.uid;
+    // test without middleware: const uid = req.query.uid;
     if (!uid) {
         return res.status(400).json({message: "Missing uid"});
     }
@@ -244,7 +245,8 @@ const deleteTripPermanently = async (req, res) => {
 }
 
 const searchActiveTripsController = async (req, res) => {
-    const uid = req.user.uid;
+    const uid = req.user.uid; 
+    // testing without middleware: const uid = req.query.uid;
     if (!uid) {
         return res.status(400).json({message: "Missing uid"});
     }
@@ -260,6 +262,7 @@ const searchActiveTripsController = async (req, res) => {
 
 const searchBinTripsController = async (req, res) => {
     const uid = req.user.uid;
+    // testing without middleware const uid = req.query.uid;
     if (!uid) {
         return res.status(400).json({message: "Missing uid"});
     }
