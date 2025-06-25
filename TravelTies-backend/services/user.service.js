@@ -76,11 +76,12 @@ const searchFriends = async ({uid, searchTerm}) => {
     if (!searchTerm) {
         return [];
     }
-    const user = await User.findOne({uid}, {_id: 0, "friends.friendUid": 1});
+    const user = await User.findOne({uid}, {_id: 0, "friends.friendUid": 1, "friends.status": 1});
     if (!user) {
         throw new Error("No user is found");
     }
-    const friendsUids = user.friends.map(friend => friend.friendUid);
+    const friendsUids = user.friends.filter(friend => friend.status === "friends")
+        .map(friend => friend.friendUid);
     if (friendsUids.length === 0) {
         return []; // if no friends then no need search already
     }
@@ -88,11 +89,11 @@ const searchFriends = async ({uid, searchTerm}) => {
     const searchResults = await User.aggregate([
         {$search: {
             index: "usernameSearch",
-            text: {
+            autocomplete: {
                 query: searchTerm,
                 path: "username",
                 fuzzy: {
-                    maxEdits: 2,
+                    maxEdits: 1,
                     prefixLength: 1
                 }
             }
@@ -118,19 +119,15 @@ const searchUsers = async ({uid, searchTerm}) => {
     if (!user) {
         throw new Error("No user is found");
     }
-    const friendsUids = user.friends.map(friend => friend.friendUid);
+    const friendsUids = user.friends.map(friend => friend.friendUid); // exclue all friends including those have sent or have received requests
     const excludeUids = [...friendsUids, uid]; // exclude themselves as well
 
     const searchResults = await User.aggregate([
         {$search: {
             index: "usernameSearch",
-            text: {
+            autocomplete: {
                 query: searchTerm,
-                path: "username",
-                fuzzy: {
-                    maxEdits: 2,
-                    prefixLength: 1
-                }
+                path: "username"
             }
         }},
         {$match: {uid: {$nin: excludeUids}}},

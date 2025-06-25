@@ -200,21 +200,13 @@ const updateParticipants = async ({id, tripParticipants}) => {
     return updatedTrip;
 }
 
-// for accepted join requests
-const addParticipants = async ({id, acceptedRequests, session}) => {
-    const updatedTrip = await Trip.findByIdAndUpdate(
-        id,
-        {$push: {tripParticipants: {$each: acceptedRequests}}},
-        {new: true, runValidators: true, session});
-    return updatedTrip;
-}
-
-const removeAcceptedRequests = async ({id, acceptedRequests, session}) => {
+const addParticipantsAndRemoveFromRequests = async ({id, acceptedRequests}) => {
     const acceptedUids = acceptedRequests.map(participant => participant.participantUid);
     const updatedTrip = await Trip.findByIdAndUpdate(
         id,
-        {$pull: {joinRequests: {requesterUid: {$in: acceptedUids}}}},
-        {new: true, runValidators: true, session});
+        {$pull: {joinRequests: {requesterUid: {$in: acceptedUids}}},
+        $push: {tripParticipants: {$each: acceptedRequests}}},
+        {new: true, runValidators: true});
     return updatedTrip;
 }
 
@@ -252,7 +244,6 @@ const searchActiveTrips = async ({uid, searchTerm}) => {
             text: {
                 query: searchTerm,
                 path: "name",
-                analyzer: "searchCaseInsensitive",
                 fuzzy: {
                     maxEdits: 2,
                     prefixLength: 1
@@ -288,7 +279,6 @@ const searchBinTrips = async ({uid, searchTerm}) => {
             text: {
                 query: searchTerm,
                 path: "name",
-                analyzer: "searchCaseInsensitive",
                 fuzzy: {
                     maxEdits: 2,
                     prefixLength: 1
@@ -313,6 +303,32 @@ const searchBinTrips = async ({uid, searchTerm}) => {
     return searchResults;
 }
 
+const addJoinRequest = async ({uid, joinCode}) => {
+    const trip = await Trip.findOne({joinCode}, {tripParticipants: 1, joinRequests: 1});
+    if (!trip) {
+        throw new Error("No trip is found");
+    }
+
+    const hasJoined = trip.tripParticipants.some(participant => participant.participantUid === uid);
+    if (hasJoined) 
+        throw new Error("This user has already joined this trip")
+
+    const hasRequested = trip.joinRequests.some(requester => requester.requesterUid === uid);
+    if (hasRequested) {
+        throw new Error("This user has already requested to join this trip");
+    }
+
+    const requestTimestamp = new Date();
+    const updatedTrip = await Trip.findOneAndUpdate({joinCode},
+        {$push: {joinRequests: {
+            requesterUid: uid,
+            requestTimestamp
+        }}},
+        {new: true, runValidators: true}
+    )
+    return updatedTrip;
+}
+
 module.exports = {
     generateJoinCode,
     createTrip,
@@ -326,11 +342,11 @@ module.exports = {
     isParticipant,
     updateOverview,
     updateParticipants,
-    addParticipants,
-    removeAcceptedRequests,
+    addParticipantsAndRemoveFromRequests,
     cancelTrip,
     restoreTrip,
     deleteTrip,
     searchActiveTrips,
-    searchBinTrips
+    searchBinTrips,
+    addJoinRequest
 };

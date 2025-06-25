@@ -29,6 +29,7 @@ router.get("/friends/search", firebaseAuthMiddleware, searchFriendsController);
 // for testing without middleware: router.get("/test/friends/search", searchFriendsController);
 
 router.get("/search", firebaseAuthMiddleware, searchNonFriends);
-// for testing without middleware: router.get("/test/search", searchNonFriends);
+// for testing without middleware: 
+router.get("/test/search", searchNonFriends);
 
 module.exports = router;

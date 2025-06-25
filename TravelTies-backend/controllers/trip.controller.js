@@ -1,10 +1,9 @@
 const {generateJoinCode, createTrip, getTripsByUid, getTripsInBin, getOverview, getParticipants,
-    getJoinRequests, updateOverview, updateParticipants, addParticipants, removeAcceptedRequests,
-    deleteTrip, cancelTrip, restoreTrip, searchActiveTrips, searchBinTrips
+    getJoinRequests, updateOverview, updateParticipants, addParticipantsAndRemoveFromRequests,
+    deleteTrip, cancelTrip, restoreTrip, searchActiveTrips, searchBinTrips, addJoinRequest
 } = require("../services/trip.service.js");
 const {generateUrl} = require("../services/awss3.service.js");
 const {validateTripDates} = require("../validators/trip.validator.js");
-const mongoose = require("mongoose");
 
 const getTripProfilePicUrl = async (req, res) => {
     const mimeType = req.query.type;
@@ -17,7 +16,7 @@ const getTripProfilePicUrl = async (req, res) => {
     const mimeTypeLc = mimeType.toLowerCase();
     if (mimeTypeLc === "image/jpeg") { // frontend cropped profile pic is saved as jpeg
         try {
-            const {key, url} = await generateUrl(mimeTypeLc, "user-profile-pics");
+            const {key, url} = await generateUrl(mimeTypeLc, "trip-profile-pics");
             return res.status(200).json({key, url});
         } catch (e) {
             return res.status(500).json({message: e.message});
@@ -28,8 +27,9 @@ const getTripProfilePicUrl = async (req, res) => {
 }
 
 const createTripController = async (req, res) => {
-    const uid = req.user.uid;
-    // for testing without middleware: const uid = req.body.uid;
+    // const uid = req.user.uid;
+    // for testing without middleware: 
+    const uid = req.body.uid;
     if (!uid) {
         return res.status(400).json({message: "Missing creator uid"});
     }
@@ -163,32 +163,17 @@ const updateTripParticipants = async (req, res) => {
 const updateTripJoinRequests = async (req, res) => {
     const {id} = req.params;
     const {acceptedRequests} = req.body;
-
-    // using transaction to make the two db actions atomic
-    const session = await mongoose.startSession();
-    session.startTransaction();
+    if (!acceptedRequests || acceptedRequests.length === 0) {
+        return res.status(200).json({message: "No accepted requests so no need to updated"})
+    }
 
     try {
-        const updateParticipants = await addParticipants({id, acceptedRequests, session});
-        if (!updateParticipants) {
-            await session.abortTransaction();
-            session.endSession();
+        const updatedTrip = await addParticipantsAndRemoveFromRequests({id, acceptedRequests});
+        if (!updatedTrip) {
             return res.status(404).json({message: "No trip is found"});
         }
-
-        const updateJoinRequests = await removeAcceptedRequests({id, acceptedRequests});
-        if (!updateJoinRequests) {
-            await session.abortTransaction();
-            session.endSession();
-            return res.status(404).json({message: "No trip is found"})
-        }
-
-        await session.commitTransaction();
-        session.endSession();
-        return res.status(200).json({trip: updateJoinRequests});
+        return res.status(200).json({trip: updatedTrip});
     } catch (e) {
-        await session.abortTransaction();
-        session.endSession();
         return res.status(500).json({message: e.message});
     }
 }
@@ -245,8 +230,9 @@ const deleteTripPermanently = async (req, res) => {
 }
 
 const searchActiveTripsController = async (req, res) => {
-    const uid = req.user.uid; 
-    // testing without middleware: const uid = req.query.uid;
+    // const uid = req.user.uid; 
+    // testing without middleware: 
+    const uid = req.query.uid;
     if (!uid) {
         return res.status(400).json({message: "Missing uid"});
     }
@@ -262,7 +248,7 @@ const searchActiveTripsController = async (req, res) => {
 
 const searchBinTripsController = async (req, res) => {
     const uid = req.user.uid;
-    // testing without middleware const uid = req.query.uid;
+    // testing without middleware: const uid = req.query.uid;
     if (!uid) {
         return res.status(400).json({message: "Missing uid"});
     }
@@ -273,6 +259,29 @@ const searchBinTripsController = async (req, res) => {
         return res.status(200).json({results: searchResults});
     } catch (e) {
         return res.status(500).json({message: e.message});
+    }
+}
+
+const addJoinRequestController = async (req, res) => {
+    const uid = req.user.uid;
+    // testing without middleware: const uid = req.body.uid;
+    if (!uid) {
+        return res.status(400).json({message: "Missing uid"});
+    }
+    const {code: joinCode} = req.params;
+
+    try {
+        const updatedTrip = await addJoinRequest({uid, joinCode});
+        return res.status(200).json({trip: updatedTrip});
+    } catch (e) {
+        let message = e.message;
+        if (message === "No trip is found") {
+            return res.status(404).json({message})
+        } else if (message === "This user has already joined this trip" || 
+            message === "This user has already requested to join this trip") {
+                return res.status(400).json({message})
+        }
+        return res.status(500).json({message});
     }
 }
 
@@ -291,5 +300,6 @@ module.exports = {
     restoreTripController,
     deleteTripPermanently, 
     searchActiveTripsController,
-    searchBinTripsController
+    searchBinTripsController,
+    addJoinRequestController
 };

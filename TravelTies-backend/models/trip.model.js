@@ -91,7 +91,13 @@ const tripSchema = new mongoose.Schema({
 
     tripParticipants: {
         type: [tripParticipantSchema],
-        default: []
+        default: [],
+        validate: {
+            validator: function (value) {
+                return Array.isArray(value) && value.length >= 1;
+            },
+            message: "Trip must have at least one participant which is the trip creator"
+        }
     },
 
     joinRequests: {
