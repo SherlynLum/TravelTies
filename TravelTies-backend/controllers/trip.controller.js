@@ -2,7 +2,7 @@ const {generateJoinCode, createTrip, getTripsByUid, getTripsInBin, getOverview, 
     getJoinRequests, updateOverview, updateParticipants, addParticipantsAndRemoveFromRequests,
     deleteTrip, cancelTrip, restoreTrip, searchActiveTrips, searchBinTrips, addJoinRequest
 } = require("../services/trip.service.js");
-const {generateUrl} = require("../services/awss3.service.js");
+const {generateUploadUrl} = require("../services/awss3.service.js");
 const {validateTripDates} = require("../validators/trip.validator.js");
 
 const getTripProfilePicUrl = async (req, res) => {
@@ -16,7 +16,7 @@ const getTripProfilePicUrl = async (req, res) => {
     const mimeTypeLc = mimeType.toLowerCase();
     if (mimeTypeLc === "image/jpeg") { // frontend cropped profile pic is saved as jpeg
         try {
-            const {key, url} = await generateUrl(mimeTypeLc, "trip-profile-pics");
+            const {key, url} = await generateUploadUrl(mimeTypeLc, "trip-profile-pics");
             return res.status(200).json({key, url});
         } catch (e) {
             return res.status(500).json({message: e.message});

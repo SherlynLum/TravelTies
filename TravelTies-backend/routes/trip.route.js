@@ -10,8 +10,7 @@ const {getTripProfilePicUrl, createTripController, getCurrentUserActiveTrips,
 const router = express.Router();
 
 router.post("/", firebaseAuthMiddleware, createTripController);
-// for testing without middleware: 
-router.post("/test", createTripController);
+// for testing without middleware: router.post("/test", createTripController);
 
 router.get("/profile-pic-url", firebaseAuthMiddleware, getTripProfilePicUrl);
 // for testing without middleware: router.get("/test/profile-pic-url", getTripProfilePicUrl);

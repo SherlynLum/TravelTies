@@ -2,7 +2,7 @@ const validateUsername = require("../validators/username.validator.js");
 const {signUpOrSignIn, checkUsernameUniqueness, updateUsername, updateProfilePic, 
     getUsernamePic, getFriends, searchFriends, searchUsers
 } = require("../services/user.service.js");
-const {generateUrl} = require("../services/awss3.service.js");
+const {generateUploadUrl} = require("../services/awss3.service.js");
 
 const syncUser = async (req, res) => {
     const uid = req.user.uid;
@@ -36,7 +36,7 @@ const getProfilePicUrl = async (req, res) => {
     const mimeTypeLc = mimeType.toLowerCase();
     if (mimeTypeLc === "image/jpeg") { // frontend cropped profile pic is saved as jpeg
         try {
-            const {key, url} = await generateUrl(mimeTypeLc, "user-profile-pics");
+            const {key, url} = await generateUploadUrl(mimeTypeLc, "user-profile-pics");
             return res.status(200).json({key, url});
         } catch (e) {
             return res.status(500).json({message: e.message});

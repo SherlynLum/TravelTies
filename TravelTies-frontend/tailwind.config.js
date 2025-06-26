@@ -5,6 +5,9 @@ module.exports = {
   presets: [require("nativewind/preset")],
   theme: {
     extend: {
+      borderRadius:{
+        "5": "5px",
+      }
     },
   },
   plugins: [],

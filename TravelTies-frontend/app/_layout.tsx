@@ -10,7 +10,7 @@ const MainLayout = () => {
   const segments = useSegments();
   const router = useRouter();
 
-  /**/
+  /*
   useEffect(() => {
     if (isAuthenticated === null) {
       return;
@@ -31,23 +31,23 @@ const MainLayout = () => {
         } else if (!hasOnboarded && currentPosition !== "onboard") {
           router.replace("/onboard");
         } else if (hasOnboarded && currentPosition !== "(screens)") {
-          router.replace("/home");
+          router.replace("/tripsDashboard");
         }
       }
     } // only redirect if isAuthenticated/isSynced/emailVerified/hasOnboarded changes
   }, [isAuthenticated, isSynced, emailVerified, hasOnboarded]) 
-/**/
+*/
 
-/* for convenience in coding specific page: 
+/* for convenience in coding specific page: */
   useEffect(() => {
     // delay redirect a tiny bit to avoid navigating too early
     const timeout = setTimeout(() => {
-      router.replace("/emailVerification");
+      router.replace("/tripsDashboard");
     }, 50); // 50ms delay usually works well
 
     return () => clearTimeout(timeout);
   }, []);
-*/
+/**/
   
   return <Stack>
     <Stack.Screen
@@ -72,6 +72,10 @@ const MainLayout = () => {
     />
     <Stack.Screen
       name = "forgotPassword"
+      options = {{ headerShown: false }}
+    />
+    <Stack.Screen
+      name = "(screens)"
       options = {{ headerShown: false }}
     />
   </Stack>
