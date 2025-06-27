@@ -8,7 +8,7 @@ const userRoute = require("./routes/user.route.js");
 const awsRoute = require("./routes/awss3.route.js");
 const tripRoute = require("./routes/trip.route.js");
 const admin = require("firebase-admin");
-const serviceAccount = require("./serviceAccountKey.json");
+const serviceAccount = require("/etc/secrets/serviceAccountKey.json");
 
 //initialise Firebase Admin SDK
 admin.initializeApp({
