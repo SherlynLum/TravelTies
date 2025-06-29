@@ -2,15 +2,12 @@ const User = require("../models/user.model.js");
 const SEARCH_RES_LIMIT = 10;
 
 const signUpOrSignIn = async (uid) => {
-    const existingUser = await User.findOne({uid}); //key and variable names are the same
-    if (!existingUser) {
-        const newUser = await User.create({uid});
-        return {existed: false, user: newUser};
-    } else if (!existingUser.username) {
-        return {existed: true, onboard: false, user: existingUser}
-    } else {
-        return {existed: true, onboard: true, user: existingUser}
-    }
+    const user = await User.findOneAndUpdate({uid},
+        {$setOnInsert: {uid}}, // if this uid does not exists, create
+        {new: true, runValidators: true, upsert: true}
+    )
+    const onboard = !!(user.username);
+    return {onboard, user};
 }
 
 const checkUsernameUniqueness = async (uid, username) => {
