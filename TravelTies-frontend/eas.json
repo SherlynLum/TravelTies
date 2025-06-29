@@ -3,9 +3,6 @@
     "version": ">= 16.7.0",
     "appVersionSource": "remote"
   },
-  "project": {
-    "default": "TravelTies-frontend"
-  },
   "build": {
     "development": {
       "developmentClient": true,
