@@ -44,7 +44,7 @@ const updateProfilePic = async (uid, profilePicKey) => {
 
 const getUsernamePic = async (uid) => {
     const profile = await User.findOne({uid}, {
-        _id: 0, username: 1, profilePicKey: 1 // explicitly exclude object id 
+        _id: 0, uid: 1, username: 1, profilePicKey: 1 // explicitly exclude object id 
     })
     return profile;
 }

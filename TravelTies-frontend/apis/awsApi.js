@@ -18,7 +18,27 @@ const getDisplayUrl = async (token, key) => {
     return backendRes.data.url;
 }
 
+const uploadPic = async (url, blob) => {
+    await axios.put(url, blob, {
+        headers: {
+            "Content-Type": "image/jpeg"
+        }
+    });
+}
+
+const deleteObj = async (token, key) => {
+    await axios.delete(
+        `${process.env.EXPO_PUBLIC_BACKEND_URL}/api/aws`, 
+        { 
+            data: { key },
+            headers: getHeaders(token)
+        }
+    )
+}
+
 export {
-    getDisplayUrl
+    getDisplayUrl,
+    uploadPic,
+    deleteObj
 }
 

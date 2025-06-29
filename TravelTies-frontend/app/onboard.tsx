@@ -299,7 +299,7 @@ const Onboard = () => {
                     contentStyle={{borderRadius: 10, backgroundColor: "white", elevation: 3}}>
                         <Menu.Item title="Take photo" onPress={() => pickProfilePic("camera")} />
                         <Divider />
-                        <Menu.Item title="Choose from Gallery" onPress={() => pickProfilePic("gallery")} />
+                        <Menu.Item title="Choose from gallery" onPress={() => pickProfilePic("gallery")} />
                     </Menu>
 
                     {/* username input */}

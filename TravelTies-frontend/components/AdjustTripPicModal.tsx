@@ -6,7 +6,6 @@ import { ImageManipulator, SaveFormat } from "expo-image-manipulator"
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
-import Svg, { Circle, Defs, Mask, Rect } from "react-native-svg";
 import Loading from './Loading';
 
 type AdjustPicModalProps = {
@@ -22,11 +21,12 @@ const AdjustPicModal : React.FC<AdjustPicModalProps> = ({isVisible, picUri, widt
     const [loading, setLoading] = useState(false);
 
     const screenWidth = Dimensions.get("window").width;
+    const cropHeight = screenWidth / 3;
 
     // find the max between width-based and height-based scaling to get the max possible square
     // this scale will be used to resize the image initially, before even applying animated style
     // get the width and height after scaling 
-    const initialScale = Math.max(screenWidth / width, screenWidth / height);
+    const initialScale = Math.max(screenWidth / width, cropHeight / height);
     const scaledWidth = width * initialScale;
     const scaledHeight = height * initialScale;
 
@@ -41,7 +41,7 @@ const AdjustPicModal : React.FC<AdjustPicModalProps> = ({isVisible, picUri, widt
     // initialPos should be based on the original pixel coordinate 
     // scaledWidth and scaledHeight are always bigger than or equals to screenWidth 
     const initialX = (screenWidth - scaledWidth) / 2;
-    const initialY = (screenWidth - scaledHeight) / 2;
+    const initialY = (cropHeight - scaledHeight) / 2;
 
     // initiate startPos and offsetPos with initialX and initialY
     const startPos = useSharedValue({x: initialX, y: initialY});
@@ -74,7 +74,7 @@ const AdjustPicModal : React.FC<AdjustPicModalProps> = ({isVisible, picUri, widt
         .onUpdate((e) => {
             // update offsetPos
             const offsetLowerBoundX = screenWidth - scaledWidth * offsetScale.value;
-            const offsetLowerBoundY = screenWidth - scaledHeight * offsetScale.value;
+            const offsetLowerBoundY = cropHeight - scaledHeight * offsetScale.value;
             offsetPos.value = { 
                 x: clamp(startPos.value.x + e.translationX, offsetLowerBoundX, 0),
                 y: clamp(startPos.value.y + e.translationY, offsetLowerBoundY, 0),
@@ -120,7 +120,7 @@ const AdjustPicModal : React.FC<AdjustPicModalProps> = ({isVisible, picUri, widt
                 .crop({
                     originX: cropPos.value.x,
                     originY: cropPos.value.y,
-                    height: screenWidth,
+                    height: cropHeight,
                     width: screenWidth
                 })
             const picRef = await picContext.renderAsync();
@@ -178,31 +178,12 @@ const AdjustPicModal : React.FC<AdjustPicModalProps> = ({isVisible, picUri, widt
                             ) : (
                                 // adjust profile picture 
                                 <View className="overflow-hidden" style={{width: screenWidth, 
-                                height: screenWidth}}>
+                                height: cropHeight}}>
                                     <GestureDetector gesture={Gesture.Simultaneous(panGesture, pinchGesture)}>
                                         <Animated.Image source={{uri: picUri}}
                                         style={[{width: scaledWidth, height: scaledHeight}, animatedStyle]}
                                         resizeMode="cover" />
                                     </GestureDetector> 
-
-                                    {/* circular mask */}
-                                    <Svg width={screenWidth} height={screenWidth} 
-                                    style={{position: "absolute", top: 0, left: 0}}>
-                                        <Defs>
-                                            <Mask id="mask">
-                                                {/* region outside circle should be blurred by the rect later so fill="white" to show through */}
-                                                <Rect width={screenWidth} height={screenWidth} fill="white" />
-
-                                                {/* region inside the circle should not be blurred by the rect later so fill="black" to hide*/}
-                                                <Circle cx={screenWidth / 2} cy={screenWidth / 2}
-                                                r={screenWidth / 2} fill="black" />
-                                            </Mask>
-                                        </Defs>
-
-                                        {/* blur the region outside circle */}
-                                        <Rect width={screenWidth} height={screenWidth} 
-                                        fill={"rgba(30, 30, 30, 0.4)"} mask="url(#mask)" />
-                                    </Svg>
                                 </View>
                             )
                         }

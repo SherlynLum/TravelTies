@@ -12,12 +12,14 @@ import { getDisplayUrl } from '@/apis/awsApi';
 import { Trip } from '@/types/trips';
 import ActiveTripCard from '@/components/activeTripCard';
 import Loading from '@/components/Loading';
+import { useRouter } from 'expo-router';
 
 const Home = () => {
   const {user, getUserIdToken} = useAuth();
   const [loading, setLoading] = useState(false);
   const [trips, setTrips] = useState<Trip[]>([]);
   const [hasError, setHasError] = useState(false);
+  const router = useRouter();
 
   const getProfilePicUrl = async (token: string, key: string) => {
     try {
@@ -28,6 +30,8 @@ const Home = () => {
         return "Failed to load";
     }
   }
+  
+  /* for testing:
   useEffect(() => {
     const activeTrips = [{_id: "abc", name: "Japan trip", noOfParticipants: 1}, 
     {_id: "efg", name: "Korea trip", startDate: "2025-09-18", endDate: "2025-09-23", 
@@ -36,8 +40,9 @@ const Home = () => {
     
     setTrips(activeTrips)
   }, []);
+  */
 
-/*
+/**/ 
   useEffect(() => {
     const getTrips = async () => {
       try {
@@ -69,7 +74,8 @@ const Home = () => {
     }
     getTrips();
   }, [])
-*/
+/**/
+
   return (
     <SafeAreaView className="flex-1 bg-white">
       <View className="flex flex-col px-5 pt-1 pb-2 gap-5">
@@ -81,7 +87,7 @@ const Home = () => {
 
           <View className="flex flex-row gap-7 justify-center items-center">
             {/* add trip button */}
-            <TouchableOpacity hitSlop={10}>
+            <TouchableOpacity onPress={() => router.push("/trips/addTrip")} hitSlop={10}>
               <Ionicons name="add-circle" size={30} color="#3B82F6" />
             </TouchableOpacity>
 

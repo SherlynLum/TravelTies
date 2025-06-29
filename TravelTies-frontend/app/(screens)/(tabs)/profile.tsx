@@ -8,7 +8,7 @@ const Profile = () => {
     await logout();
   }
   return (
-    <View>
+    <View className='flex-1 items-center justify-center'>
       <Text>Profile</Text>
       <Pressable onPress={handleLogout}>
         <Text>Sign out</Text>
