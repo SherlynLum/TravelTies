@@ -6,7 +6,6 @@ const signUpOrSignIn = async (uid) => {
         {$setOnInsert: {uid}}, // if this uid does not exists, create
         {new: true, runValidators: true, upsert: true}
     )
-    console.log(user)
     const onboard = !!(user.username);
     return {onboard, user};
 }

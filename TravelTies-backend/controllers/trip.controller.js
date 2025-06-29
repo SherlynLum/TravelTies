@@ -27,9 +27,8 @@ const getTripProfilePicUrl = async (req, res) => {
 }
 
 const createTripController = async (req, res) => {
-    // const uid = req.user.uid;
-    // for testing without middleware: 
-    const uid = req.body.uid;
+    const uid = req.user.uid;
+    // for testing without middleware: const uid = req.body.uid;
     if (!uid) {
         return res.status(400).json({message: "Missing creator uid"});
     }
