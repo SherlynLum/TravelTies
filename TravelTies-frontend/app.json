@@ -11,7 +11,7 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.travelties.travelties",
-      "googleServicesFile": "./ios/TravelTies/GoogleService-Info.plist",
+      "googleServicesFile": "./GoogleService-Info.plist",
       "infoPlist": {
         "NSCameraUsageDescription": "TravelTies need access to your camera to take profile pictures",
         "NSPhotoLibraryUsageDescription": "TravelTies need access to your photo library to select photos"
@@ -23,8 +23,7 @@
         "backgroundColor": "#ffffff"
       },
       "edgeToEdgeEnabled": true,
-      "package": "com.travelties.travelties",
-      "googleServicesFile": "./android/app/google-services.json"
+      "package": "com.travelties.travelties"
     },
     "web": {
       "bundler": "metro",
