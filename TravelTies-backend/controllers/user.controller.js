@@ -13,13 +13,7 @@ const syncUser = async (req, res) => {
 
     try {
         const response = await signUpOrSignIn(uid);
-        if (!response.existed) { // new user
-            return res.status(201).json({onboard: false, data: response.user})
-        } else if (!response.onboard) { // existing user with no username, need direct to onboarding
-            return res.status(200).json({onboard: false, data: response.user})
-        } else { // existing user with username, direct to home screen
-        return res.status(200).json({onboard: true, data: response.user});
-        }
+        return res.status(200).json({onboard: response.onboard, data: response.user});
     } catch (e) {
         return res.status(500).json({message: e.message});
     }
