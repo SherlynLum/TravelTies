@@ -38,9 +38,6 @@ yarn-error.*
 
 app-example
 
-# Firebase config
-firebaseConfig.ts
-
 # env file 
 .env
 

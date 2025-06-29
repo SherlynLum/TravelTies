@@ -57,6 +57,8 @@ const AddTrip = () => {
     const [noOfDays, setNoOfDays] = useState("");
     const [isTyping, setIsTyping] = useState(false);
     const [noOfNights, setNoOfNights] = useState<number | null>(null);
+    const [dayStr, setDayStr] = useState("Days");
+    const [nightStr, setNightStr] = useState("Nights");
 
     const screenWidth = Dimensions.get("window").width;
     const imageWidth = screenWidth - 18 - 18; // 18 horixontal padding on each side
@@ -83,6 +85,7 @@ const AddTrip = () => {
                 if (!profile) {
                     throw new Error("Failed to load profile of current user")
                 }
+                console.log(profile);
                 const creator = {participantUid: profile.uid, role: "creator"};
                 setTripParticipants([creator]);
                 if (profile.profilePicKey) {
@@ -254,8 +257,15 @@ const AddTrip = () => {
         }
 
         if (noOfDays) {
-            const nights = Number(noOfDays) - 1;
+            const days = Number(noOfDays)
+            const nights = days - 1;
             setNoOfNights(nights)
+            if (days <= 1) {
+                setDayStr("Day");
+            }
+            if (nights <= 1) {
+                setNightStr("Night");
+            }
         } else {
             setNoOfNights(null);
         }
@@ -277,6 +287,7 @@ const AddTrip = () => {
             router.replace("/tripsDashboard");
         } catch (e) {
             console.log(e);
+            console.log("Axios error:", isAxiosError(e) && e.response?.data)
             if (isAxiosError(e) && e.response?.data?.datesErr) {
                 Alert.alert("Failed to create trip", e.response.data.message);
             }
@@ -304,14 +315,8 @@ const AddTrip = () => {
             const diffInMs = endDate.getTime() - startDate.getTime();
             const days = Math.round(diffInMs / (1000 * 60 * 60 * 24)) + 1;
             if (Number(noOfDays) !== days) {
-                Alert.alert("Caution", 
-                "The number of days does not match the selected start and end dates. Do you still want to proceed?",
-                [{
-                    text: "Cancel"
-                }, {
-                    text: "Proceed",
-                    onPress:() => createATrip()
-                }]);
+                Alert.alert("Failed to create trip", 
+                "The number of days does not match the selected start and end dates")
                 return;
             }
         }
@@ -440,7 +445,7 @@ const AddTrip = () => {
                                 </Text>
                             </Pressable>
                             <Pressable hitSlop={14} onPress={() => {
-                                setStartDate(tempStartDate);
+                                setStartDate(tempStartDate || new Date()); // if onChange is not fired then the date picker actually shows the default date which is today, so fallback to today's date
                                 setStartPickerOpen(false)
                             }}>
                                 <Text className="text-green-700 font-medium text-base">
@@ -472,8 +477,8 @@ const AddTrip = () => {
                         </Text>
                     </TouchableOpacity>
                     <Pressable hitSlop={14} onPress={() => {
-                            setTempStartDate(null);
-                            setStartDate(null)
+                            setTempEndDate(null);
+                            setEndDate(null)
                         }}>
                            <Entypo name="circle-with-cross" size={28} 
                            color={endDate ? "red" : "gray"}/>
@@ -502,8 +507,8 @@ const AddTrip = () => {
                                 </Text>
                             </Pressable>
                             <Pressable hitSlop={14} onPress={() => {
-                                setEndDate(tempEndDate);
-                                setEndPickerOpen(false)
+                                setEndDate(tempEndDate || new Date());
+                                setEndPickerOpen(false);
                             }}>
                                 <Text className="text-green-700 font-medium text-base">
                                     Save
@@ -539,15 +544,15 @@ const AddTrip = () => {
                         />
                     </View>
                     <Text className="text-black font-medium text-base">
-                        Days
+                        {dayStr}
                     </Text>
-                { noOfNights && (
+                { noOfNights !== null && (
                     <View className="flex flex-row gap-4">
                         <Text className="text-black font-medium text-base">
                             {noOfNights}
                         </Text>
                         <Text className="text-black font-medium text-base">
-                            Nights
+                            {nightStr}
                         </Text>
                     </View>
                 )}

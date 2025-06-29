@@ -15,37 +15,34 @@ const DisplayPicModal : React.FC<AdjustPicModalProps> = ({isVisible, picUri, clo
     const screenWidth = Dimensions.get("window").width;
 
   return (
-    <View className="flex-1">
-        <StatusBar 
-                translucent
-                backgroundColor="transparent"
-                style="dark"
-        />
-        <Modal visible={isVisible} animationType="slide">
-            <View className="absolute top-0 bottom-0 left-0 right-0 bg-black">
-                <SafeAreaView className="flex-1">
-                    {/* header */}
-                    <View style={{paddingHorizontal: wp(3), height: 56, width: "100%"}}
-                    className="flex-row items-center justify-center">
-                        <Pressable onPress={closeModal} hitSlop={10}
-                        style={{position: "absolute", left: wp(3)}}>
-                            <Ionicons name="chevron-back-outline" size={24} color="white" />
-                        </Pressable>
+    <Modal visible={isVisible} animationType="slide">
+        <SafeAreaView className="flex-1 bg-black">
+            <StatusBar 
+                    translucent
+                    backgroundColor="transparent"
+                    style="light"
+            />
 
-                        <Text style={{fontSize: hp(1.8)}} className="font-medium text-white">
-                            Profile picture
-                        </Text>
-                    </View>
+            {/* header */}
+            <View style={{paddingHorizontal: wp(3), height: 56, width: "100%"}}
+            className="flex-row items-center justify-center">
+                <Pressable onPress={closeModal} hitSlop={10}
+                style={{position: "absolute", left: wp(3)}}>
+                    <Ionicons name="chevron-back-outline" size={24} color="white" />
+                </Pressable>
 
-                    <View className="flex-1 justify-center items-center">
-                        <Image source={picUri ? ({uri: picUri}) : 
-                        require("../assets/images/default-user-profile-pic.png")} 
-                        style={{width: screenWidth, height: screenWidth}} />
-                    </View>
-                </SafeAreaView>
+                <Text style={{fontSize: hp(1.8)}} className="font-medium text-white">
+                    Profile picture
+                </Text>
             </View>
-        </Modal>
-    </View>
+
+            <View className="flex-1 justify-center items-center">
+                <Image source={picUri ? ({uri: picUri}) : 
+                require("../assets/images/default-user-profile-pic.png")} 
+                style={{width: screenWidth, height: screenWidth}} />
+            </View>
+        </SafeAreaView>
+    </Modal>
   )
 }
 

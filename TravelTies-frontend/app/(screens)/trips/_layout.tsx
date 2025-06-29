@@ -21,7 +21,7 @@ export default function Layout() {
                         fontWeight: "bold"
                     },
                     headerLeft: () => (
-                        <Pressable onPress={() => router.back()} hitSlop={14}>
+                        <Pressable onPress={() => router.back()} hitSlop={14} className="pr-5">
                             <Text className="font-semibold text-white text-base">
                                 Cancel
                             </Text>

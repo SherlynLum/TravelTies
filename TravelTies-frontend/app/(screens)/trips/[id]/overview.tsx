@@ -1,4 +1,4 @@
-import { Alert, ScrollView, Text, View, Image, Dimensions, ImageBackground} from 'react-native'
+import { Alert, ScrollView, Text, View, Image, Dimensions, ImageBackground, TouchableOpacity} from 'react-native'
 import React, { useEffect, useState } from 'react'
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Link, useLocalSearchParams, useRouter } from 'expo-router';
@@ -186,58 +186,58 @@ const Overview = () => {
 
                     <View className="flex-1 flex-row justify-between items-center shadow-sm px-5">
                         <Link href={`./itinerary`} asChild>
-                            <View className="rounded-[10px] h-[100px] items-center justify-center" 
+                            <TouchableOpacity className="rounded-[10px] h-[100px] items-center justify-center" 
                             style={{backgroundColor: "#CCE4F6", width: wp(37)}}>
                                 <Text className="text-lg font-semibold">
                                     Itinerary
                                 </Text>
-                            </View>
+                            </TouchableOpacity>
                         </Link>
                         <Link href={`./polls`} asChild>
-                            <View className="rounded-[10px] h-[100px] items-center justify-center" 
+                            <TouchableOpacity className="rounded-[10px] h-[100px] items-center justify-center" 
                             style={{backgroundColor: "#CDE5DC", width: wp(37)}}>
                                 <Text className="text-lg font-semibold">
                                     Polls
                                 </Text>
-                            </View>
+                            </TouchableOpacity>
                         </Link>
                     </View>
 
                     <View className="flex-1 flex-row justify-between items-center shadow-sm px-5">
                         <Link href={`./checklists`} asChild>
-                            <View className="rounded-[10px] h-[100px] items-center justify-center" 
+                            <TouchableOpacity className="rounded-[10px] h-[100px] items-center justify-center" 
                             style={{backgroundColor: "#C9EBCB", width: wp(37)}}>
                                 <Text className="text-lg font-semibold">
                                     Checklists
                                 </Text>
-                            </View>
+                            </TouchableOpacity>
                         </Link>
                         <Link href={`./expenseTracker`} asChild>
-                            <View className="rounded-[10px] h-[100px] items-center justify-center" 
+                            <TouchableOpacity className="rounded-[10px] h-[100px] items-center justify-center" 
                             style={{backgroundColor: "#FFE6B3", width: wp(37)}}>
                                 <Text className="text-lg font-semibold">
                                     Expense tracker
                                 </Text>
-                            </View>
+                            </TouchableOpacity>
                         </Link>
                     </View>
 
                     <View className="flex-1 flex-row justify-between items-center shadow-sm px-5">
                         <Link href={`./gallery`} asChild>
-                            <View className="rounded-[10px] h-[100px] items-center justify-center" 
+                            <TouchableOpacity className="rounded-[10px] h-[100px] items-center justify-center" 
                             style={{backgroundColor: "#FCD8C4", width: wp(37)}}>
                                 <Text className="text-lg font-semibold">
                                     Gallery
                                 </Text>
-                            </View>
+                            </TouchableOpacity>
                         </Link>
                         <Link href={`./recommendations`} asChild>
-                            <View className="rounded-[10px] h-[100px] items-center justify-center" 
+                            <TouchableOpacity className="rounded-[10px] h-[100px] items-center justify-center" 
                             style={{backgroundColor: "#F4C7D9", width: wp(37)}}>
                                 <Text className="text-lg font-semibold">
                                     Recommendations
                                 </Text>
-                            </View>
+                            </TouchableOpacity>
                         </Link>
                 </View>
                 </View>

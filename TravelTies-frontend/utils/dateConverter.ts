@@ -3,7 +3,7 @@ const toFloatingDate = (date: Date) => {
     // getMonth returns zero-based month index
     // padStart to ensure at least two characters, if shorter, pads "0" to the left
     const month = (date.getMonth() + 1).toString().padStart(2, "0");
-    const day = date.getDate.toString().padStart(2, "0")
+    const day = date.getDate().toString().padStart(2, "0")
     return `${year}-${month}-${day}`;
 }
 

@@ -14,7 +14,9 @@ const MainLayout = () => {
     if (isAuthenticated === null) {
       return;
     } 
+
     const currentPosition = segments[0];
+    console.log(hasOnboarded);
     if (!isAuthenticated && currentPosition !== "signIn" && currentPosition !== "signUp") {
       // redirect to signIn
       router.replace("/signIn");

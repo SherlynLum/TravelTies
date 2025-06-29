@@ -12,9 +12,10 @@ import axios, { isAxiosError } from "axios";
 import { useAuth } from '@/context/authContext.js';
 import { Divider, Menu } from 'react-native-paper';
 import Entypo from "@expo/vector-icons/Entypo";
+import { useRouter } from 'expo-router'
 
 const Onboard = () => {
-    const {user, setHasOnboarded, getUserIdToken} = useAuth();
+    const {user, setHasOnboarded, getUserIdToken, logout} = useAuth();
     const [menuOpen, setMenuOpen] = useState(false);
     const [picUri, setPicUri] = useState("");
     const [picWidth, setPicWidth] = useState(0);
@@ -29,6 +30,7 @@ const Onboard = () => {
     const [updatePicSuccess, setUpdatePicSuccess] = useState(false);
     const [usernameErr, setUsernameErr] = useState("");
     const usernameRef = useRef("");
+    const router = useRouter();
 
     // pick profile pic
     const pickProfilePic = async (source: "camera" | "gallery") => {
@@ -98,11 +100,15 @@ const Onboard = () => {
             });
 
             setUploadSuccess(true);
-            if (picKey) { // if there is a previous pic key, store the previous pic key into old pic key to be deleted later from AWS
-                setOldPicKey(picKey);
+            const oldKey = picKey;
+            if (oldKey) { // if there is a previous pic key, store the previous pic key into old pic key to be deleted later from AWS
+                setOldPicKey(oldKey);
+                setPicKey(key);
+                return {key, oldKey};
             }
+
             setPicKey(key);
-            return true; // for checking this time upload success or not 
+            return {key}; // for checking this time upload success or not 
         } catch (e) {
             if (isAxiosError(e)) { // deal with axios request errors 
                 // if error comes from get presigned url, there will be a message field in res
@@ -112,40 +118,41 @@ const Onboard = () => {
                 console.log("Failed to fetch or convert pic: ", e);
             }
             Alert.alert("Failed to upload profile picture");
-            return false; // for checking this time upload success or not 
+            return; // for checking this time upload success or not 
         }
     }
 
     const validateUsername = () => {
         if (/\s/.test(usernameRef.current)) {
             setUsernameErr("Username cannot contain space(s)");
-            return;
+            return {valid: false};
         }
         if (usernameRef.current.length < 3) {
             setUsernameErr("Username is too short");
-            return;
+            return {valid: false};
         }
         if (usernameRef.current.length > 20) {
             setUsernameErr("Username is too long");
-            return;
+            return {valid: false};
         }
         if (!/^[a-zA-Z0-9_]*$/.test(usernameRef.current)) {
             setUsernameErr("Username contains invalid character(s)");
-            return;
+            return {valid: false};
         }
         setUsernameErr(""); // clear username error if valid
+        return {valid: true};
     }
 
-    const updatePicToDb = async (token: string) => {
+    const updatePicToDb = async (token: string, key: string, oldKey?: string) => {
         try {
-            if (!picKey) {
+            if (!key) {
                 throw new Error("Missing AWS S3 key for profile picture")
             }
 
             // update profile pic key to db if user upload profile pic
             const picRes = await axios.patch(
                 `${process.env.EXPO_PUBLIC_BACKEND_URL}/api/user/profile-pic`, 
-                { profilePicKey: picKey },
+                { profilePicKey: key },
                 { 
                     headers: {
                         "Content-Type": "application/json",
@@ -157,11 +164,11 @@ const Onboard = () => {
                 throw new Error("Failed to update profile picture key to database");
             }
 
-            if (oldPicKey) { // if there is old pic key, remove the object from aws
+            if (oldKey) { // if there is old pic key, remove the object from aws
                 await axios.delete(
                     `${process.env.EXPO_PUBLIC_BACKEND_URL}/api/aws`, 
                     { 
-                        data: { key: oldPicKey },
+                        data: { key: oldKey },
                         headers: {
                             "Content-Type": "application/json",
                             "Authorization": `Bearer ${token}`
@@ -215,8 +222,10 @@ const Onboard = () => {
             Alert.alert('Sign in', 'Please fill in username');
             return;
         }
-        validateUsername(); // check username one more time in case user never on blur
-        if (usernameErr) {
+
+        const validateRes = validateUsername(); // check username one more time in case user never on blur
+
+        if (!validateRes.valid) {
             setLoading(false); // early exit if username is not valid
             return;
         }
@@ -231,24 +240,40 @@ const Onboard = () => {
                     setLoading(false);
                     return; // early exit if fail to upload profile picture
                 }
-            } else if (uploadSuccess && !updatePicSuccess) { // if uploaded successfully but haven't updated pic key to db successfully yet
-                const updatePicRes = await updatePicToDb(token);
+                const updatePicRes = await updatePicToDb(token, uploadRes.key, uploadRes.oldKey);
+                if (!updatePicRes) {
+                    setLoading(false);
+                    return; // early exit if fail to update new pic key to database
+                }
+            } 
+
+            if (uploadSuccess && !updatePicSuccess) { // if haven't updated pic key to db successfully yet
+                const updatePicRes = await updatePicToDb(token, picKey, oldPicKey);
                 if (!updatePicRes) {
                     setLoading(false);
                     return; // early exit if fail to update new pic key to database
                 }
             }
-        } else {
-            const updateUsernameRes = await updateUsernameToDb(token);
-            if (!updateUsernameRes) {
-                setLoading(false);
-                return; // exit if fail to update username to database
-            }
+        }
+
+        const updateUsernameRes = await updateUsernameToDb(token);
+        if (!updateUsernameRes) {
+            setLoading(false);
+            return; // exit if fail to update username to database
         }
 
         setHasOnboarded(true) // if reach here, means everything is successful, onboard is thus complete now 
         setLoading(false);
     }
+
+    const handleBackToSignIn = async () => {
+        const logOutRes = await logout();
+        if (!logOutRes.success) {
+          Alert.alert("Back to Sign in failed", logOutRes.message);
+        } else {
+          router.replace("/signIn");
+        }
+      }
    
   return (
     <ImageBackground
@@ -264,7 +289,7 @@ const Onboard = () => {
     <SafeAreaView className="flex-1">
         <CustomKeyboardView>
              <View style={{paddingHorizontal: wp(4.07), paddingTop: hp(1.88)}}
-            className="flex-1 gap-12 bg-transparent items-center">
+            className="flex-1 gap-9 bg-transparent items-center">
                 <View style={{top: hp(5.5), width: wp(75.8), height: hp(13.7)}}
                 className="bg-transparent justify-center items-center">
                     <Image source={require("../assets/images/plane-pic.png")} className="absolute"
@@ -275,7 +300,7 @@ const Onboard = () => {
                     </Text> 
                 </View> 
 
-                <View style={{top: hp(5), width: wp(88), height: hp(59), paddingHorizontal: wp(2.5),
+                <View style={{top: hp(5), width: wp(88), height: hp(65), paddingHorizontal: wp(2.5),
                 paddingTop: hp(2.5), paddingBottom: hp(4), borderRadius: 30}}
                 className="flex flex-col justify-center items-center gap-7 bg-white">
 
@@ -369,7 +394,16 @@ const Onboard = () => {
                             )
                         }
                     </View>
-                </View>
+
+                    {/* return to sign up page */}
+                    <View className="items-center justify-center">
+                        <Pressable onPress={handleBackToSignIn} style={{minWidth: 30, minHeight: 30}}>
+                            <Text style={{fontSize: hp(1.5)}} className="font-bold text-gray-500">
+                            Back to Sign in
+                            </Text>
+                        </Pressable>
+                    </View>
+            </View>
             </View>
 
             <DisplayPicModal isVisible={displayModalOpen} picUri={croppedPicUri} 

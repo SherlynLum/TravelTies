@@ -83,7 +83,7 @@ const ForgotPassword = () => {
             </Text> 
           </View> 
             
-          <View style={{top: hp(5), width: wp(88), height: hp(57), paddingHorizontal: wp(2.5),
+          <View style={{top: hp(5), width: wp(88), height: hp(58), paddingHorizontal: wp(2.5),
           borderRadius: 30}}
           className="flex flex-col items-center justify-center gap-6 bg-white">
             <View className="flex flex-col items-center justify-center gap-2">

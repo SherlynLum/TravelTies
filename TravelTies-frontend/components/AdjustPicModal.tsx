@@ -118,10 +118,10 @@ const AdjustPicModal : React.FC<AdjustPicModalProps> = ({isVisible, picUri, widt
             setLoading(true);
             const picContext = ImageManipulator.manipulate(picUri)
                 .crop({
-                    originX: cropPos.value.x,
-                    originY: cropPos.value.y,
-                    height: screenWidth,
-                    width: screenWidth
+                    originX: cropPos.value.x / initialScale, // undo initialScale to get x-coordinate relative to original image pixels
+                    originY: cropPos.value.y / initialScale, // undo initialScale to get y-coordinate relative to original image pixels
+                    height: screenWidth / (initialScale * offsetScale.value), // cropWidth in original image pixels
+                    width: screenWidth / (initialScale * offsetScale.value) // cropWidth in original image pixels
                 })
             const picRef = await picContext.renderAsync();
             const picRes = await picRef.saveAsync({
@@ -142,75 +142,71 @@ const AdjustPicModal : React.FC<AdjustPicModalProps> = ({isVisible, picUri, widt
     }
 
   return (
-    <View className="flex-1">
-        <StatusBar 
-                translucent
-                backgroundColor="transparent"
-                style="dark"
-        />
-        <Modal visible={isVisible} animationType="slide">
-            <View className="absolute top-0 bottom-0 left-0 right-0 bg-black">
-                <SafeAreaView className="flex-1">
-                    {/* header */}
-                    <View style={{paddingHorizontal: wp(3), height: 56, width: "100%"}}
-                    className="flex-row items-center justify-between">
-                        <Pressable onPress={closeModal} hitSlop={14}>
-                            <Text style={{fontSize: hp(1.8)}} className="font-medium text-white">
-                                Cancel 
-                            </Text>
-                        </Pressable>
+    <Modal visible={isVisible} animationType="slide">
+        <SafeAreaView className="flex-1 bg-black">
+            <StatusBar 
+                    translucent
+                    backgroundColor="transparent"
+                    style="light"
+            />
+            {/* header */}
+            <View style={{paddingHorizontal: wp(3), height: 56, width: "100%"}}
+            className="flex-row items-center justify-between">
+                <Pressable onPress={closeModal} hitSlop={14}>
+                    <Text style={{fontSize: hp(1.8)}} className="font-medium text-white">
+                        Cancel 
+                    </Text>
+                </Pressable>
 
-                        <Text style={{fontSize: hp(1.8)}} className="font-medium text-white">
-                            Adjust and scale
-                        </Text>
+                <Text style={{fontSize: hp(1.8)}} className="font-medium text-white">
+                    Adjust and scale
+                </Text>
 
-                        <Pressable onPress={cropPic} hitSlop={14}>
-                            <Text style={{fontSize: hp(1.8)}} className="font-medium text-white">
-                                Save
-                            </Text>
-                        </Pressable>
-                    </View>
-
-                    <View className="flex-1 justify-center items-center">
-                        {
-                            loading ? (
-                                <Loading size={hp(10)} />
-                            ) : (
-                                // adjust profile picture 
-                                <View className="overflow-hidden" style={{width: screenWidth, 
-                                height: screenWidth}}>
-                                    <GestureDetector gesture={Gesture.Simultaneous(panGesture, pinchGesture)}>
-                                        <Animated.Image source={{uri: picUri}}
-                                        style={[{width: scaledWidth, height: scaledHeight}, animatedStyle]}
-                                        resizeMode="cover" />
-                                    </GestureDetector> 
-
-                                    {/* circular mask */}
-                                    <Svg width={screenWidth} height={screenWidth} 
-                                    style={{position: "absolute", top: 0, left: 0}}>
-                                        <Defs>
-                                            <Mask id="mask">
-                                                {/* region outside circle should be blurred by the rect later so fill="white" to show through */}
-                                                <Rect width={screenWidth} height={screenWidth} fill="white" />
-
-                                                {/* region inside the circle should not be blurred by the rect later so fill="black" to hide*/}
-                                                <Circle cx={screenWidth / 2} cy={screenWidth / 2}
-                                                r={screenWidth / 2} fill="black" />
-                                            </Mask>
-                                        </Defs>
-
-                                        {/* blur the region outside circle */}
-                                        <Rect width={screenWidth} height={screenWidth} 
-                                        fill={"rgba(30, 30, 30, 0.4)"} mask="url(#mask)" />
-                                    </Svg>
-                                </View>
-                            )
-                        }
-                    </View>
-                </SafeAreaView>
+                <Pressable onPress={cropPic} hitSlop={14}>
+                    <Text style={{fontSize: hp(1.8)}} className="font-medium text-white">
+                        Save
+                    </Text>
+                </Pressable>
             </View>
-        </Modal>
-    </View>
+
+            <View className="flex-1 justify-center items-center">
+                {
+                    loading ? (
+                        <Loading size={hp(10)} />
+                    ) : (
+                        // adjust profile picture 
+                        <View className="overflow-hidden" style={{width: screenWidth, 
+                        height: screenWidth}}>
+                            <GestureDetector gesture={Gesture.Simultaneous(panGesture, pinchGesture)}>
+                                <Animated.Image source={{uri: picUri}}
+                                style={[{width: scaledWidth, height: scaledHeight}, animatedStyle]}
+                                resizeMode="cover" />
+                            </GestureDetector> 
+
+                            {/* circular mask */}
+                            <Svg width={screenWidth} height={screenWidth} 
+                            style={{position: "absolute", top: 0, left: 0}}>
+                                <Defs>
+                                    <Mask id="mask">
+                                        {/* region outside circle should be blurred by the rect later so fill="white" to show through */}
+                                        <Rect width={screenWidth} height={screenWidth} fill="white" />
+
+                                        {/* region inside the circle should not be blurred by the rect later so fill="black" to hide*/}
+                                        <Circle cx={screenWidth / 2} cy={screenWidth / 2}
+                                        r={screenWidth / 2} fill="black" />
+                                    </Mask>
+                                </Defs>
+
+                                {/* blur the region outside circle */}
+                                <Rect width={screenWidth} height={screenWidth} 
+                                fill={"rgba(30, 30, 30, 0.6)"} mask="url(#mask)" />
+                            </Svg>
+                        </View>
+                    )
+                }
+            </View>
+        </SafeAreaView>
+    </Modal>
   )
 }
 

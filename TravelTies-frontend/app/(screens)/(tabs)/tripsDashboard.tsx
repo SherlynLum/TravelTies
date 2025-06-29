@@ -92,7 +92,7 @@ const Home = () => {
             </TouchableOpacity>
 
             {/* open trips bin button */}
-            <TouchableOpacity hitSlop={10}>
+            <TouchableOpacity onPress={() => router.push("/trips/bin")} hitSlop={10}>
               <Feather name="trash-2" size={25} color="gray" />
             </TouchableOpacity>
           </View>
