@@ -23,7 +23,8 @@
         "backgroundColor": "#ffffff"
       },
       "edgeToEdgeEnabled": true,
-      "package": "com.travelties.travelties"
+      "package": "com.travelties.travelties",
+      "googleServicesFile": "./google-services.json"
     },
     "web": {
       "bundler": "metro",

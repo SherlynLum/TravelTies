@@ -12,6 +12,7 @@
       "distribution": "internal"
     },
     "production": {
+      "root": "TravelTies-frontend",
       "autoIncrement": true,
       "android": {
         "buildType": "apk"
