@@ -1,0 +1,17 @@
+.mainContainer{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    height: 100vh;
+    padding: 3vw;
+}
+
+@media (min-width: 768px) {
+    .mainContainer{
+        justify-content: flex-start;
+        height: 50vh;
+        padding: 5vw;
+    }
+}

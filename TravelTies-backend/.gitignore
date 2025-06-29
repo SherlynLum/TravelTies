@@ -1,0 +1,6 @@
+# Environment variables
+.env
+
+
+# Firebase Admin SDK credentials
+serviceAccountKey.json
