@@ -9,26 +9,26 @@
 /* Begin PBXBuildFile section */
 		13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB51A68108700A75B9A /* Images.xcassets */; };
 		3E461D99554A48A4959DE609 /* SplashScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = AA286B85B6C04FC6940260E9 /* SplashScreen.storyboard */; };
-		708F4CCA5E79788E5CB223C7 /* ExpoModulesProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 22DEFE49FB6DAF6671B07102 /* ExpoModulesProvider.swift */; };
-		B32295EC0023485DBB90BC0E /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 7BDFC39260B34F40A09023EA /* GoogleService-Info.plist */; };
-		BA4D3AACDF1F47B4FFD96796 /* libPods-TravelTies.a in Frameworks */ = {isa = PBXBuildFile; fileRef = ECD7836F793C5F8138D61644 /* libPods-TravelTies.a */; };
+		47FA631DAC69DD79734E28A5 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 10B28F365FFA4C9CBB578511 /* PrivacyInfo.xcprivacy */; };
+		8700E17217454B88829ED963 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 02F5FD5F3EFA43519D58E9CA /* GoogleService-Info.plist */; };
 		BB2F792D24A3F905000567C9 /* Expo.plist in Resources */ = {isa = PBXBuildFile; fileRef = BB2F792C24A3F905000567C9 /* Expo.plist */; };
-		CF0D778822AE3F1B67F0369A /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 2BFB67AAC474320FE9A03A9F /* PrivacyInfo.xcprivacy */; };
+		D3F70DD3FB915F14F4E5C107 /* libPods-TravelTies.a in Frameworks */ = {isa = PBXBuildFile; fileRef = AE575B61B2002A1053F0062E /* libPods-TravelTies.a */; };
 		F11748422D0307B40044C1D9 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = F11748412D0307B40044C1D9 /* AppDelegate.swift */; };
+		F65C1BA204D15C60F04CAE10 /* ExpoModulesProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = E352292932CE288DCE9FAC28 /* ExpoModulesProvider.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		02F5FD5F3EFA43519D58E9CA /* GoogleService-Info.plist */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 4; includeInIndex = 0; lastKnownFileType = text.plist.xml; name = "GoogleService-Info.plist"; path = "TravelTies/GoogleService-Info.plist"; sourceTree = "<group>"; };
+		10B28F365FFA4C9CBB578511 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; includeInIndex = 1; name = PrivacyInfo.xcprivacy; path = TravelTies/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		13B07F961A680F5B00A75B9A /* TravelTies.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = TravelTies.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		13B07FB51A68108700A75B9A /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Images.xcassets; path = TravelTies/Images.xcassets; sourceTree = "<group>"; };
 		13B07FB61A68108700A75B9A /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = TravelTies/Info.plist; sourceTree = "<group>"; };
-		22DEFE49FB6DAF6671B07102 /* ExpoModulesProvider.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ExpoModulesProvider.swift; path = "Pods/Target Support Files/Pods-TravelTies/ExpoModulesProvider.swift"; sourceTree = "<group>"; };
-		2BFB67AAC474320FE9A03A9F /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; includeInIndex = 1; name = PrivacyInfo.xcprivacy; path = TravelTies/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
-		6CBC841FE1729B9C0DFEA424 /* Pods-TravelTies.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-TravelTies.debug.xcconfig"; path = "Target Support Files/Pods-TravelTies/Pods-TravelTies.debug.xcconfig"; sourceTree = "<group>"; };
-		7BDFC39260B34F40A09023EA /* GoogleService-Info.plist */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 4; includeInIndex = 0; lastKnownFileType = text.plist.xml; name = "GoogleService-Info.plist"; path = "TravelTies/GoogleService-Info.plist"; sourceTree = "<group>"; };
-		A530219A30748008409A019C /* Pods-TravelTies.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-TravelTies.release.xcconfig"; path = "Target Support Files/Pods-TravelTies/Pods-TravelTies.release.xcconfig"; sourceTree = "<group>"; };
+		A42CD3562FDE6F63B054818D /* Pods-TravelTies.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-TravelTies.release.xcconfig"; path = "Target Support Files/Pods-TravelTies/Pods-TravelTies.release.xcconfig"; sourceTree = "<group>"; };
 		AA286B85B6C04FC6940260E9 /* SplashScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = SplashScreen.storyboard; path = TravelTies/SplashScreen.storyboard; sourceTree = "<group>"; };
+		AE575B61B2002A1053F0062E /* libPods-TravelTies.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-TravelTies.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		BB2F792C24A3F905000567C9 /* Expo.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Expo.plist; sourceTree = "<group>"; };
-		ECD7836F793C5F8138D61644 /* libPods-TravelTies.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-TravelTies.a"; sourceTree = BUILT_PRODUCTS_DIR; };
+		D015E9980D0E063194006884 /* Pods-TravelTies.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-TravelTies.debug.xcconfig"; path = "Target Support Files/Pods-TravelTies/Pods-TravelTies.debug.xcconfig"; sourceTree = "<group>"; };
+		E352292932CE288DCE9FAC28 /* ExpoModulesProvider.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = ExpoModulesProvider.swift; path = "Pods/Target Support Files/Pods-TravelTies/ExpoModulesProvider.swift"; sourceTree = "<group>"; };
 		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
 		F11748412D0307B40044C1D9 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AppDelegate.swift; path = TravelTies/AppDelegate.swift; sourceTree = "<group>"; };
 		F11748442D0722820044C1D9 /* TravelTies-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = "TravelTies-Bridging-Header.h"; path = "TravelTies/TravelTies-Bridging-Header.h"; sourceTree = "<group>"; };
@@ -39,13 +39,31 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				BA4D3AACDF1F47B4FFD96796 /* libPods-TravelTies.a in Frameworks */,
+				D3F70DD3FB915F14F4E5C107 /* libPods-TravelTies.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		08003200D5FB1C6FFB961A50 /* TravelTies */ = {
+			isa = PBXGroup;
+			children = (
+				E352292932CE288DCE9FAC28 /* ExpoModulesProvider.swift */,
+			);
+			name = TravelTies;
+			sourceTree = "<group>";
+		};
+		1023D6A717CA5F7D2E630744 /* Pods */ = {
+			isa = PBXGroup;
+			children = (
+				D015E9980D0E063194006884 /* Pods-TravelTies.debug.xcconfig */,
+				A42CD3562FDE6F63B054818D /* Pods-TravelTies.release.xcconfig */,
+			);
+			name = Pods;
+			path = Pods;
+			sourceTree = "<group>";
+		};
 		13B07FAE1A68108700A75B9A /* TravelTies */ = {
 			isa = PBXGroup;
 			children = (
@@ -55,8 +73,8 @@
 				13B07FB51A68108700A75B9A /* Images.xcassets */,
 				13B07FB61A68108700A75B9A /* Info.plist */,
 				AA286B85B6C04FC6940260E9 /* SplashScreen.storyboard */,
-				2BFB67AAC474320FE9A03A9F /* PrivacyInfo.xcprivacy */,
-				7BDFC39260B34F40A09023EA /* GoogleService-Info.plist */,
+				02F5FD5F3EFA43519D58E9CA /* GoogleService-Info.plist */,
+				10B28F365FFA4C9CBB578511 /* PrivacyInfo.xcprivacy */,
 			);
 			name = TravelTies;
 			sourceTree = "<group>";
@@ -65,9 +83,17 @@
 			isa = PBXGroup;
 			children = (
 				ED297162215061F000B7C4FE /* JavaScriptCore.framework */,
-				ECD7836F793C5F8138D61644 /* libPods-TravelTies.a */,
+				AE575B61B2002A1053F0062E /* libPods-TravelTies.a */,
 			);
 			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		3ED84DF847922FF2CEFFFB63 /* ExpoModulesProviders */ = {
+			isa = PBXGroup;
+			children = (
+				08003200D5FB1C6FFB961A50 /* TravelTies */,
+			);
+			name = ExpoModulesProviders;
 			sourceTree = "<group>";
 		};
 		832341AE1AAA6A7D00B99B32 /* Libraries */ = {
@@ -84,8 +110,8 @@
 				832341AE1AAA6A7D00B99B32 /* Libraries */,
 				83CBBA001A601CBA00E9B192 /* Products */,
 				2D16E6871FA4F8E400B85C8A /* Frameworks */,
-				A4D8A820B1ABF1EE4D017F9E /* Pods */,
-				E189800ED41EE502D6ADDBB3 /* ExpoModulesProviders */,
+				1023D6A717CA5F7D2E630744 /* Pods */,
+				3ED84DF847922FF2CEFFFB63 /* ExpoModulesProviders */,
 			);
 			indentWidth = 2;
 			sourceTree = "<group>";
@@ -100,16 +126,6 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
-		A4D8A820B1ABF1EE4D017F9E /* Pods */ = {
-			isa = PBXGroup;
-			children = (
-				6CBC841FE1729B9C0DFEA424 /* Pods-TravelTies.debug.xcconfig */,
-				A530219A30748008409A019C /* Pods-TravelTies.release.xcconfig */,
-			);
-			name = Pods;
-			path = Pods;
-			sourceTree = "<group>";
-		};
 		BB2F792B24A3F905000567C9 /* Supporting */ = {
 			isa = PBXGroup;
 			children = (
@@ -117,22 +133,6 @@
 			);
 			name = Supporting;
 			path = TravelTies/Supporting;
-			sourceTree = "<group>";
-		};
-		D51D06892D7E3FAFBE29156C /* TravelTies */ = {
-			isa = PBXGroup;
-			children = (
-				22DEFE49FB6DAF6671B07102 /* ExpoModulesProvider.swift */,
-			);
-			name = TravelTies;
-			sourceTree = "<group>";
-		};
-		E189800ED41EE502D6ADDBB3 /* ExpoModulesProviders */ = {
-			isa = PBXGroup;
-			children = (
-				D51D06892D7E3FAFBE29156C /* TravelTies */,
-			);
-			name = ExpoModulesProviders;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -143,13 +143,13 @@
 			buildConfigurationList = 13B07F931A680F5B00A75B9A /* Build configuration list for PBXNativeTarget "TravelTies" */;
 			buildPhases = (
 				08A4A3CD28434E44B6B9DE2E /* [CP] Check Pods Manifest.lock */,
-				186275CAFD89E4DBB4111B14 /* [Expo] Configure project */,
+				A78F73ED660215127D420571 /* [Expo] Configure project */,
 				13B07F871A680F5B00A75B9A /* Sources */,
 				13B07F8C1A680F5B00A75B9A /* Frameworks */,
 				13B07F8E1A680F5B00A75B9A /* Resources */,
 				00DD1BFF1BD5951E006B06BC /* Bundle React Native code and images */,
 				800E24972A6A228C8D4807E9 /* [CP] Copy Pods Resources */,
-				E84935C7434BAFDBB96FB248 /* [CP] Embed Pods Frameworks */,
+				68E76667EAEA43BA16846101 /* [CP] Embed Pods Frameworks */,
 			);
 			buildRules = (
 			);
@@ -199,8 +199,8 @@
 				BB2F792D24A3F905000567C9 /* Expo.plist in Resources */,
 				13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */,
 				3E461D99554A48A4959DE609 /* SplashScreen.storyboard in Resources */,
-				CF0D778822AE3F1B67F0369A /* PrivacyInfo.xcprivacy in Resources */,
-				B32295EC0023485DBB90BC0E /* GoogleService-Info.plist in Resources */,
+				8700E17217454B88829ED963 /* GoogleService-Info.plist in Resources */,
+				47FA631DAC69DD79734E28A5 /* PrivacyInfo.xcprivacy in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -244,24 +244,23 @@
 			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
 			showEnvVarsInLog = 0;
 		};
-		186275CAFD89E4DBB4111B14 /* [Expo] Configure project */ = {
+		68E76667EAEA43BA16846101 /* [CP] Embed Pods Frameworks */ = {
 			isa = PBXShellScriptBuildPhase;
-			alwaysOutOfDate = 1;
 			buildActionMask = 2147483647;
 			files = (
 			);
-			inputFileListPaths = (
-			);
 			inputPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-TravelTies/Pods-TravelTies-frameworks.sh",
+				"${PODS_XCFRAMEWORKS_BUILD_DIR}/hermes-engine/Pre-built/hermes.framework/hermes",
 			);
-			name = "[Expo] Configure project";
-			outputFileListPaths = (
-			);
+			name = "[CP] Embed Pods Frameworks";
 			outputPaths = (
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/hermes.framework",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "# This script configures Expo modules and generates the modules provider file.\nbash -l -c \"./Pods/Target\\ Support\\ Files/Pods-TravelTies/expo-configure-project.sh\"\n";
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-TravelTies/Pods-TravelTies-frameworks.sh\"\n";
+			showEnvVarsInLog = 0;
 		};
 		800E24972A6A228C8D4807E9 /* [CP] Copy Pods Resources */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -321,23 +320,24 @@
 			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-TravelTies/Pods-TravelTies-resources.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
-		E84935C7434BAFDBB96FB248 /* [CP] Embed Pods Frameworks */ = {
+		A78F73ED660215127D420571 /* [Expo] Configure project */ = {
 			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
 			buildActionMask = 2147483647;
 			files = (
 			);
-			inputPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-TravelTies/Pods-TravelTies-frameworks.sh",
-				"${PODS_XCFRAMEWORKS_BUILD_DIR}/hermes-engine/Pre-built/hermes.framework/hermes",
+			inputFileListPaths = (
 			);
-			name = "[CP] Embed Pods Frameworks";
+			inputPaths = (
+			);
+			name = "[Expo] Configure project";
+			outputFileListPaths = (
+			);
 			outputPaths = (
-				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/hermes.framework",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-TravelTies/Pods-TravelTies-frameworks.sh\"\n";
-			showEnvVarsInLog = 0;
+			shellScript = "# This script configures Expo modules and generates the modules provider file.\nbash -l -c \"./Pods/Target\\ Support\\ Files/Pods-TravelTies/expo-configure-project.sh\"\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 
@@ -347,7 +347,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				F11748422D0307B40044C1D9 /* AppDelegate.swift in Sources */,
-				708F4CCA5E79788E5CB223C7 /* ExpoModulesProvider.swift in Sources */,
+				F65C1BA204D15C60F04CAE10 /* ExpoModulesProvider.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -356,7 +356,7 @@
 /* Begin XCBuildConfiguration section */
 		13B07F941A680F5B00A75B9A /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 6CBC841FE1729B9C0DFEA424 /* Pods-TravelTies.debug.xcconfig */;
+			baseConfigurationReference = D015E9980D0E063194006884 /* Pods-TravelTies.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
@@ -392,7 +392,7 @@
 		};
 		13B07F951A680F5B00A75B9A /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = A530219A30748008409A019C /* Pods-TravelTies.release.xcconfig */;
+			baseConfigurationReference = A42CD3562FDE6F63B054818D /* Pods-TravelTies.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
