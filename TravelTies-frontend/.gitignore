@@ -41,6 +41,3 @@ app-example
 # env file 
 .env
 
-# native folder
-/android
-/ios
