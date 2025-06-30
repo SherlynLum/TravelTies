@@ -17,7 +17,8 @@ const MainLayout = () => {
 
     const currentPosition = segments[0];
     console.log(hasOnboarded);
-    if (!isAuthenticated && currentPosition !== "signIn" && currentPosition !== "signUp") {
+    if (!isAuthenticated && currentPosition !== "signIn" && currentPosition !== "signUp" 
+      && currentPosition !== "forgotPassword") {
       // redirect to signIn
       router.replace("/signIn");
     } else if (isAuthenticated && isSynced) { // if isSynced is false or null, isAuthenticated will always be false or null, so no need to check !isAuthenticated && !isSynced
