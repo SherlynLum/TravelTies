@@ -61,7 +61,6 @@ export const AuthContextProvider = ({ children }) => {
                 throw new Error("Failed to load data")
             }
 
-            console.log(backendResJson)
             setHasOnboarded(backendResJson.onboard);
             setIsSynced(true)
             return {success: true, data: backendResJson.data}
@@ -112,7 +111,6 @@ export const AuthContextProvider = ({ children }) => {
             // sign in in Google
             await GoogleSignin.hasPlayServices({ showPlayServicesUpdateDialog: true});
             const response = await GoogleSignin.signIn();
-            console.log("Google Sign in response:", response);
 
             // try both the new style and old style of google sign in result
             const idToken = response.data?.idToken || response?.idToken;
@@ -122,7 +120,6 @@ export const AuthContextProvider = ({ children }) => {
 
             // sign in in Firebase
             const googleCredential = GoogleAuthProvider.credential(idToken);
-            console.log("googleCredential:", googleCredential);
             const data = await signInWithCredential(auth, googleCredential);
             const user = data?.user;
             if (!user) {

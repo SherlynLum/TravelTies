@@ -16,7 +16,6 @@ const MainLayout = () => {
     } 
 
     const currentPosition = segments[0];
-    console.log(hasOnboarded);
     if (!isAuthenticated && currentPosition !== "signIn" && currentPosition !== "signUp" 
       && currentPosition !== "forgotPassword") {
       // redirect to signIn

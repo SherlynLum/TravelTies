@@ -7,8 +7,8 @@ import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-nat
 export default function StartPage() {
   return (
     <SafeAreaView className="flex-1 bg-white">
-      <View className="flex-1 justify-center item-center">
-        <Loading size={hp(8)} />
+      <View className="flex-1 justify-center items-center">
+        <Loading size={hp(12)} />
       </View>
     </SafeAreaView>
   );

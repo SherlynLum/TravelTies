@@ -37,12 +37,6 @@
           <string>com.googleusercontent.apps.304571751866-8khl3376kj5r88h70upf1kfud7470p80</string>
         </array>
       </dict>
-      <dict>
-        <key>CFBundleURLSchemes</key>
-        <array>
-          <string>exp+travelties-frontend</string>
-        </array>
-      </dict>
     </array>
     <key>CFBundleVersion</key>
     <string>1</string>
