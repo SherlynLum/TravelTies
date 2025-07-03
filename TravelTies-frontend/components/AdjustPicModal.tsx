@@ -47,7 +47,7 @@ const AdjustPicModal : React.FC<AdjustPicModalProps> = ({isVisible, picUri, widt
     const startPos = useSharedValue({x: initialX, y: initialY});
     const offsetPos = useSharedValue({x: initialX, y: initialY});
 
-    // to keep track of the crop area, initiaate cropPos with -initialX and -initialY 
+    // to keep track of the crop area, initiate cropPos with -initialX and -initialY 
     // this cropPos is the coordinates of the top left corner of the crop area with respect to the pic
     // crop area has a size of screenWidth * screenWidth
     const cropPos = useSharedValue({x: -initialX, y: - initialY});
