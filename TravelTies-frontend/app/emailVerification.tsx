@@ -25,7 +25,7 @@ const EmailVerification = () => {
         // clean up countdown if useEffect is called in between countdown
         return () => clearTimeout(countdown)
       }
-    }, [cooldown])
+    }, [cooldown]) 
 
   // handle verifyEmail
   const handleEmailVerification = async () => {
@@ -52,7 +52,7 @@ const EmailVerification = () => {
   // send verification email once user land on this page
   useEffect(() => {
     handleEmailVerification();
-  }, [])
+  }, []) 
 
 
   const userEmail = user?.email || "your email";
@@ -97,7 +97,7 @@ const EmailVerification = () => {
             </Text> 
           </View> 
             
-          <View style={{top: hp(5), width: wp(88), height: hp(60), paddingHorizontal: wp(2.5),
+          <View style={{top: hp(5), width: wp(88), height: hp(62), paddingHorizontal: wp(2.5),
           paddingBottom: hp(1), borderRadius: 30}}
           className="flex flex-col items-center justify-center gap-0 bg-white">
               <Image source={require("../assets/images/email-verification.png")}
@@ -138,7 +138,7 @@ const EmailVerification = () => {
                     </View>
                   )
                 }
-                </View> 
+                </View> r
 
                 <View className="flex gap-6">
 

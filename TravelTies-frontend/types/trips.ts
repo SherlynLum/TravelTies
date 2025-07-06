@@ -8,4 +8,9 @@ export interface Trip {
     noOfNights?: number; 
     noOfParticipants: number;
     profilePicUrl?: string;
+};
+
+export interface TripParticipant {
+    participantUid: string;
+    role: string;
 }

@@ -5,7 +5,7 @@ import { Pressable, ScrollView } from 'react-native-gesture-handler';
 import { useAuth } from '@/context/authContext';
 import { pickOnePic } from '@/utils/imagePicker';
 import { createTrip, getUploadUrl } from '@/apis/tripApi';
-import { uploadPic } from '@/apis/awsApi';
+import { deleteObj, uploadPic } from '@/apis/awsApi';
 import { isAxiosError } from 'axios';
 import { Divider, Menu } from 'react-native-paper';
 import DateTimePicker, { DateTimePickerAndroid } from "@react-native-community/datetimepicker";
@@ -18,6 +18,8 @@ import { getDisplayUrl } from "@/apis/awsApi";
 import { useRouter } from 'expo-router';
 import Loading from '@/components/Loading';
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
+import { TripParticipant } from '@/types/trips';
+import AdjustTripPicModal from '@/components/AdjustTripPicModal';
 
 const AddTrip = () => {
     const insets = useSafeAreaInsets();
@@ -26,9 +28,8 @@ const AddTrip = () => {
     const nameRef = useRef("");
     const ios = Platform.OS === 'ios'
 
-    const [userProfilePicKey, setUserProfilePicKey] = useState("");
     const [userProfilePicUrl, setUserProfilePicUrl] = useState("");
-    const [tripParticipants, setTripParticipants] = useState<Object[]>([]);
+    const [tripParticipants, setTripParticipants] = useState<TripParticipant[]>([]);
 
     const [picUri, setPicUri] = useState("");
     const [picWidth, setPicWidth] = useState(0);
@@ -38,9 +39,9 @@ const AddTrip = () => {
     const [uploadSuccess, setUploadSuccess] = useState(false);
     const [oldPicKey, setOldPicKey] = useState("");
     const [picKey, setPicKey] = useState("");
-    const [updatePicSuccess, setUpdatePicSuccess] = useState(false);
     const [menuOpen, setMenuOpen] = useState(false);
     const [loading, setLoading] = useState(false);
+    const [createLoading, setCreateLoading] = useState(false);
 
     const [startDate, setStartDate] = useState<Date | null>(null);
     const [tempStartDate, setTempStartDate] = useState<Date | null>(null);
@@ -89,8 +90,7 @@ const AddTrip = () => {
                 const creator = {participantUid: profile.uid, role: "creator"};
                 setTripParticipants([creator]);
                 if (profile.profilePicKey) {
-                    setUserProfilePicKey(profile.profilePicKey);
-                    const url = await getDisplayUrl(token, profile.profilePicKey);
+                    const url = await getProfilePicUrl(token, profile.profilePicKey);
                     setUserProfilePicUrl(url);
                 }
             } catch (e) {
@@ -109,7 +109,6 @@ const AddTrip = () => {
         getUserProfile();
     }, [])
 
-    /* No time for now: dealing with user upload trip profile picture
     // pick profile pic
     const pickProfilePic = async (source: "camera" | "gallery") => {
         setMenuOpen(false);
@@ -119,7 +118,6 @@ const AddTrip = () => {
                 setPicUri(response.uri);
                 setCroppedPicUri(""); // reset croppedPicUri since the selected picture is changed
                 setUploadSuccess(false); // similarly, reset uploadSuccess
-                setUpdatePicSuccess(false); // similarly, reset updatePicSSuccess
                 Image.getSize(response.uri, (width, height) => {
                     setPicWidth(width);
                     setPicHeight(height);
@@ -163,7 +161,7 @@ const AddTrip = () => {
             await uploadPic(url, blob);
 
             setUploadSuccess(true);
-            if (picKey) { // if there is a previous pic key, store the previous pic key into old pic key to be deleted later from AWS
+            if (picKey) { // if there is a previous pic key, store the previous pic key into oldPicKey
                 setOldPicKey(picKey);
             }
             setPicKey(key);
@@ -171,16 +169,23 @@ const AddTrip = () => {
         } catch (e) {
             if (isAxiosError(e)) { // deal with axios request errors 
                 // if error comes from get presigned url, there will be a message field in res
-                // if error comes from upload to url i.e. from AWS S3, res will be raw XML string without a message field
-                console.log(e.response?.data?.message || e.response?.data || "Failed to get presigned url or failed to upload to AWS S3");
+                console.log(e.response?.data?.message ||  "Failed to get presigned url");
             } else { // deal with error in fetch and blob
-                console.log("Failed to fetch or convert pic: ", e);
+                console.log(e);
             }
-            Alert.alert("Failed to upload trip profile picture");
+            Alert.alert("Add trip", "Failed to upload trip profile picture");
             return false; // for checking this time upload success or not 
         }
     }
-    */
+
+    const deletePrevPic = async (token: string) => {
+        try {
+            await deleteObj(token, oldPicKey);
+            setOldPicKey("");
+        } catch (e) { // when fail to delete picture from AWS S3, it is okay to let user proceed as it is not a critical issue just will cause additional storage
+            console.log("Failed to delete picture with key ", oldPicKey, " from AWS S3");
+        }
+    }
 
     const openStartDatePicker = () => {
         setIsPickingStartDate(true);
@@ -274,6 +279,21 @@ const AddTrip = () => {
     const createATrip = async () => {
         try {
             const token = await getUserIdToken(user);
+
+            if (picKey) {
+                if (!uploadSuccess) {
+                    const uploadRes = await uploadCroppedPic(token);
+                    if (!uploadRes) {
+                        setCreateLoading(false);
+                        return; // early exit if failed to upload
+                    }
+                }
+            }
+
+            if (oldPicKey) {
+                await deletePrevPic(token); // no early exit as delete previous pictrue from aws s3 is not really a must
+            } 
+
             const trip = await createTrip({token, name: nameRef.current, 
                 profilePicKey: picKey || undefined, 
                 startDate: startDate ? toFloatingDate(startDate) : undefined,
@@ -292,6 +312,8 @@ const AddTrip = () => {
                 Alert.alert("Failed to create trip", e.response.data.message);
             }
             Alert.alert("Failed to create trip", "Please try again later")
+        } finally {
+            setCreateLoading(false);
         }
     }
 
@@ -321,6 +343,7 @@ const AddTrip = () => {
             }
         }
 
+        setCreateLoading(true);
         return createATrip();
     }
 
@@ -367,16 +390,6 @@ const AddTrip = () => {
                     style={{width: imageWidth, height: imageHeight}}
                     className="border-neutral-400 border-1" />
                 <View className="items-center">
-                    <TouchableOpacity 
-                    className='bg-blue-400 justify-center items-center border 
-                    border-blue-700 shadow-sm h-[44px] px-6 rounded-[30px]'>
-                        <Text className='text-white font-semibold tracking-wider text-sm'>
-                            Choose a different picture
-                        </Text>
-                    </TouchableOpacity>
-                </View>
-                {/* for full implementation of choose a different profile picture
-            <View className="items-center">
                     <Menu visible={menuOpen} onDismiss={() => setMenuOpen(false)}
                         anchor={
                             <TouchableOpacity onPress={() => setMenuOpen(true)} 
@@ -392,7 +405,7 @@ const AddTrip = () => {
                         <Divider />
                         <Menu.Item title="Choose from gallery" onPress={() => pickProfilePic("gallery")} />
                     </Menu>
-                </View> */}
+                </View>
             </View>
 
             {/* select start date */}
@@ -585,20 +598,32 @@ const AddTrip = () => {
                 </View>
             </View>
 
+            {/* create button */}
             <View className="items-center justify-center">
-                <TouchableOpacity onPress={handleCreate}
-                className='bg-blue-500 justify-center items-center border 
-                border-blue-600 shadow-sm h-[44px] px-8 rounded-[30px]'>
-                    <Text className='text-white font-semibold tracking-wider text-sm'>
-                        Create
-                    </Text>
-                </TouchableOpacity>
+                {
+                    createLoading ? (
+                        <Loading size={hp(8)} />
+                    ) : (
+                        <TouchableOpacity onPress={handleCreate}
+                        className='bg-blue-500 justify-center items-center border 
+                        border-blue-600 shadow-sm h-[44px] px-8 rounded-[30px]'>
+                            <Text className='text-white font-semibold tracking-wider text-sm'>
+                                Create
+                            </Text>
+                        </TouchableOpacity>
+                    )
+                }
             </View>
         </View>
+
+        {picUri && picWidth > 0 && picHeight > 0 && (
+            <AdjustTripPicModal isVisible={adjustModalOpen} picUri={picUri} width={picWidth}
+            height={picHeight} closeModal={closeAdjustModal} completeCrop={completeAdjustPic} />
+        )}
+
     </ScrollView>
     </KeyboardAvoidingView>
   ))
 }
-
 
 export default AddTrip

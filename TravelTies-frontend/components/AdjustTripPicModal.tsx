@@ -7,6 +7,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
 import Loading from './Loading';
+import {clamp} from "react-native-redash";
 
 type AdjustPicModalProps = {
     isVisible: boolean,
@@ -52,17 +53,13 @@ const AdjustPicModal : React.FC<AdjustPicModalProps> = ({isVisible, picUri, widt
     // crop area has a size of screenWidth * screenWidth
     const cropPos = useSharedValue({x: -initialX, y: - initialY});
 
-    // create a clamp helper function to set the min and max for pan and pinch
-    const clamp = (val: number, min: number, max: number) => {
-        return Math.max(min, Math.min(val, max));
-    }
-
     // we will scale first then translate 
     // thus, offsetPos is in terms of the current scale 
     // however when added to the cropPos, it should be adjusted to the original image pixel
     
     // function to recalculate cropPos after pan or pinch gesture
     const updateCropPos = () => {
+        "worklet"; // Reanimated can only call a function marked as 'worklet' when running on the UI thread
         cropPos.value = {
             x: -offsetPos.value.x / offsetScale.value,
             y: -offsetPos.value.y / offsetScale.value
@@ -118,13 +115,14 @@ const AdjustPicModal : React.FC<AdjustPicModalProps> = ({isVisible, picUri, widt
             setLoading(true);
             const picContext = ImageManipulator.manipulate(picUri)
                 .crop({
-                    originX: cropPos.value.x,
-                    originY: cropPos.value.y,
-                    height: cropHeight,
-                    width: screenWidth
+                    originX: cropPos.value.x / initialScale,
+                    originY: cropPos.value.y / initialScale,
+                    height: cropHeight / (initialScale * offsetScale.value),
+                    width: screenWidth / (initialScale * offsetScale.value)
                 })
             const picRef = await picContext.renderAsync();
             const picRes = await picRef.saveAsync({
+                compress: 0.7,
                 format: SaveFormat.JPEG,
             });
             if (!picRes?.uri) {

@@ -14,7 +14,7 @@ import ActiveTripCard from '@/components/activeTripCard';
 import Loading from '@/components/Loading';
 import { useRouter } from 'expo-router';
 
-const Home = () => {
+const TripsDashboard = () => {
   const {user, getUserIdToken} = useAuth();
   const [loading, setLoading] = useState(false);
   const [trips, setTrips] = useState<Trip[]>([]);
@@ -145,4 +145,4 @@ const Home = () => {
   )
 }
 
-export default Home
+export default TripsDashboard

@@ -89,15 +89,22 @@ const Onboard = () => {
             if (!croppedPicUri) {
                 throw new Error("No profile picture was found");
             }
+
             const resource = await fetch(croppedPicUri);
             const blob = await resource.blob();
 
             // upload to presigned uri
-            await axios.put(url, blob, {
+            const response = await fetch(url, {
+                method: "PUT",
                 headers: {
-                    "Content-Type": "image/jpeg"
-                }
+                    "Content-Type": "image/jpeg",
+                },
+                body: blob,
             });
+
+            if (!response.ok) {
+                throw new Error("Failed to upload user profile picture to AWS S3");
+            }
 
             setUploadSuccess(true);
             const oldKey = picKey;
@@ -112,12 +119,11 @@ const Onboard = () => {
         } catch (e) {
             if (isAxiosError(e)) { // deal with axios request errors 
                 // if error comes from get presigned url, there will be a message field in res
-                // if error comes from upload to url i.e. from AWS S3, res will be raw XML string without a message field
-                console.log(e.response?.data?.message || e.response?.data || "Failed to get presigned url or failed to upload to AWS S3");
+                console.log(e.response?.data?.message || "Failed to get presigned url");
             } else { // deal with error in fetch and blob
-                console.log("Failed to fetch or convert pic: ", e);
+                console.log(e);
             }
-            Alert.alert("Failed to upload profile picture");
+            Alert.alert("Onboard", "Failed to upload profile picture");
             return; // for checking this time upload success or not 
         }
     }
@@ -329,9 +335,13 @@ const Onboard = () => {
 
                     {/* username input */}
                     <View className="gap-4">
-                        <View style={{paddingHorizontal: wp(2.5)}}>
+                        <View style={{paddingHorizontal: wp(2.5)}} className="flex flex-row gap-2">
                             <Text style={{fontSize: hp(2.4)}} className="font-semibold text-black">
                                 Username
+                            </Text>
+                            <Text style={{fontSize: hp(2.4)}} 
+                            className="font-semibold text-red-500 text-left">
+                                *
                             </Text>
                         </View>
                         <View className="gap-3 justify-center items-center">

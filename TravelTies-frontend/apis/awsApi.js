@@ -19,11 +19,17 @@ const getDisplayUrl = async (token, key) => {
 }
 
 const uploadPic = async (url, blob) => {
-    await axios.put(url, blob, {
+    const response = await fetch(url, {
+        method: "PUT",
         headers: {
-            "Content-Type": "image/jpeg"
-        }
+            "Content-Type": "image/jpeg",
+        },
+        body: blob,
     });
+    
+    if (!response.ok) {
+        throw new Error("Failed to upload trip profile picture to AWS S3")
+    }
 }
 
 const deleteObj = async (token, key) => {
