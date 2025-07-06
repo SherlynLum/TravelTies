@@ -18,7 +18,7 @@ import { getDisplayUrl } from "@/apis/awsApi";
 import { useRouter } from 'expo-router';
 import Loading from '@/components/Loading';
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
-import { TripParticipant } from '@/types/trips';
+import { TripParticipant, TripParticipantWithProfile } from '@/types/trips';
 import AdjustTripPicModal from '@/components/AdjustTripPicModal';
 
 const AddTrip = () => {
@@ -30,6 +30,7 @@ const AddTrip = () => {
 
     const [userProfilePicUrl, setUserProfilePicUrl] = useState("");
     const [tripParticipants, setTripParticipants] = useState<TripParticipant[]>([]);
+    const [buddies, setbuddies] = useState<TripParticipantWithProfile[]>([]);
 
     const [picUri, setPicUri] = useState("");
     const [picWidth, setPicWidth] = useState(0);

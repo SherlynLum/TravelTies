@@ -14,3 +14,11 @@ export interface TripParticipant {
     participantUid: string;
     role: string;
 }
+
+export interface TripParticipantWithProfile {
+    participantUid: string;
+    role: string;
+    username: string;
+    profilePicKey?: string;
+    profilePicUrl?: string;
+}
