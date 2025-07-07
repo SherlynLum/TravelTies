@@ -13,6 +13,7 @@ import { Trip } from '@/types/trips';
 import ActiveTripCard from '@/components/activeTripCard';
 import Loading from '@/components/Loading';
 import { useRouter } from 'expo-router';
+import SearchActiveTripModal from '@/components/SearchActiveTripModal';
 
 const TripsDashboard = () => {
   const {user, getUserIdToken} = useAuth();
@@ -20,6 +21,7 @@ const TripsDashboard = () => {
   const [trips, setTrips] = useState<Trip[]>([]);
   const [hasError, setHasError] = useState(false);
   const router = useRouter();
+  const [searchModalOpen, setSearchModalOpen] = useState(false);
 
   const getProfilePicUrl = async (token: string, key: string) => {
     try {
@@ -76,6 +78,10 @@ const TripsDashboard = () => {
   }, [])
 /**/
 
+  const closeSearchModal = () => {
+    setSearchModalOpen(false);
+  }
+
   return (
     <SafeAreaView className="flex-1 bg-white">
       <View className="flex flex-col px-5 pt-1 pb-2 gap-5">
@@ -99,7 +105,7 @@ const TripsDashboard = () => {
         </View>
 
         {/* search bar */}
-        <TouchableOpacity>
+        <TouchableOpacity onPress={() => setSearchModalOpen(true)}>
           <View className="flex flex-row items-center justify-start px-4 bg-gray-200 h-11
           rounded-5 gap-4">
             <FontAwesome name="search" size={15} color="#9CA3AF"/>
@@ -141,6 +147,7 @@ const TripsDashboard = () => {
           }
         />) 
       }
+      <SearchActiveTripModal isVisible={searchModalOpen} closeModal={closeSearchModal} />
     </SafeAreaView>
   )
 }

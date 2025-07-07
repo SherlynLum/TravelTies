@@ -1,7 +1,7 @@
 import { View, Text, TextInput, Alert, Image, Dimensions, TouchableOpacity, Platform, KeyboardAvoidingView } from 'react-native'
 import React, { useEffect, useRef, useState } from 'react'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import { Pressable, ScrollView } from 'react-native-gesture-handler';
+import { FlatList, Pressable, ScrollView } from 'react-native-gesture-handler';
 import { useAuth } from '@/context/authContext';
 import { pickOnePic } from '@/utils/imagePicker';
 import { createTrip, getUploadUrl } from '@/apis/tripApi';
@@ -20,17 +20,14 @@ import Loading from '@/components/Loading';
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
 import { TripParticipant, TripParticipantWithProfile } from '@/types/trips';
 import AdjustTripPicModal from '@/components/AdjustTripPicModal';
+import ManageBuddiesModal from '@/components/ManageBuddiesModal';
 
 const AddTrip = () => {
     const insets = useSafeAreaInsets();
     const router = useRouter();
     const {user, getUserIdToken} = useAuth();
     const nameRef = useRef("");
-    const ios = Platform.OS === 'ios'
-
-    const [userProfilePicUrl, setUserProfilePicUrl] = useState("");
-    const [tripParticipants, setTripParticipants] = useState<TripParticipant[]>([]);
-    const [buddies, setbuddies] = useState<TripParticipantWithProfile[]>([]);
+    const ios = Platform.OS === 'ios';
 
     const [picUri, setPicUri] = useState("");
     const [picWidth, setPicWidth] = useState(0);
@@ -62,6 +59,12 @@ const AddTrip = () => {
     const [dayStr, setDayStr] = useState("Days");
     const [nightStr, setNightStr] = useState("Nights");
 
+    const [userProfilePicUrl, setUserProfilePicUrl] = useState("");
+    const [buddies, setBuddies] = useState<TripParticipantWithProfile[]>([]);
+    const [currentUid, setCurrentUid] = useState("");
+    const [tripParticipants, setTripParticipants] = useState<TripParticipant[]>([]);
+    const [manageModalOpen, setManageModalOpen] = useState(false);
+
     const screenWidth = Dimensions.get("window").width;
     const imageWidth = screenWidth - 18 - 18; // 18 horixontal padding on each side
     const imageHeight = imageWidth / 3;
@@ -87,13 +90,22 @@ const AddTrip = () => {
                 if (!profile) {
                     throw new Error("Failed to load profile of current user")
                 }
-                console.log(profile);
-                const creator = {participantUid: profile.uid, role: "creator"};
-                setTripParticipants([creator]);
+                setCurrentUid(profile.uid);
+
+                let url; 
                 if (profile.profilePicKey) {
-                    const url = await getProfilePicUrl(token, profile.profilePicKey);
+                    url = await getProfilePicUrl(token, profile.profilePicKey);
                     setUserProfilePicUrl(url);
                 }
+
+                const creatorWithProfile = {
+                    participantUid: profile.uid,
+                    role: "creator",
+                    username: profile.username,
+                    profilePicKey: profile.profilePicKey || undefined,
+                    profilePicUrl: url || undefined
+                }
+                setBuddies([creatorWithProfile]);
             } catch (e) {
                 console.log(e);
                 Alert.alert("Create trip", 
@@ -276,6 +288,20 @@ const AddTrip = () => {
             setNoOfNights(null);
         }
     }, [startDate, endDate, noOfDays]);
+
+    const closeManageModal = () => {
+        setManageModalOpen(false);
+    }
+
+    const completeManageModal = (updatedbuddies: TripParticipantWithProfile[]) => {
+        setBuddies(updatedbuddies);
+        setManageModalOpen(false);
+    }
+
+    useEffect(() => {
+        const participants = buddies.map(({participantUid, role}) => ({participantUid, role}))
+        setTripParticipants(participants)
+    }, [buddies])
 
     const createATrip = async () => {
         try {
@@ -585,10 +611,32 @@ const AddTrip = () => {
                             <Image source={!userProfilePicUrl 
                             ? require("../../../assets/images/default-user-profile-pic.png")
                             : userProfilePicUrl === "Failed to load" 
-                            ? {uri: `https://placehold.co/40x40?text=!`}
+                            ? require("../../../assets/images/error-icon.png")
                             : {uri: userProfilePicUrl}}
                             className="border-neutral-400 border-2 w-[40px] h-[40px] rounded-[20px]" />
-                            <FontAwesome6 name="edit" size={24} color="#60A5FA" />
+
+                            {/* buddies */}
+                            <FlatList
+                            data={buddies.filter(buddy => buddy.participantUid !== currentUid)}
+                            renderItem={({item}) => (
+                                <Image source={!item.profilePicUrl 
+                                ? require("../../../assets/images/default-user-profile-pic.png")
+                                : item.profilePicUrl === "Failed to load" 
+                                ? require("../../../assets/images/error-icon.png")
+                                : {uri: item.profilePicUrl}}
+                                className="border-neutral-400 border-2 w-[40px] h-[40px] rounded-[20px]" />
+                            )}
+                            horizontal={true}
+                            showsHorizontalScrollIndicator={false}
+                            keyExtractor={(item) => item.participantUid}
+                            contentContainerStyle={{flexGrow: 1, justifyContent: "center", alignItems: "center"}}
+                            ItemSeparatorComponent={() => <View className="w-[20px]"/>}
+                            />
+
+                            {/* edit button */}
+                            <Pressable onPress={() => setManageModalOpen(true)} hitSlop={14}>
+                                <FontAwesome6 name="edit" size={24} color="#60A5FA" />
+                            </Pressable>
                         </View>
                         <View className="px-3">
                             <Text className="text-xs text-gray-500 font-semibold">
@@ -622,6 +670,8 @@ const AddTrip = () => {
             height={picHeight} closeModal={closeAdjustModal} completeCrop={completeAdjustPic} />
         )}
 
+        <ManageBuddiesModal isVisible={manageModalOpen} buddies={buddies} currentUid={currentUid}
+            closeModal={closeManageModal} complete={completeManageModal}/>
     </ScrollView>
     </KeyboardAvoidingView>
   ))

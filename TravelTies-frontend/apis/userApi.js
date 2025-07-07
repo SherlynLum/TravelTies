@@ -42,7 +42,25 @@ const getFriends = async (token) => {
     return friendsWithPicUrl;
 }
 
+const searchFriends = async (token, searchTerm) => {
+    const backendRes = await axios.get(
+        `${baseUrl}/api/user/friends/search`,
+        {   headers: getHeaders(token),
+            params: {
+                term: searchTerm
+            }
+        }
+    );
+    const results = backendRes.data.results;
+    const resultsWithPicUrl = results.map(friend => friend.profilePicKey
+        ? {...friend, profilePicUrl: getProfilePicUrl(token, friend.profilePicKey)}
+        : friend
+    )
+    return resultsWithPicUrl;
+}
+
 export {
     getProfile,
-    getFriends
+    getFriends,
+    searchFriends
 }
