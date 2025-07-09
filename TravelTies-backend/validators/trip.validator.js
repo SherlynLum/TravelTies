@@ -26,7 +26,7 @@ const validateTripDates = ({startDate, endDate, noOfDays, noOfNights}) => {
             return "Number of days is required if start date and end date are both provided";
         } 
 
-        const diffDays = diffMs / (1000 * 60 * 60 * 24) + 1;
+        const diffDays = Math.round(diffMs / (1000 * 60 * 60 * 24)) + 1;
         if (noOfDays !== diffDays) { 
             return "Number of days does not match with trip start date and end date";
         }
