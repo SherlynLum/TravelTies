@@ -1,4 +1,4 @@
-import { Alert, ScrollView, Text, View, Image, Dimensions, ImageBackground, TouchableOpacity} from 'react-native'
+import { Alert, ScrollView, Text, View, Dimensions, ImageBackground, TouchableOpacity} from 'react-native'
 import React, { useEffect, useState } from 'react'
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Link, useLocalSearchParams, useRouter } from 'expo-router';

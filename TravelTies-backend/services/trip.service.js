@@ -94,6 +94,11 @@ const getOverview = async (tripId) => {
     return tripOverview;
 }
 
+const getJoinCode = async (tripId) => {
+    const trip = await Trip.findById(tripId, {joinCode: 1})
+    return trip;
+}
+
 const getParticipants = async (tripId) => {
     const tripExists = await Trip.exists({_id: tripId});
     if (!tripExists) {
@@ -111,7 +116,7 @@ const getParticipants = async (tripId) => {
         {$unwind: "$participantsProfiles"},
         {$project: {
             _id: 0,
-            uid: "$participantsProfiles.uid",
+            participantUid: "$participantsProfiles.uid",
             username: "$participantsProfiles.username",
             profilePicKey: "$participantsProfiles.profilePicKey",
             role: "$tripParticipants.role",
@@ -335,6 +340,7 @@ module.exports = {
     getTripsByUid,
     getTripsInBin,
     getOverview,
+    getJoinCode,
     getParticipants,
     getJoinRequests,
     isCreator,

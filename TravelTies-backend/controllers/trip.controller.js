@@ -1,6 +1,7 @@
 const {generateJoinCode, createTrip, getTripsByUid, getTripsInBin, getOverview, getParticipants,
     getJoinRequests, updateOverview, updateParticipants, addParticipantsAndRemoveFromRequests,
-    deleteTrip, cancelTrip, restoreTrip, searchActiveTrips, searchBinTrips, addJoinRequest
+    deleteTrip, cancelTrip, restoreTrip, searchActiveTrips, searchBinTrips, addJoinRequest,
+    getJoinCode
 } = require("../services/trip.service.js");
 const {generateUploadUrl} = require("../services/awss3.service.js");
 const {validateTripDates} = require("../validators/trip.validator.js");
@@ -89,6 +90,19 @@ const getTripOverview = async (req, res) => {
             return res.status(404).json({message: "No trip is found"})
         }
         return res.status(200).json({trip: tripOverview});
+    } catch (e) {
+        return res.status(500).json({message: e.message})
+    }
+}
+
+const getTripJoinCode= async (req, res) => {
+    const {id} = req.params; 
+    try {
+        const trip = await getJoinCode(id);
+        if (!trip) {
+            return res.status(404).json({message: "No trip is found"})
+        }
+        return res.status(200).json({trip});
     } catch (e) {
         return res.status(500).json({message: e.message})
     }
@@ -291,6 +305,7 @@ module.exports = {
     getCurrentUserActiveTrips,
     getCurrentUserBinTrips,
     getTripOverview,
+    getTripJoinCode,
     getTripParticipants,
     getTripJoinRequests, 
     updateTripOverview,

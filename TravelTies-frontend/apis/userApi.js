@@ -29,15 +29,34 @@ const getProfile = async (token) => {
     return backendRes.data.user;
 }
 
+const getProfileWithUrl = async (token) => {
+    const backendRes = await axios.get(
+        `${baseUrl}/api/user`,
+        {headers: getHeaders(token)}
+    );
+    const user = backendRes.data.user;
+    if (!user.profilePicKey) {
+        return user;
+    }
+    const profilePicUrl = await getProfilePicUrl(token, user.profilePicKey);
+    return {...user, profilePicUrl};
+}
+
 const getFriends = async (token) => {
     const backendRes = await axios.get(
         `${baseUrl}/api/user/friends`,
         {headers: getHeaders(token)}
     );
     const friends = backendRes.data.friends;
-    const friendsWithPicUrl = friends.map(friend => friend.profilePicKey
-        ? {...friend, profilePicUrl: getProfilePicUrl(token, friend.profilePicKey)}
-        : friend
+    const friendsWithPicUrl = await Promise.all(
+        friends.map(async (friend) => {
+            if (!friend.profilePicKey) {
+                return friend;
+            }
+
+            const profilePicUrl = await getProfilePicUrl(token, friend.profilePicKey);
+            return {...friend, profilePicUrl};
+        })
     )
     return friendsWithPicUrl;
 }
@@ -52,15 +71,22 @@ const searchFriends = async (token, searchTerm) => {
         }
     );
     const results = backendRes.data.results;
-    const resultsWithPicUrl = results.map(friend => friend.profilePicKey
-        ? {...friend, profilePicUrl: getProfilePicUrl(token, friend.profilePicKey)}
-        : friend
+    const resultsWithPicUrl = await Promise.all(
+        results.map(async (friend) => {
+            if (!friend.profilePicKey) {
+                return friend;
+            }
+
+            const profilePicUrl = await getProfilePicUrl(token, friend.profilePicKey);
+            return {...friend, profilePicUrl};
+        })
     )
     return resultsWithPicUrl;
 }
 
 export {
     getProfile,
+    getProfileWithUrl,
     getFriends,
     searchFriends
 }
