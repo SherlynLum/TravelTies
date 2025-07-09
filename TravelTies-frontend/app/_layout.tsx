@@ -10,13 +10,14 @@ const MainLayout = () => {
   const segments = useSegments();
   const router = useRouter();
 
-  /*
   useEffect(() => {
     if (isAuthenticated === null) {
       return;
     } 
+
     const currentPosition = segments[0];
-    if (!isAuthenticated && currentPosition !== "signIn" && currentPosition !== "signUp") {
+    if (!isAuthenticated && currentPosition !== "signIn" && currentPosition !== "signUp" 
+      && currentPosition !== "forgotPassword") {
       // redirect to signIn
       router.replace("/signIn");
     } else if (isAuthenticated && isSynced) { // if isSynced is false or null, isAuthenticated will always be false or null, so no need to check !isAuthenticated && !isSynced
@@ -36,18 +37,17 @@ const MainLayout = () => {
       }
     } // only redirect if isAuthenticated/isSynced/emailVerified/hasOnboarded changes
   }, [isAuthenticated, isSynced, emailVerified, hasOnboarded]) 
-*/
 
-/* for convenience in coding specific page: */
+/* for convenience in coding specific page: 
   useEffect(() => {
     // delay redirect a tiny bit to avoid navigating too early
     const timeout = setTimeout(() => {
-      router.replace("/tripsDashboard");
+      router.replace("/emailVerification");
     }, 50); // 50ms delay usually works well
 
     return () => clearTimeout(timeout);
   }, []);
-/**/
+*/
   
   return <Stack>
     <Stack.Screen

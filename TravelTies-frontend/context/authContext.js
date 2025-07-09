@@ -192,11 +192,12 @@ export const AuthContextProvider = ({ children }) => {
 
     const verifyEmail = async (user) => {
         try {
+            /* self-coded email verification page is not working, comment out for now
             const actionCodeSettings = {
                 url: "https://travelties-fce2c.firebaseapp.com",
-                handleCodeInApp: true
-            };
-            await sendEmailVerification(user, actionCodeSettings);
+                handleCodeInApp: false
+            }; */
+            await sendEmailVerification(user); // with actionCodeSettings: await sendEmailVerification(user, actionCodeSettings);
             return {success: true};
         } catch (e) {
             let message = e.message || "Failed to send verification email";

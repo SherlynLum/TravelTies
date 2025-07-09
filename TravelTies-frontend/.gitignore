@@ -38,12 +38,6 @@ yarn-error.*
 
 app-example
 
-# Firebase config
-firebaseConfig.ts
-
 # env file 
 .env
 
-# Firebase google services config
-google-services.json
-GoogleService-Info.plist

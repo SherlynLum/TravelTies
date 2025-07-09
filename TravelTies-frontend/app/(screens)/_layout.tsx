@@ -8,6 +8,9 @@ export default function _layout() {
             <Stack.Screen 
                 name="(tabs)"
                 options={{headerShown: false}} />
+            <Stack.Screen 
+                name="trips"
+                options={{headerShown: false}} />
         </Stack>
     )
 }

@@ -76,7 +76,7 @@ const SignUp = () => {
                     </Text> 
                 </View> 
 
-                <View style={{top: hp(5), width: wp(88), height: hp(62), paddingHorizontal: wp(2.5),
+                <View style={{top: hp(5), width: wp(88), height: hp(63), paddingHorizontal: wp(2.5),
                 paddingTop: hp(2.5), paddingBottom: hp(4), borderRadius: 30}}
                 className='flex flex-col justify-center item-center gap-6 bg-white'>
                     <View style={{paddingHorizontal: wp(3.8)}}>

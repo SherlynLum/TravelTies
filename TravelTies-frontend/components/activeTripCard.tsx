@@ -26,8 +26,12 @@ const ActiveTripCard = ({_id, name, profilePicKey, startDate, endDate, noOfDays,
         formattedEndDate = formatDate(endDate);
     }
 
+    const dayStr = noOfDays ? ((noOfDays <= 1) ? "Day" : "Days") : undefined;
+    const nightStr = noOfNights ? ((noOfNights <= 1) ? "Night" : "Nights") : undefined;
+    const buddyStr = (noOfParticipants <= 1) ? "Buddy" : "Buddies";
+
   return (
-    <Link href={`/trips/${_id}`} asChild>
+    <Link href={`/trips/${_id}/overview`} asChild>
         <TouchableOpacity className="rounded-xl items-center">
             <View className="pb-5" style={{paddingHorizontal: 18}}>
             <Card style={{padding: 0, borderRadius: 16, width: imageWidth}}>
@@ -71,16 +75,16 @@ const ActiveTripCard = ({_id, name, profilePicKey, startDate, endDate, noOfDays,
                             Duration
                             </Text>
                             <Text className="font-medium text-sm text-left">
-                                {noOfDays} Days {noOfNights} Nights
+                                {`${noOfDays} ${dayStr} ${noOfNights} ${nightStr}`}
                             </Text>
                         </View>
                     ) : null}
 
                     {/* number of participants */}
-                    <View className="flex flex-row gap-1 justify-start items-center">
+                    <View className="flex flex-row gap-2 justify-start items-center">
                         <Octicons name="person" size={20} color="gray" />     
                         <Text className="font-medium text-sm text-left">
-                            {noOfParticipants} buddies 
+                            {`${noOfParticipants} ${buddyStr}`}
                         </Text>
                     </View>
                 </View>

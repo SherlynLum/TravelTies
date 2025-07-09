@@ -3,7 +3,7 @@ import React from 'react'
 
 const Discover = () => {
   return (
-    <View>
+    <View className="flex-1 items-center justify-center">
       <Text>Discover</Text>
     </View>
   )

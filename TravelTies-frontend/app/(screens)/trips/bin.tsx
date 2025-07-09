@@ -30,7 +30,8 @@ const TripsDashboard = () => {
         return "Failed to load";
     }
   }
-/* for testing purpose: 
+  
+  /* for testing:
   useEffect(() => {
     const activeTrips = [{_id: "abc", name: "Japan trip", noOfParticipants: 1}, 
     {_id: "efg", name: "Korea trip", startDate: "2025-09-18", endDate: "2025-09-23", 
@@ -39,7 +40,9 @@ const TripsDashboard = () => {
     
     setTrips(activeTrips)
   }, []);
-*/
+  */
+
+/**/ 
   useEffect(() => {
     const getTrips = async () => {
       try {
@@ -71,7 +74,8 @@ const TripsDashboard = () => {
     }
     getTrips();
   }, [])
-  
+/**/
+
   return (
     <SafeAreaView className="flex-1 bg-white">
       <View className="flex flex-col px-5 pt-1 pb-2 gap-5">

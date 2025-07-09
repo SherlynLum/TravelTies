@@ -18,7 +18,33 @@ const getDisplayUrl = async (token, key) => {
     return backendRes.data.url;
 }
 
+const uploadPic = async (url, blob) => {
+    const response = await fetch(url, {
+        method: "PUT",
+        headers: {
+            "Content-Type": "image/jpeg",
+        },
+        body: blob,
+    });
+    
+    if (!response.ok) {
+        throw new Error("Failed to upload trip profile picture to AWS S3")
+    }
+}
+
+const deleteObj = async (token, key) => {
+    await axios.delete(
+        `${process.env.EXPO_PUBLIC_BACKEND_URL}/api/aws`, 
+        { 
+            data: { key },
+            headers: getHeaders(token)
+        }
+    )
+}
+
 export {
-    getDisplayUrl
+    getDisplayUrl,
+    uploadPic,
+    deleteObj
 }
 

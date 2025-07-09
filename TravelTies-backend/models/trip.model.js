@@ -6,7 +6,7 @@ const tripParticipantSchema = new mongoose.Schema({
         required: true
     },
     
-    role: { // no role if status === "pending"
+    role: { 
         type: String, 
         enum: ["creator", "admin", "member"]
     }

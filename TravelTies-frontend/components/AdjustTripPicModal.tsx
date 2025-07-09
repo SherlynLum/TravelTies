@@ -6,9 +6,8 @@ import { ImageManipulator, SaveFormat } from "expo-image-manipulator"
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
-import Svg, { Circle, Defs, Mask, Rect } from "react-native-svg";
 import Loading from './Loading';
-import { clamp } from "react-native-redash";
+import {clamp} from "react-native-redash";
 
 type AdjustPicModalProps = {
     isVisible: boolean,
@@ -23,11 +22,12 @@ const AdjustPicModal : React.FC<AdjustPicModalProps> = ({isVisible, picUri, widt
     const [loading, setLoading] = useState(false);
 
     const screenWidth = Dimensions.get("window").width;
+    const cropHeight = screenWidth / 3;
 
     // find the max between width-based and height-based scaling to get the max possible square
     // this scale will be used to resize the image initially, before even applying animated style
     // get the width and height after scaling 
-    const initialScale = Math.max(screenWidth / width, screenWidth / height);
+    const initialScale = Math.max(screenWidth / width, cropHeight / height);
     const scaledWidth = width * initialScale;
     const scaledHeight = height * initialScale;
 
@@ -42,13 +42,13 @@ const AdjustPicModal : React.FC<AdjustPicModalProps> = ({isVisible, picUri, widt
     // initialPos should be based on the original pixel coordinate 
     // scaledWidth and scaledHeight are always bigger than or equals to screenWidth 
     const initialX = (screenWidth - scaledWidth) / 2;
-    const initialY = (screenWidth - scaledHeight) / 2;
+    const initialY = (cropHeight - scaledHeight) / 2;
 
     // initiate startPos and offsetPos with initialX and initialY
     const startPos = useSharedValue({x: initialX, y: initialY});
     const offsetPos = useSharedValue({x: initialX, y: initialY});
 
-    // to keep track of the crop area, initiate cropPos with -initialX and -initialY 
+    // to keep track of the crop area, initiaate cropPos with -initialX and -initialY 
     // this cropPos is the coordinates of the top left corner of the crop area with respect to the pic
     // crop area has a size of screenWidth * screenWidth
     const cropPos = useSharedValue({x: -initialX, y: - initialY});
@@ -71,7 +71,7 @@ const AdjustPicModal : React.FC<AdjustPicModalProps> = ({isVisible, picUri, widt
         .onUpdate((e) => {
             // update offsetPos
             const offsetLowerBoundX = screenWidth - scaledWidth * offsetScale.value;
-            const offsetLowerBoundY = screenWidth - scaledHeight * offsetScale.value;
+            const offsetLowerBoundY = cropHeight - scaledHeight * offsetScale.value;
             offsetPos.value = { 
                 x: clamp(startPos.value.x + e.translationX, offsetLowerBoundX, 0),
                 y: clamp(startPos.value.y + e.translationY, offsetLowerBoundY, 0),
@@ -115,14 +115,14 @@ const AdjustPicModal : React.FC<AdjustPicModalProps> = ({isVisible, picUri, widt
             setLoading(true);
             const picContext = ImageManipulator.manipulate(picUri)
                 .crop({
-                    originX: cropPos.value.x / initialScale, // undo initialScale to get x-coordinate relative to original image pixels
-                    originY: cropPos.value.y / initialScale, // undo initialScale to get y-coordinate relative to original image pixels
-                    height: screenWidth / (initialScale * offsetScale.value), // cropWidth in original image pixels
-                    width: screenWidth / (initialScale * offsetScale.value) // cropWidth in original image pixels
+                    originX: cropPos.value.x / initialScale,
+                    originY: cropPos.value.y / initialScale,
+                    height: cropHeight / (initialScale * offsetScale.value),
+                    width: screenWidth / (initialScale * offsetScale.value)
                 })
             const picRef = await picContext.renderAsync();
             const picRes = await picRef.saveAsync({
-                compress: 0.7, // compress the picture to speed up upload and retrieval without significantly affecting quality
+                compress: 0.7,
                 format: SaveFormat.JPEG,
             });
             if (!picRes?.uri) {
@@ -140,71 +140,56 @@ const AdjustPicModal : React.FC<AdjustPicModalProps> = ({isVisible, picUri, widt
     }
 
   return (
-    <Modal visible={isVisible} animationType="slide">
-        <SafeAreaView className="flex-1 bg-black">
-            <StatusBar 
-                    translucent
-                    backgroundColor="transparent"
-                    style="light"
-            />
-            {/* header */}
-            <View style={{paddingHorizontal: wp(3), height: 56, width: "100%"}}
-            className="flex-row items-center justify-between">
-                <Pressable onPress={closeModal} hitSlop={14}>
-                    <Text style={{fontSize: hp(1.8)}} className="font-medium text-white">
-                        Cancel 
-                    </Text>
-                </Pressable>
+    <View className="flex-1">
+        <StatusBar 
+                translucent
+                backgroundColor="transparent"
+                style="dark"
+        />
+        <Modal visible={isVisible} animationType="slide">
+            <View className="absolute top-0 bottom-0 left-0 right-0 bg-black">
+                <SafeAreaView className="flex-1">
+                    {/* header */}
+                    <View style={{paddingHorizontal: wp(3), height: 56, width: "100%"}}
+                    className="flex-row items-center justify-between">
+                        <Pressable onPress={closeModal} hitSlop={14}>
+                            <Text style={{fontSize: hp(1.8)}} className="font-medium text-white">
+                                Cancel 
+                            </Text>
+                        </Pressable>
 
-                <Text style={{fontSize: hp(1.8)}} className="font-medium text-white">
-                    Adjust and scale
-                </Text>
+                        <Text style={{fontSize: hp(1.8)}} className="font-medium text-white">
+                            Adjust and scale
+                        </Text>
 
-                <Pressable onPress={cropPic} hitSlop={14}>
-                    <Text style={{fontSize: hp(1.8)}} className="font-medium text-white">
-                        Save
-                    </Text>
-                </Pressable>
+                        <Pressable onPress={cropPic} hitSlop={14}>
+                            <Text style={{fontSize: hp(1.8)}} className="font-medium text-white">
+                                Save
+                            </Text>
+                        </Pressable>
+                    </View>
+
+                    <View className="flex-1 justify-center items-center">
+                        {
+                            loading ? (
+                                <Loading size={hp(10)} />
+                            ) : (
+                                // adjust profile picture 
+                                <View className="overflow-hidden" style={{width: screenWidth, 
+                                height: cropHeight}}>
+                                    <GestureDetector gesture={Gesture.Simultaneous(panGesture, pinchGesture)}>
+                                        <Animated.Image source={{uri: picUri}}
+                                        style={[{width: scaledWidth, height: scaledHeight}, animatedStyle]}
+                                        resizeMode="cover" />
+                                    </GestureDetector> 
+                                </View>
+                            )
+                        }
+                    </View>
+                </SafeAreaView>
             </View>
-
-            <View className="flex-1 justify-center items-center">
-                {
-                    loading ? (
-                        <Loading size={hp(10)} />
-                    ) : (
-                        // adjust profile picture 
-                        <View className="overflow-hidden" style={{width: screenWidth, 
-                        height: screenWidth}}>
-                            <GestureDetector gesture={Gesture.Simultaneous(panGesture, pinchGesture)}>
-                                <Animated.Image source={{uri: picUri}}
-                                style={[{width: scaledWidth, height: scaledHeight}, animatedStyle]}
-                                resizeMode="cover" />
-                            </GestureDetector> 
-
-                            {/* circular mask */}
-                            <Svg width={screenWidth} height={screenWidth} 
-                            style={{position: "absolute", top: 0, left: 0}}>
-                                <Defs>
-                                    <Mask id="mask">
-                                        {/* region outside circle should be blurred by the rect later so fill="white" to show through */}
-                                        <Rect width={screenWidth} height={screenWidth} fill="white" />
-
-                                        {/* region inside the circle should not be blurred by the rect later so fill="black" to hide*/}
-                                        <Circle cx={screenWidth / 2} cy={screenWidth / 2}
-                                        r={screenWidth / 2} fill="black" />
-                                    </Mask>
-                                </Defs>
-
-                                {/* blur the region outside circle */}
-                                <Rect width={screenWidth} height={screenWidth} 
-                                fill={"rgba(30, 30, 30, 0.6)"} mask="url(#mask)" />
-                            </Svg>
-                        </View>
-                    )
-                }
-            </View>
-        </SafeAreaView>
-    </Modal>
+        </Modal>
+    </View>
   )
 }
 

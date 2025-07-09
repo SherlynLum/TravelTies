@@ -38,7 +38,7 @@ const createTripController = async (req, res) => {
     // validation
     const datesErr = validateTripDates({startDate, endDate, noOfDays, noOfNights});
     if (datesErr) {
-        return res.status(400).json({message: datesErr});
+        return res.status(400).json({message: datesErr, datesErr: true});
     }
 
     try {
