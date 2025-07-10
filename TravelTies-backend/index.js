@@ -7,8 +7,10 @@ const mongoose = require("mongoose");
 const userRoute = require("./routes/user.route.js");
 const awsRoute = require("./routes/awss3.route.js");
 const tripRoute = require("./routes/trip.route.js");
+const expenseTrackerRoute = require("./routes/expenseTracker.route");
+const expenseRoute = require("./routes/expense.route");
 const admin = require("firebase-admin");
-const serviceAccount = require("/etc/secrets/serviceAccountKey.json");
+const serviceAccount = require("./serviceAccountKey.json");
 
 //initialise Firebase Admin SDK
 admin.initializeApp({
@@ -29,11 +31,13 @@ mongoose.connect(process.env.DB_URL).then(() => {
     app.listen(port, () => {
         console.log(`Server is running on port ${port}`);
     });
-}).catch(() => {
-    console.log('Connection failed!');
+}).catch((err) => {
+    console.log('Connection failed!',err);
 })
 
 //routes
 app.use("/api/user", userRoute);
 app.use("/api/aws", awsRoute);
 app.use("/api/trip", tripRoute);
+app.use("/api/expense-tracker", expenseTrackerRoute);
+app.use("/api/expenses", expenseRoute);
