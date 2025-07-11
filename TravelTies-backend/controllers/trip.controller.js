@@ -1,7 +1,7 @@
 const {generateJoinCode, createTrip, getTripsByUid, getTripsInBin, getOverview, getParticipants,
-    getJoinRequests, updateOverview, updateParticipants, addParticipantsAndRemoveFromRequests,
+    getJoinRequests, updateTrip, addParticipantsAndRemoveFromRequests,
     deleteTrip, cancelTrip, restoreTrip, searchActiveTrips, searchBinTrips, addJoinRequest,
-    getJoinCode
+    getJoinCode, removeBuddy
 } = require("../services/trip.service.js");
 const {generateUploadUrl} = require("../services/awss3.service.js");
 const {validateTripDates} = require("../validators/trip.validator.js");
@@ -138,33 +138,19 @@ const getTripJoinRequests = async (req, res) => {
     }
 }
 
-const updateTripOverview = async (req, res) => {
+const updateTripController = async (req, res) => {
     const {id} = req.params;
-    const {name, profilePicKey, startDate, endDate, noOfDays, noOfNights} = req.body;
+    const {name, profilePicKey, startDate, endDate, noOfDays, noOfNights, tripParticipants} = req.body;
 
     // validation
     const datesErr = validateTripDates({startDate, endDate, noOfDays, noOfNights});
     if (datesErr) {
-        return res.status(400).json({message: datesErr});
+        return res.status(400).json({message: datesErr, datesErr: true});
     }
 
     try {
-        const updatedTrip = await updateOverview({id, name, profilePicKey, startDate, endDate, 
-            noOfDays, noOfNights});
-        if (!updatedTrip) {
-            return res.status(404).json({message: "No trip is found"})
-        }
-        return res.status(200).json({trip: updatedTrip});
-    } catch (e) {
-        return res.status(500).json({message: e.message});
-    }
-}
-
-const updateTripParticipants = async (req, res) => {
-    const {id} = req.params;
-    const {tripParticipants} = req.body;
-    try {
-        const updatedTrip = await updateParticipants({id, tripParticipants});
+        const updatedTrip = await updateTrip({id, name, profilePicKey, startDate, endDate, 
+            noOfDays, noOfNights, tripParticipants});
         if (!updatedTrip) {
             return res.status(404).json({message: "No trip is found"})
         }
@@ -176,13 +162,13 @@ const updateTripParticipants = async (req, res) => {
 
 const updateTripJoinRequests = async (req, res) => {
     const {id} = req.params;
-    const {acceptedRequests} = req.body;
-    if (!acceptedRequests || acceptedRequests.length === 0) {
-        return res.status(200).json({message: "No accepted requests so no need to updated"})
+    const {acceptedRequests, declinedUids} = req.body;
+    if (acceptedRequests.length === 0 && declinedUids.length === 0) {
+        return res.status(200).json({message: "No accepted and declined requests so no need to updated"})
     }
 
     try {
-        const updatedTrip = await addParticipantsAndRemoveFromRequests({id, acceptedRequests});
+        const updatedTrip = await addParticipantsAndRemoveFromRequests({id, acceptedRequests, declinedUids});
         if (!updatedTrip) {
             return res.status(404).json({message: "No trip is found"});
         }
@@ -299,6 +285,25 @@ const addJoinRequestController = async (req, res) => {
     }
 }
 
+const removeBuddyController = async (req, res) => {
+    const uid = req.user.uid;
+    // testing without middleware: const uid = req.body.uid;
+    if (!uid) {
+        return res.status(400).json({message: "Missing uid"});
+    }
+    const {id: tripId} = req.params;
+
+    try {
+        const updatedTrip = await removeBuddy({uid, tripId});
+        if (!updatedTrip) {
+            return res.status(404).json({message: "No trip is found"})
+        }
+        return res.status(200).json({trip: updatedTrip});
+    } catch (e) {
+        return res.status(500).json({message: e.message});
+    }
+}
+
 module.exports = {
     getTripProfilePicUrl,
     createTripController,
@@ -308,13 +313,13 @@ module.exports = {
     getTripJoinCode,
     getTripParticipants,
     getTripJoinRequests, 
-    updateTripOverview,
-    updateTripParticipants,
+    updateTripController,
     updateTripJoinRequests,
     cancelTripController,
     restoreTripController,
     deleteTripPermanently, 
     searchActiveTripsController,
     searchBinTripsController,
-    addJoinRequestController
+    addJoinRequestController,
+    removeBuddyController
 };

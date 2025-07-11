@@ -35,3 +35,11 @@ export interface TripParticipantWithProfile {
     profilePicKey?: string;
     profilePicUrl?: string;
 }
+
+export interface JoinRequestsWithProfile {
+    uid: string;
+    username: string,
+    profilePicKey?: string,
+    profilePicUrl?: string;
+    requestAt: Date
+}

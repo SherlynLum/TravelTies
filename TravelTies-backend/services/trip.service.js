@@ -186,30 +186,23 @@ const isParticipant = async ({uid, tripId}) => {
     return !!trip;
 }
 
-const updateOverview = async ({id, name, profilePicKey, startDate, endDate, noOfDays, 
-    noOfNights}) => {
+const updateTrip = async ({id, name, profilePicKey, startDate, endDate, noOfDays, 
+    noOfNights, tripParticipants}) => {
         const updatedTrip = await Trip.findByIdAndUpdate(
             id,
             {$set: {
-                name, profilePicKey, startDate, endDate, noOfDays, noOfNights
+                name, profilePicKey, startDate, endDate, noOfDays, noOfNights, tripParticipants
             }},
             {new: true, runValidators: true});
         return updatedTrip;
 }
 
-const updateParticipants = async ({id, tripParticipants}) => {
-    const updatedTrip = await Trip.findByIdAndUpdate(
-        id,
-        {$set: {tripParticipants}},
-        {new: true, runValidators: true});
-    return updatedTrip;
-}
-
-const addParticipantsAndRemoveFromRequests = async ({id, acceptedRequests}) => {
+const addParticipantsAndRemoveFromRequests = async ({id, acceptedRequests, declinedUids}) => {
     const acceptedUids = acceptedRequests.map(participant => participant.participantUid);
+    const uidsToBeRemoved = [...acceptedUids, ...declinedUids];
     const updatedTrip = await Trip.findByIdAndUpdate(
         id,
-        {$pull: {joinRequests: {requesterUid: {$in: acceptedUids}}},
+        {$pull: {joinRequests: {requesterUid: {$in: uidsToBeRemoved}}},
         $push: {tripParticipants: {$each: acceptedRequests}}},
         {new: true, runValidators: true});
     return updatedTrip;
@@ -333,6 +326,13 @@ const addJoinRequest = async ({uid, joinCode}) => {
     )
     return updatedTrip;
 }
+ 
+const removeBuddy = async ({uid, tripId}) => {
+    const updatedTrip = await Trip.findByIdAndUpdate(tripId, {
+        $pull: {tripParticipants: {uid}}
+    }, {new: true, runValidators: true});
+    return updatedTrip;
+}
 
 module.exports = {
     generateJoinCode,
@@ -346,13 +346,13 @@ module.exports = {
     isCreator,
     hasAdminRights,
     isParticipant,
-    updateOverview,
-    updateParticipants,
+    updateTrip,
     addParticipantsAndRemoveFromRequests,
     cancelTrip,
     restoreTrip,
     deleteTrip,
     searchActiveTrips,
     searchBinTrips,
-    addJoinRequest
+    addJoinRequest,
+    removeBuddy
 };

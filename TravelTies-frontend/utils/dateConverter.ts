@@ -15,8 +15,14 @@ const toDisplayDay = (date: Date) => {
     return date.toLocaleDateString(undefined, {weekday: "short"})
 }
 
+const toLocalDateObj= (date: string) => {
+    const [year, month, day] = date.split("-");
+    return new Date(Number(year), Number(month) - 1, Number(day));
+}
+
 export {
     toFloatingDate,
     toDisplayDate,
-    toDisplayDay
+    toDisplayDay,
+    toLocalDateObj
 }

@@ -2,11 +2,10 @@ const express = require("express");
 const {firebaseAuthMiddleware, requireCreator, requireCreatorOrAdmin, requireParticipants} = require("../middlewares/auth.middleware.js");
 const {getTripProfilePicUrl, createTripController, getCurrentUserActiveTrips,
     getCurrentUserBinTrips, getTripOverview, getTripParticipants, getTripJoinRequests,
-    updateTripOverview, updateTripJoinRequests, updateTripParticipants, cancelTripController,
-    restoreTripController, deleteTripPermanently, searchActiveTripsController, 
-    searchBinTripsController,
-    addJoinRequestController,
-    getTripJoinCode
+    updateTripController, updateTripJoinRequests, cancelTripController, restoreTripController, 
+    deleteTripPermanently, searchActiveTripsController, searchBinTripsController, 
+    addJoinRequestController, getTripJoinCode,
+    removeBuddyController,
 } = require("../controllers/trip.controller.js")
 const router = express.Router();
 
@@ -34,11 +33,14 @@ router.get("/participants/:id", firebaseAuthMiddleware, getTripParticipants);
 router.get("/requests/:id", firebaseAuthMiddleware, getTripJoinRequests);
 // for testing without middleware: router.get("/test/requests/:id", getTripJoinRequests);
 
-router.patch("/overview/:id", firebaseAuthMiddleware, requireParticipants, updateTripOverview);
-// for testing without middleware: router.patch("/test/overview/:id", requireParticipants, updateTripOverview);
+router.get("/search", firebaseAuthMiddleware, searchActiveTripsController);
+// for testing without middleware: router.get("/test/search", searchActiveTripsController);
 
-router.put("/participants/:id", firebaseAuthMiddleware, requireCreatorOrAdmin, updateTripParticipants);
-// for testing without middleware: router.patch("/test/participants/:id", requireCreatorOrAdmin, updateTripParticipants);
+router.get("/bin/search", firebaseAuthMiddleware, searchBinTripsController);
+// for testing without middleware: router.get("/test/bin/search", searchBinTripsController);
+
+router.patch("/:id", firebaseAuthMiddleware, requireParticipants, updateTripController);
+// for testing without middleware: router.patch("/test/:id", requireParticipants, updateTripOverview);
 
 // for user to request to join this trip
 router.patch("/request/:code", firebaseAuthMiddleware, addJoinRequestController);
@@ -53,13 +55,10 @@ router.patch("/cancel/:id", firebaseAuthMiddleware, requireCreator, cancelTripCo
 router.patch("/restore/:id", firebaseAuthMiddleware, requireCreator, restoreTripController);
 // for testing without middleware: router.patch("/test/restore/:id", requireCreator, restoreTripController);
 
+router.patch("/leave/:id", firebaseAuthMiddleware, requireParticipants, removeBuddyController);
+// for testing without middleware: router.patch("/test/restore/:id", requireParticipants, removeBuddyController);
+
 router.delete("/:id", firebaseAuthMiddleware, requireCreator, deleteTripPermanently);
 // for testing without middleware: router.delete("/test/:id", requireCreator, deleteTripPermanently);
-
-router.get("/search", firebaseAuthMiddleware, searchActiveTripsController);
-// for testing without middleware: router.get("/test/search", searchActiveTripsController);
-
-router.get("/bin/search", firebaseAuthMiddleware, searchBinTripsController);
-// for testing without middleware: router.get("/test/bin/search", searchBinTripsController);
 
 module.exports = router;

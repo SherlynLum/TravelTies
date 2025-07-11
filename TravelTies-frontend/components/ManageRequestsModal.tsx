@@ -1,80 +1,65 @@
-import { View, Text, Modal, Pressable, Image, Platform, TouchableOpacity, Switch, TextInput, Alert } from 'react-native';
+import { View, Text, Modal, Pressable, Image, Platform, TouchableOpacity, Switch, Alert } from 'react-native';
 import React, { useEffect, useMemo, useState } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
-import { TripParticipantWithProfile } from '@/types/trips';
+import { JoinRequestsWithProfile, TripParticipant, TripParticipantWithProfile } from '@/types/trips';
 import { FlatList } from 'react-native-gesture-handler';
-import FontAwesome from '@expo/vector-icons/FontAwesome';
-import { useAuth } from '@/context/authContext';
-import { User } from "@/types/users";
-import { getFriends, searchFriends } from '@/apis/userApi';
-import Loading from './Loading';
-import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
 import { Divider } from 'react-native-paper';
+import { useAuth } from '@/context/authContext';
+import { getRequests, updateRequests } from '@/apis/tripApi';
+import Loading from '@/components/Loading';
+import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
 
-type AddBuddiesProps = {
+type ManageRequestsProps = { 
     isVisible: boolean,
-    buddies: TripParticipantWithProfile[],
+    id: string, 
     closeModal: () => void,
-    complete: (updatedBuddies: TripParticipantWithProfile[]) => void
 }
 
-const AddBuddiesModal = ({isVisible, buddies, closeModal, complete} : AddBuddiesProps) => {
-    const HEADER_HEIGHT = Platform.OS === "ios" ? 44 : 56;
-    const [updatedBuddies, setUpdatedBuddies] = useState(buddies);
-    const [searchTerm, setSearchTerm] = useState("");
-    const [loading, setLoading] = useState(false);
-    const uid_set = useMemo(() => new Set(updatedBuddies.map(buddy => buddy.participantUid)), 
-        [updatedBuddies])
-    const [friends, setFriends] = useState<User[]>([]);
+const ManageRequestsModal = ({isVisible, id, closeModal} : ManageRequestsProps) => {
     const {user, getUserIdToken} = useAuth();
+    const HEADER_HEIGHT = Platform.OS === "ios" ? 44 : 56;
+    const [requests, setRequests] = useState<JoinRequestsWithProfile[]>([]);
+    const [acceptedRequests, setAcceptedRequests] = useState<TripParticipant[]>([]); // without profile for uploading to db
+    const [acceptedBuddies, setAcceptedBuddies] = useState<TripParticipantWithProfile[]>([]); // with profile for easy display
+    const accepted_uids = useMemo(() => new Set(acceptedBuddies.map(buddy => buddy.participantUid)), 
+            [acceptedBuddies]);
+    const [declinedUids, setDeclinedUids] = useState<string[]>([]);
+    const [loading, setLoading] = useState(false);
     const [hasError, setHasError] = useState(false);
-    
-    useEffect(() => {
+
+    const loadJoinRequests = async () => {
         setLoading(true);
+        try {
+            const token = await getUserIdToken(user);
+            const joinRequests = await getRequests({token, id});
+            setRequests(joinRequests);
+            setHasError(false);
+        } catch (e) {
+            console.log(e);
+            setHasError(true);
+        } finally {
+            setLoading(false);
+        }
+    }
 
-        const timeout = setTimeout(async () => {
-            try{
-                const token = await getUserIdToken(user);
-                const cleanedSearchTerm = searchTerm.trim();
-                if (cleanedSearchTerm) {
-                    const results = await searchFriends(token, cleanedSearchTerm);
-                    setFriends(results);
-                } else {
-                    const results = await getFriends(token);
-                    setFriends(results)
-                }
-                setHasError(false);
-            } catch (e) {
-                console.log(e);
-                setHasError(true);
-            } finally {
-                setLoading(false);
-            }
-        }, 500);
+    useEffect(() => {
+        loadJoinRequests();
+    }, [])
 
-        return () => clearTimeout(timeout);
-    }, [searchTerm])
-
-    const handleAdd = (friend: User) => {
-        const newBuddy = {
-            participantUid: friend.uid,
-            role: "member", // initial role will be member
-            username: friend.username,
-            profilePicKey: friend.profilePicKey || undefined,
-            profilePicUrl: friend.profilePicUrl || undefined
-        };
-        setUpdatedBuddies(prev => [...prev, newBuddy]);
-    };
-
+    useEffect(() => {
+        const participants = acceptedBuddies.map(({participantUid, role}) => ({participantUid, role}))
+        setAcceptedRequests(participants)
+    }, [acceptedBuddies])
+    
     const isAdmin = (uid: string) => {
-        return updatedBuddies.some(
+        return acceptedBuddies.some(
             buddy => buddy.participantUid === uid && buddy.role === "admin"
         );
     }
 
     const toggleAdmin = (uid: string) => {
-        setUpdatedBuddies(prev => 
+        setAcceptedBuddies(prev => 
             prev.map(buddy => 
                 buddy.participantUid === uid // if is the buddy that is toggling 
                 ? {
@@ -86,7 +71,7 @@ const AddBuddiesModal = ({isVisible, buddies, closeModal, complete} : AddBuddies
     };
 
     const removeBuddy = (uid: string) => {
-        setUpdatedBuddies(prev => prev.filter(buddy => buddy.participantUid !== uid))
+        setAcceptedBuddies(prev => prev.filter(buddy => buddy.participantUid !== uid))
     };
 
     const handleRemove = (uid: string, username: string) => {
@@ -105,8 +90,37 @@ const AddBuddiesModal = ({isVisible, buddies, closeModal, complete} : AddBuddies
         )
     }
 
-    const handleSave = () => {
-        complete(updatedBuddies);
+    const handleAccept = (request: JoinRequestsWithProfile) => {
+        const newBuddy = {
+            participantUid: request.uid,
+            role: "member", // initial role will be member
+            username: request.username,
+            profilePicKey: request.profilePicKey || undefined,
+            profilePicUrl: request.profilePicUrl || undefined
+        };
+        setAcceptedBuddies(prev => [...prev, newBuddy]);
+    };
+
+    const handleDecline = (uid: string) => {
+        setDeclinedUids(prev => [...prev, uid]);
+        setRequests(prev => prev.filter(request => request.uid !== uid));
+    };
+
+    const handleSave = async () => {
+        setLoading(true);
+        try {
+            const token = await getUserIdToken(user);
+            const res = await updateRequests({token, id, acceptedRequests, declinedUids});
+            if (!res) {
+                throw new Error("No trip is found");
+            }
+            closeModal();
+        } catch (e) {
+            console.log(e);
+            Alert.alert("Manage join requests", "Failed to update join requests - please try again");
+        } finally {
+            setLoading(false);
+        }
     }
 
   return (
@@ -128,48 +142,32 @@ const AddBuddiesModal = ({isVisible, buddies, closeModal, complete} : AddBuddies
                 </Pressable>
 
                 <Text className="font-bold text-white text-base">
-                    Add trip buddies
+                    Manage join requests
                 </Text>
 
-                <Pressable onPress={handleSave} hitSlop={14}>
-                    <Text className="font-semibold text-white text-base">
+                <Pressable onPress={handleSave} disabled={loading} hitSlop={14}>
+                    <Text className={`font-semibold ${loading ? "text-neutral-400" : "text-white"} 
+                    text-base`}>
                         Save
                     </Text>
                 </Pressable>
             </View>
 
-            {/* search bar */}
-            <View className="px-5 py-5 items-center justify-center bg-white">
-                <View className="flex flex-row items-center justify-start px-4 bg-gray-200 h-11
-                rounded-5 gap-4">
-                    <FontAwesome name="search" size={15} color="#9CA3AF"/>
-                    <TextInput
-                        autoCapitalize="none"
-                        value={searchTerm}
-                        onChangeText={value => setSearchTerm(value)}
-                        className='flex-1 font-medium text-black text-base'
-                        placeholder='Search by username'
-                        placeholderTextColor={'gray'}
-                        clearButtonMode="while-editing"
-                    />
-                </View>
-            </View>
-
-            {/* friends list */}
             {loading ? (
-                <View className="flex-1 justify-center items-center px-5 bg-white">
+                <View className="flex-1 justify-center items-center bg-white">
                     <Loading size={hp(12)} />
                 </View>
             ) : hasError ? (
-                <View className="flex-1 justify-center items-center px-5 bg-white"> 
+                <View className="flex-1 justify-center items-center bg-white">
                     <Text className="text-center text-base font-medium italic text-gray-500">
-                    {"An error occurred when loading your friends list.\nPlease try again later."}
+                        {"An error occurred when loading the join requests.\nPlease try again later."}
                     </Text>
                 </View>
             ) : (
                 <View className="flex-1 bg-white">
+                    {/* requests list */}
                     <FlatList
-                    data={friends}
+                    data={requests}
                     renderItem={({item}) => {
                         return (
                         <View className="flex flex-row w-full justify-between items-center">
@@ -185,14 +183,26 @@ const AddBuddiesModal = ({isVisible, buddies, closeModal, complete} : AddBuddies
                                 </Text>
                             </View>
                             {
-                                !uid_set.has(item.uid) ? (
-                                    <TouchableOpacity onPress={() => handleAdd(item)} hitSlop={10}
-                                    className='bg-blue-500 justify-center items-center border 
-                                    border-blue-600 shadow-sm h-[30px] px-8 rounded-[30px]'>
+                                !accepted_uids.has(item.uid) ? (
+                                <View className="flex flex-row gap-2">
+                                    {/* accept button */}
+                                    <TouchableOpacity hitSlop={10} onPress={() => handleAccept(item)}
+                                    className='bg-green-600 justify-center items-center border 
+                                    border-green-700 shadow-sm h-[30px] px-8 rounded-[30px]'>
                                         <Text className='text-white font-semibold tracking-wider text-sm'>
-                                            Add to trip
+                                            Accept
                                         </Text>
                                     </TouchableOpacity>
+
+                                    {/* decline button */}
+                                    <TouchableOpacity hitSlop={10} onPress={() => handleDecline(item.uid)}
+                                    className='bg-red-600 justify-center items-center border 
+                                    border-red-700 shadow-sm h-[30px] px-8 rounded-[30px]'>
+                                        <Text className='text-white font-semibold tracking-wider text-sm'>
+                                            Decline
+                                        </Text>
+                                    </TouchableOpacity>
+                                </View>
                                 ) : (
                                     <View className="flex flex-row gap-2">
                                         {/* admin toggle */}
@@ -221,14 +231,15 @@ const AddBuddiesModal = ({isVisible, buddies, closeModal, complete} : AddBuddies
                     )}}
                     keyExtractor={(item) => item.uid}
                     ListEmptyComponent={
-                        <View className="flex-1 justify-center items-center"> 
+                        <View className="flex-1 justify-center items-center bg-white"> 
                             <Text className="text-center text-base font-medium italic text-gray-500">
-                            {"No friends found"}
+                            {"There are no join requests"}
                             </Text>
                         </View>
                     }
                     contentContainerStyle={{flexGrow: 1, paddingHorizontal: 20, paddingVertical: 20}}
                     ItemSeparatorComponent={() => <Divider />}
+                    onRefresh={loadJoinRequests}
                     />
                 </View>
             )}
@@ -237,4 +248,4 @@ const AddBuddiesModal = ({isVisible, buddies, closeModal, complete} : AddBuddies
   )
 }
 
-export default AddBuddiesModal
+export default ManageRequestsModal

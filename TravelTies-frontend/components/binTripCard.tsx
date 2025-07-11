@@ -156,7 +156,7 @@ const BinTripCard = ({trip, removeFromBin} : BinTripCardProps) => {
                     {/* restore button */}
                     <TouchableOpacity hitSlop={10} onPress={handleRestore}
                     className='bg-green-600 justify-center items-center border 
-                    border-green-800 shadow-sm h-[30px] px-8 rounded-[30px]'>
+                    border-green-700 shadow-sm h-[30px] px-8 rounded-[30px]'>
                         <Text className='text-white font-semibold tracking-wider text-sm'>
                             Restore
                         </Text>

@@ -4,7 +4,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { FlatList, Pressable, ScrollView } from 'react-native-gesture-handler';
 import { useAuth } from '@/context/authContext';
 import { pickOnePic } from '@/utils/imagePicker';
-import { createTrip, getParticipants, getTripOverviewWithUrl, getUploadUrl } from '@/apis/tripApi';
+import { cancelTrip, getParticipants, getTripOverviewWithUrl, getUploadUrl, leaveTrip, updateTrip} from '@/apis/tripApi';
 import { deleteObj, uploadPic } from '@/apis/awsApi';
 import { isAxiosError } from 'axios';
 import { Divider, Menu } from 'react-native-paper';
@@ -12,18 +12,20 @@ import DateTimePicker, { DateTimePickerAndroid } from "@react-native-community/d
 import AntDesign from '@expo/vector-icons/AntDesign';
 import Entypo from '@expo/vector-icons/Entypo';
 import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
-import { toDisplayDate, toDisplayDay, toFloatingDate } from '@/utils/dateConverter';
+import { toDisplayDate, toDisplayDay, toFloatingDate, toLocalDateObj } from '@/utils/dateConverter';
 import { getProfileWithUrl } from "@/apis/userApi";
 import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
 import Loading from '@/components/Loading';
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
-import { Trip, TripParticipant, TripParticipantWithProfile } from '@/types/trips';
+import { TripParticipant, TripParticipantWithProfile } from '@/types/trips';
 import AdjustTripPicModal from '@/components/AdjustTripPicModal';
 import ManageBuddiesModal from '@/components/ManageBuddiesModal';
+import ManageRequestsModal from '@/components/ManageRequestsModal';
 
 const EditTripDetails = () => {
     const insets = useSafeAreaInsets();
-    const {id} = useLocalSearchParams();
+    const params = useLocalSearchParams();
+    const id = Array.isArray(params.id) ? params.id[0] : params.id; // for Typescript checking, although it is never possible to be an array 
     const router = useRouter();
     const {user, getUserIdToken} = useAuth();
     const [name, setName] = useState("");
@@ -39,8 +41,7 @@ const EditTripDetails = () => {
     const [oldPicKey, setOldPicKey] = useState("");
     const [picKey, setPicKey] = useState("");
     const [menuOpen, setMenuOpen] = useState(false);
-    const [loading, setLoading] = useState(false); 
-    const [createLoading, setCreateLoading] = useState(false);
+    const [loading, setLoading] = useState(false);
 
     const [startDate, setStartDate] = useState<Date | null>(null);
     const [tempStartDate, setTempStartDate] = useState<Date | null>(null);
@@ -65,8 +66,12 @@ const EditTripDetails = () => {
     const [participantLoading, setParticipantLoading] = useState(false);
     const [participantError, setParticipantError] = useState(false);
     const [currentUid, setCurrentUid] = useState("");
+    const [currentRole, setCurrentRole] = useState("");
     const [tripParticipants, setTripParticipants] = useState<TripParticipant[]>([]);
-    const [manageModalOpen, setManageModalOpen] = useState(false);
+    const [buddiesModalOpen, setBuddiesModalOpen] = useState(false);
+    const [requestsModalOpen, setRequestsModalOpen] = useState(false);
+    const [updateLoading, setUpdateLoading] = useState(false);
+    const [exitLoading, setExitLoading] = useState(false);
 
     const screenWidth = Dimensions.get("window").width;
     const imageWidth = screenWidth - 18 - 18; // 18 horixontal padding on each side
@@ -90,15 +95,35 @@ const EditTripDetails = () => {
 
               const overview = await getTripOverviewWithUrl({token, id});
               setName(overview.name);
+              setPicKey(overview.profilePicKey || "");
               setTripProfilePicUrl(overview.profilePicUrl || "");
-              
+              if (overview.startDate) {
+                const start = toLocalDateObj(overview.startDate);
+                setStartDate(start);
+                setStartDateStr({date: toDisplayDate(start), day: toDisplayDay(start)});
+              } else if (!overview.startDate) {
+                setStartDate(null);
+                setStartDateStr({date: "", day: ""});
+              }
+              if (overview.endDate) {
+                const end = toLocalDateObj(overview.endDate);
+                setEndDate(end);
+                setEndDateStr({date: toDisplayDate(end), day: toDisplayDay(end)});
+              } else if (!overview.endDate) {
+                setEndDate(null);
+                setEndDateStr({date: "", day: ""});
+              }
+              setNoOfDays(overview.noOfDays ? overview.noOfDays.toString() : "");
+              setDayStr(overview.noOfDays <= 1 ? "Day" : "Days");
+              setNoOfNights(overview.noOfNights ?? null);
+              setNightStr(overview.noOfNights <= 1 ? "Night" : "Nights");
           } catch (e) {
               console.log(e);
               Alert.alert("Edit trip details", 
               "Unable to load trip details",
               [{
                   text: "Back to trip overview",
-                  onPress: () => router.back()
+                  onPress: () => router.replace(`/trips/${id}/overview`)
               }])
           } finally {
               setLoading(false);
@@ -118,9 +143,13 @@ const EditTripDetails = () => {
             const participants = await getParticipants({token, id});
             setBuddies(participants);
             setParticipantError(false);
+            const role = participants.find(participant => participant.uid === currentUid)?.role;
+            setCurrentRole(role || "");
           } catch (e) {
             console.log(e); 
+            setBuddies([]);
             setParticipantError(true);
+            setCurrentRole("");
           } finally {
             setParticipantLoading(false);
           }
@@ -296,13 +325,17 @@ const EditTripDetails = () => {
         }
     }, [startDate, endDate, noOfDays]);
 
+    const closeRequestModal = () => {
+      setRequestsModalOpen(false);
+    }
+
     const closeManageModal = () => {
-        setManageModalOpen(false);
+        setBuddiesModalOpen(false);
     }
 
     const completeManageModal = (updatedbuddies: TripParticipantWithProfile[]) => {
         setBuddies(updatedbuddies);
-        setManageModalOpen(false);
+        setBuddiesModalOpen(false);
     }
 
     useEffect(() => {
@@ -310,60 +343,60 @@ const EditTripDetails = () => {
         setTripParticipants(participants)
     }, [buddies])
 
-    const createATrip = async () => {
-        try {
-            const token = await getUserIdToken(user);
+    const updateTripDetails = async () => {
+      try {
+          const token = await getUserIdToken(user);
 
-            if (picKey) {
-                if (!uploadSuccess) {
-                    const uploadRes = await uploadCroppedPic(token);
-                    if (!uploadRes) {
-                        setCreateLoading(false);
-                        return; // early exit if failed to upload
-                    }
-                }
-            }
+          if (picKey) {
+              if (!uploadSuccess) {
+                  const uploadRes = await uploadCroppedPic(token);
+                  if (!uploadRes) {
+                    setUpdateLoading(false);
+                    return; // early exit if failed to upload
+                  }
+              }
+          }
 
-            if (oldPicKey) {
-                await deletePrevPic(token); // no early exit as delete previous pictrue from aws s3 is not really a must
-            } 
+          if (oldPicKey) {
+              await deletePrevPic(token); // no early exit as delete previous pictrue from aws s3 is not really a must
+          } 
 
-            const trip = await createTrip({token, name: nameRef.current, 
-                profilePicKey: picKey || undefined, 
-                startDate: startDate ? toFloatingDate(startDate) : undefined,
-                endDate: endDate ? toFloatingDate(endDate) : undefined,
-                noOfDays: noOfDays ? Number(noOfDays) : undefined,
-                noOfNights: noOfNights || undefined,
-                tripParticipants});
-            if (!trip) {
-                throw new Error("No trip is created");
-            }
-            router.replace("/tripsDashboard");
-        } catch (e) {
-            console.log(e);
-            console.log("Axios error:", isAxiosError(e) && e.response?.data)
-            if (isAxiosError(e) && e.response?.data?.datesErr) {
-                Alert.alert("Failed to create trip", e.response.data.message);
-            }
-            Alert.alert("Failed to create trip", "Please try again later")
-        } finally {
-            setCreateLoading(false);
-        }
+          const trip = await updateTrip({token, id, name, 
+              profilePicKey: picKey || undefined, 
+              startDate: startDate ? toFloatingDate(startDate) : undefined,
+              endDate: endDate ? toFloatingDate(endDate) : undefined,
+              noOfDays: noOfDays ? Number(noOfDays) : undefined,
+              noOfNights: noOfNights || undefined,
+              tripParticipants});
+          if (!trip) {
+              throw new Error("No trip is found");
+          }
+          router.replace(`/trips/${id}/overview`);
+      } catch (e) {
+          console.log(e);
+          console.log("Axios error:", isAxiosError(e) && e.response?.data)
+          if (isAxiosError(e) && e.response?.data?.datesErr) {
+              Alert.alert("Failed to update trip details", e.response.data.message);
+          }
+          Alert.alert("Failed to update trip details", "Please try again later")
+      } finally {
+          setUpdateLoading(false);
+      }
     }
 
-    const handleCreate = async () => {
-        if (!nameRef.current) {
-            Alert.alert("Failed to create trip", "Please give your trip a name");
+    const handleUpdate = async () => {
+        if (!name) {
+            Alert.alert("Failed to update trip details", "Please give your trip a name");
             return;
         }
         if ((startDate && !endDate) || (!startDate && endDate)) {
-            Alert.alert("Failed to create trip", 
+            Alert.alert("Failed to update trip details", 
                 "Start date and end date must be set together or left unset");
             return;
         }
 
         if (startDate && endDate && (startDate > endDate)) {
-            Alert.alert("Failed to create trip", "Start Date must be before end date");
+            Alert.alert("Failed to update trip details", "Start Date must be before end date");
             return;
         }
 
@@ -371,14 +404,79 @@ const EditTripDetails = () => {
             const diffInMs = endDate.getTime() - startDate.getTime();
             const days = Math.round(diffInMs / (1000 * 60 * 60 * 24)) + 1;
             if (Number(noOfDays) !== days) {
-                Alert.alert("Failed to create trip", 
-                "The number of days does not match the selected start and end dates")
+                Alert.alert("Failed to update trip details", 
+                "The number of days does not match the selected start and end dates");
                 return;
             }
         }
 
-        setCreateLoading(true);
-        return createATrip();
+        if (Number(noOfDays) <= 0) {
+          Alert.alert("Failed to update trip details", "The number of days must be at least 1");
+          return;
+        }
+
+        setUpdateLoading(true);
+        await updateTripDetails(); 
+    }
+
+    const cancelThisTrip = async () => {
+      try {
+        const token = await getUserIdToken(user);
+        const res = await cancelTrip({token, id});
+        if (!res) {
+          throw new Error("No trip is found");
+        }
+        router.replace("/tripsDashboard")
+      } catch (e) {
+        console.log(e);
+        Alert.alert("Cancel trip", `Failed to cancel ${name}`)
+      }
+    }
+
+    const handleCancel = () => {
+      Alert.alert("Cancel trip", `Are you sure you want to cancel ${name}?`,
+        [
+          {
+            text: "No",
+            style: "cancel"
+          }, 
+          {
+            text: "Yes",
+            style: "destructive",
+            onPress: cancelThisTrip
+          }
+        ]
+      )
+    }
+
+    const leaveThisTrip = async () => {
+      try {
+        const token = await getUserIdToken(user);
+        const res = await leaveTrip({token, id});
+        if (!res) {
+          throw new Error("No trip is found");
+        }
+        router.replace("/tripsDashboard")
+      } catch (e) {
+        console.log(e);
+        Alert.alert("Leave trip", `Failed to leave ${name}`)
+      }
+    }
+
+    const handleLeave = () => {
+      Alert.alert("Leave trip", `Are you sure you want to leave ${name}?`,
+        [
+          {
+            text: "No",
+            style: "cancel"
+          }, 
+          {
+            text: "Yes",
+            style: "destructive",
+            onPress: leaveThisTrip
+          }
+        ]
+      )
     }
 
   return (
@@ -404,8 +502,9 @@ const EditTripDetails = () => {
                 </View>
                 <View className="bg-white border border-black px-4 rounded-[5px] h-[50px]">
                     <TextInput
+                        value={name}
                         autoCapitalize="none"
-                        onChangeText={value => nameRef.current=value}
+                        onChangeText={setName}
                         className="flex-1 font-medium text-black text-base"
                         placeholder="Name your trip"
                         placeholderTextColor={"gray"}
@@ -419,7 +518,8 @@ const EditTripDetails = () => {
                 <Text className="font-semibold text-lg text-left">
                     Trip profile picture
                 </Text>
-                <Image source={croppedPicUri ? ({uri: croppedPicUri}) : 
+                <Image source={croppedPicUri ? {uri: croppedPicUri} : // if croppedPicUri exists, means users change the previous profile pic
+                    tripProfilePicUrl ? {uri: tripProfilePicUrl} : // next check whether there is a previously uploaded profile pic if no croppedPicUri
                     require("../../../assets/images/default-trip-profile-pic.png")}
                     style={{width: imageWidth, height: imageHeight}}
                     className="border-neutral-400 border-1" />
@@ -608,13 +708,25 @@ const EditTripDetails = () => {
 
             {/* manage buddies */}
             <View className="flex flex-col gap-3">
-                <Text className="font-semibold text-lg text-left">
-                    Buddies
-                </Text>
+                <View className="flex flex-row gap-4 items-center justifiy-start">
+                    <Text className="font-semibold text-lg text-left">
+                        Buddies
+                    </Text>
+                    {/* manage join requests button */}
+                    { (currentRole === "admin" || currentRole === "creator") && (
+                      <TouchableOpacity onPress={() => setRequestsModalOpen(true)}
+                      className='bg-blue-400 justify-center items-center border 
+                      border-blue-700 shadow-sm h-[44px] px-6 rounded-[30px]'>
+                          <Text className='text-white font-semibold tracking-wider text-sm'>
+                              Manage join requests
+                          </Text>
+                      </TouchableOpacity>
+                    )}
+                </View>
                 <View className="flex flex-row gap-4 items-center">
-                    {/* current user i.e. the creator */}
+                    {/* current user */}
                     <View className="flex flex-col gap-2 justify-center items-start">
-                        <View className="flex flex-row gap-5 justify-start items-center">
+                        <View className="flex flex-row gap-3 justify-start items-center w-full">
                             <Image source={!userProfilePicUrl 
                             ? require("../../../assets/images/default-user-profile-pic.png")
                             : userProfilePicUrl === "Failed to load" 
@@ -622,28 +734,39 @@ const EditTripDetails = () => {
                             : {uri: userProfilePicUrl}}
                             className="border-neutral-400 border-2 w-[40px] h-[40px] rounded-[20px]" />
 
-                            {/* buddies */}
-                            <FlatList
-                            data={buddies.filter(buddy => buddy.participantUid !== currentUid)}
-                            renderItem={({item}) => (
-                                <Image source={!item.profilePicUrl 
-                                ? require("../../../assets/images/default-user-profile-pic.png")
-                                : item.profilePicUrl === "Failed to load" 
-                                ? require("../../../assets/images/error-icon.png")
-                                : {uri: item.profilePicUrl}}
-                                className="border-neutral-400 border-2 w-[40px] h-[40px] rounded-[20px]" />
+                            {participantLoading ? (
+                              <Loading size={hp(6)} />
+                            ) : participantError ? (
+                              <Text className="font-medium text-xs italic text-red-600">
+                                Failed to load your trip buddies
+                              </Text>
+                            ) : (
+                              <View className="flex-1 flex-row gap-4 items-center">
+                                {/* buddies */}
+                                <FlatList
+                                data={buddies.filter(buddy => buddy.participantUid !== currentUid)}
+                                renderItem={({item}) => (
+                                    <Image source={!item.profilePicUrl 
+                                    ? require("../../../assets/images/default-user-profile-pic.png")
+                                    : item.profilePicUrl === "Failed to load" 
+                                    ? require("../../../assets/images/error-icon.png")
+                                    : {uri: item.profilePicUrl}}
+                                    className="border-neutral-400 border-2 w-[40px] h-[40px] rounded-[20px]" />
+                                )}
+                                horizontal={true}
+                                showsHorizontalScrollIndicator={false}
+                                keyExtractor={(item) => item.participantUid}
+                                style={{flexGrow: 0, flexShrink: 1}}
+                                ItemSeparatorComponent={() => <View className="w-[12px]"/>}
+                                />
+                                {(currentRole === "admin" || currentRole === "creator") &&
+                                  // edit button 
+                                  (<Pressable onPress={() => setBuddiesModalOpen(true)} hitSlop={14}>
+                                      <FontAwesome6 name="edit" size={24} color="#60A5FA" />
+                                  </Pressable>)
+                                }
+                              </View>
                             )}
-                            horizontal={true}
-                            showsHorizontalScrollIndicator={false}
-                            keyExtractor={(item) => item.participantUid}
-                            contentContainerStyle={{flexGrow: 1, justifyContent: "center", alignItems: "center"}}
-                            ItemSeparatorComponent={() => <View className="w-[20px]"/>}
-                            />
-
-                            {/* edit button */}
-                            <Pressable onPress={() => setManageModalOpen(true)} hitSlop={14}>
-                                <FontAwesome6 name="edit" size={24} color="#60A5FA" />
-                            </Pressable>
                         </View>
                         <View className="px-3">
                             <Text className="text-xs text-gray-500 font-semibold">
@@ -654,18 +777,45 @@ const EditTripDetails = () => {
                 </View>
             </View>
 
-            {/* create button */}
+            {/* save changes button */}
             <View className="items-center justify-center">
                 {
-                    createLoading ? (
+                    updateLoading ? (
                         <Loading size={hp(8)} />
                     ) : (
-                        <TouchableOpacity onPress={handleCreate}
+                        <TouchableOpacity onPress={handleUpdate}
                         className='bg-blue-500 justify-center items-center border 
-                        border-blue-600 shadow-sm h-[44px] px-8 rounded-[30px]'>
+                        border-blue-600 shadow-sm h-[44px] rounded-[10px]'
+                        style={{width: imageWidth}}>
                             <Text className='text-white font-semibold tracking-wider text-sm'>
-                                Create
+                                Save changes
                             </Text>
+                        </TouchableOpacity>
+                    )
+                }
+            </View>
+
+            <View className="items-center justify-center">
+                {
+                    exitLoading ? (
+                        <Loading size={hp(8)} />
+                    ) : currentRole === "creator" ? (
+                        <TouchableOpacity onPress={handleCancel}
+                        className='bg-white justify-center items-center border 
+                        border-black shadow-sm h-[44px] rounded-[10px]'
+                        style={{width: imageWidth}}>
+                            <Text className='text-red-500 font-semibold tracking-wider text-sm'>
+                                Cancel trip
+                            </Text>
+                        </TouchableOpacity>
+                    ) : (
+                        <TouchableOpacity onPress={handleLeave}
+                          className='bg-white justify-center items-center border 
+                          border-black shadow-sm h-[44px] rounded-[10px]'
+                          style={{width: imageWidth}}>
+                              <Text className='text-red-500 font-semibold tracking-wider text-sm'>
+                                  Leave trip
+                              </Text>
                         </TouchableOpacity>
                     )
                 }
@@ -677,7 +827,9 @@ const EditTripDetails = () => {
             height={picHeight} closeModal={closeAdjustModal} completeCrop={completeAdjustPic} />
         )}
 
-        <ManageBuddiesModal isVisible={manageModalOpen} buddies={buddies} currentUid={currentUid}
+        <ManageRequestsModal isVisible={requestsModalOpen} id={id} closeModal={closeRequestModal} />
+
+        <ManageBuddiesModal isVisible={buddiesModalOpen} buddies={buddies} currentUid={currentUid}
             closeModal={closeManageModal} complete={completeManageModal}/>
     </ScrollView>
     </KeyboardAvoidingView>

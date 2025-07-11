@@ -38,7 +38,7 @@ const DisplayTripInfo = () => {
                     "Unable to load this trip's info",
                     [{
                         text: "Back to trip overview",
-                        onPress: () => router.back()
+                        onPress: () => router.replace(`/trips/${id}/overview`)
                     }])
             } finally {
                 setLoading(false);

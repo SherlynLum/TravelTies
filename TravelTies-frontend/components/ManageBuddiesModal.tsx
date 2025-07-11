@@ -1,4 +1,4 @@
-import { View, Text, Modal, Pressable, Image, Platform, TouchableOpacity, Switch } from 'react-native';
+import { View, Text, Modal, Pressable, Image, Platform, TouchableOpacity, Switch, Alert } from 'react-native';
 import React, { useState } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
@@ -44,6 +44,22 @@ const ManageBuddiesModal = ({isVisible, buddies, currentUid, closeModal, complet
     const removeBuddy = (uid: string) => {
         setUpdatedBuddies(prev => prev.filter(buddy => buddy.participantUid !== uid))
     };
+
+    const handleRemove = (uid: string, username: string) => {
+        Alert.alert("Remove buddy", `Are you sure you want to remove ${username} from this trip?`,
+            [
+                {
+                text: "No",
+                style: "cancel"
+                }, 
+                {
+                text: "Yes",
+                style: "destructive",
+                onPress: () => removeBuddy(uid)
+                }
+            ]
+        )
+    }
 
     const handleSave = () => {
         complete(updatedBuddies);
@@ -100,7 +116,7 @@ const ManageBuddiesModal = ({isVisible, buddies, currentUid, closeModal, complet
                             <Image source={!item.profilePicUrl 
                             ? require("../../../assets/images/default-user-profile-pic.png")
                             : item.profilePicUrl === "Failed to load" 
-                            ? require("../../../assets/images/error-icon.png")
+                            ? require("../../../assets/images/image-error-icon.png")
                             : {uri: item.profilePicUrl}}
                             className="border-neutral-400 border-2 w-[40px] h-[40px] rounded-[20px]" />
                             <Text className="font-medium text-base text-black">
@@ -130,7 +146,7 @@ const ManageBuddiesModal = ({isVisible, buddies, currentUid, closeModal, complet
                                     </View>
 
                                     {/* remove button */}
-                                    <TouchableOpacity hitSlop={10} onPress={() => removeBuddy(item.participantUid)}
+                                    <TouchableOpacity hitSlop={10} onPress={() => handleRemove(item.participantUid, item.username)}
                                     className='bg-red-600 justify-center items-center border 
                                     border-red-700 shadow-sm h-[30px] px-8 rounded-[30px]'>
                                         <Text className='text-white font-semibold tracking-wider text-sm'>
@@ -150,8 +166,7 @@ const ManageBuddiesModal = ({isVisible, buddies, currentUid, closeModal, complet
                         </Text>
                     </View>
                 }
-                contentContainerStyle={{flexGrow: 1, justifyContent: "center", alignItems: "center",
-                paddingHorizontal: 20, paddingVertical: 20}}
+                contentContainerStyle={{flexGrow: 1, paddingHorizontal: 20, paddingVertical: 20}}
                 ItemSeparatorComponent={() => <Divider />}
                 />
             </View>

@@ -111,7 +111,7 @@ const AddTrip = () => {
                 "Unable to create a trip because we couldn’t load your profile.",
                 [{
                     text: "Back to trips dashboard",
-                    onPress: () => router.back()
+                    onPress: () => router.replace("/tripsDashboard")
                 }])
             } finally {
                 setLoading(false);
@@ -364,13 +364,18 @@ const AddTrip = () => {
             const days = Math.round(diffInMs / (1000 * 60 * 60 * 24)) + 1;
             if (Number(noOfDays) !== days) {
                 Alert.alert("Failed to create trip", 
-                "The number of days does not match the selected start and end dates")
+                "The number of days does not match the selected start and end dates");
                 return;
             }
         }
 
+        if (Number(noOfDays) <= 0) {
+            Alert.alert("Failed to create trip", "The number of days must be at least 1");
+            return;
+        }
+
         setCreateLoading(true);
-        return createATrip();
+        await createATrip();
     }
 
   return (
@@ -606,11 +611,11 @@ const AddTrip = () => {
                 <View className="flex flex-row gap-4 items-center">
                     {/* current user i.e. the creator */}
                     <View className="flex flex-col gap-2 justify-center items-start">
-                        <View className="flex flex-row gap-5 justify-start items-center">
+                        <View className="flex flex-row gap-5 justify-start items-center w-full">
                             <Image source={!userProfilePicUrl 
                             ? require("../../../assets/images/default-user-profile-pic.png")
                             : userProfilePicUrl === "Failed to load" 
-                            ? require("../../../assets/images/error-icon.png")
+                            ? require("../../../assets/images/image-error-icon.png")
                             : {uri: userProfilePicUrl}}
                             className="border-neutral-400 border-2 w-[40px] h-[40px] rounded-[20px]" />
 
@@ -621,14 +626,14 @@ const AddTrip = () => {
                                 <Image source={!item.profilePicUrl 
                                 ? require("../../../assets/images/default-user-profile-pic.png")
                                 : item.profilePicUrl === "Failed to load" 
-                                ? require("../../../assets/images/error-icon.png")
+                                ? require("../../../assets/images/image-error-icon.png")
                                 : {uri: item.profilePicUrl}}
                                 className="border-neutral-400 border-2 w-[40px] h-[40px] rounded-[20px]" />
                             )}
                             horizontal={true}
-                            showsHorizontalScrollIndicator={false}
                             keyExtractor={(item) => item.participantUid}
-                            contentContainerStyle={{flexGrow: 1, justifyContent: "center", alignItems: "center"}}
+                            contentContainerStyle={{justifyContent: "center", alignItems: "center"}}
+                            style={{flexGrow: 0, flexShrink: 1}}
                             ItemSeparatorComponent={() => <View className="w-[20px]"/>}
                             />
 
