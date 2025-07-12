@@ -556,7 +556,8 @@ const EditTripDetails = () => {
                     <TouchableOpacity className="flex-1 flex-row bg-white border border-black px-4 
                     rounded-[5px] h-[50px] items-center gap-3" onPress={openStartDatePicker}>
                         <AntDesign name="calendar" size={24} color="gray" />
-                        <Text className="flex-1 font-medium text-gray-500 text-base">
+                        <Text className={`flex-1 font-medium ${startDateStr.date ? "text-black" :
+                        "text-gray-500"} text-base`}>
                             {startDateStr.date ? `${startDateStr.date} (${startDateStr.day})` 
                             : "Select trip start date"}
                         </Text>
@@ -618,7 +619,8 @@ const EditTripDetails = () => {
                     <TouchableOpacity className="flex-1 flex-row bg-white border border-black px-4 
                     rounded-[5px] h-[50px] items-center gap-3" onPress={openEndDatePicker}>
                         <AntDesign name="calendar" size={24} color="gray" />
-                        <Text className="flex-1 font-medium text-gray-500 text-base">
+                        <Text className={`flex-1 font-medium ${endDateStr.date ? "text-black" :
+                        "text-gray-500"} text-base`}>
                             {endDateStr.date ? `${endDateStr.date} (${endDateStr.day})` 
                             : "Select trip end date"}
                         </Text>

@@ -116,8 +116,8 @@ const TripsDashboard = () => {
             {["Planning", "Ongoing", "Completed"].map(tabName => (
               <TouchableOpacity
               key={tabName} onPress={() => setTab(tabName)} hitSlop={5}
-              className={`bg-white justify-center items-center border shadow-sm h-[35px] px-8 
-              rounded-[30px] ${tab === tabName ? "border-blue-500": "border-gray-500"}`}>
+              className={`bg-white justify-center items-center shadow-sm h-[35px] px-8 rounded-[30px] 
+              ${tab === tabName ? "border-blue-500 border-2": "border-gray-500 border"}`}>
                 <Text className={`font-semibold ${tab === tabName ? "text-blue-500" : "text-gray-500"}
                 text-sm`}>
                   {tabName}

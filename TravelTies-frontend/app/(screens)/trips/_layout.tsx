@@ -1,4 +1,4 @@
-import { View, Text, Pressable } from 'react-native'
+import { Pressable } from 'react-native'
 import React from 'react'
 import { Stack, useRouter } from 'expo-router'
 import Ionicons from '@expo/vector-icons/Ionicons';
@@ -22,9 +22,7 @@ export default function Layout() {
                     },
                     headerLeft: () => (
                         <Pressable onPress={() => router.back()} hitSlop={14} className="pr-5">
-                            <Text className="font-semibold text-white text-base">
-                                Cancel
-                            </Text>
+                            <Ionicons name="chevron-back" size={24} color="white" />
                         </Pressable>
                     )
                 }} />
@@ -39,7 +37,7 @@ export default function Layout() {
                         fontWeight: "bold"
                     },
                     headerLeft: () => (
-                        <Pressable onPress={() => router.back()} hitSlop={14}>
+                        <Pressable onPress={() => router.back()} hitSlop={14} className="pr-5">
                             <Ionicons name="chevron-back" size={24} color="white" />
                         </Pressable>
                     )
