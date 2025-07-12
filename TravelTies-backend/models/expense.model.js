@@ -14,7 +14,13 @@ const owedBySchema = new mongoose.Schema({
     isPaid: {
         type: Boolean,
         default: false
-    }
+    },
+
+    splitMethod: {
+        type: String,
+        enum: ['even', 'custom']
+},
+
 }, {
     _id: false
 })
