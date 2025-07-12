@@ -8,4 +8,7 @@ router.post("/", expenseController.createExpense);
 // GET /api/expenses/:trackerId
 router.get("/:trackerId", expenseController.getExpensesForTracker);
 
+// DELETE /api/expenses/:expenseId
+router.delete("/:expenseId", expenseController.deleteExpense);
+
 module.exports = router;
