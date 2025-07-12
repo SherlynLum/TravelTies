@@ -50,3 +50,27 @@ exports.getExpensesForTracker = async (req, res) => {
         res.status(500).json({ error: "Failed to fetch expenses" });
     }
 };
+
+// Delete a specific expense
+exports.deleteExpense = async (req, res) => {
+  try {
+    const { expenseId } = req.params;
+
+    const deletedExpense = await Expense.findByIdAndDelete(expenseId);
+    if (!deletedExpense) {
+      return res.status(404).json({ error: "Expense not found" });
+    }
+
+    // Deduct from totalExpenses
+    const tracker = await ExpenseTracker.findById(deletedExpense.expenseTrackerId);
+    if (tracker) {
+      tracker.totalExpenses -= deletedExpense.amountForPayer;
+      await tracker.save();
+    }
+
+    res.json({ message: "Expense deleted successfully" });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Failed to delete expense" });
+  }
+};
