@@ -35,3 +35,23 @@ exports.getExpenseTracker = async (req, res) => {
         res.status(500).json({ error: "Failed to fetch expense tracker" });
     }
 };
+
+exports.updateExpenseTracker = async (req, res) => {
+  try {
+    const { tripId } = req.params;
+    const { budget } = req.body;
+
+    const tracker = await ExpenseTracker.findOne({ tripId });
+    if (!tracker) {
+      return res.status(404).json({ error: "Expense tracker not found" });
+    }
+
+    tracker.budget = budget;
+    await tracker.save();
+
+    res.status(200).json(tracker);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Failed to update budget" });
+  }
+};
