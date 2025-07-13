@@ -10,7 +10,7 @@ const tripRoute = require("./routes/trip.route.js");
 const expenseTrackerRoute = require("./routes/expenseTracker.route");
 const expenseRoute = require("./routes/expense.route");
 const admin = require("firebase-admin");
-const serviceAccount = require("./serviceAccountKey.json");
+const serviceAccount = require("etc/secrets/serviceAccountKey.json");
 
 //initialise Firebase Admin SDK
 admin.initializeApp({
