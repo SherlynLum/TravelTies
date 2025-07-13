@@ -11,17 +11,19 @@ const categoryColors = {
   uncategorised: '#BDC3C7',
 };
 
+type OwedBy = {
+  owedByUid: string;
+  amount: number;
+  isPaid?: boolean;
+};
+
 type ExpenseItem = {
   _id: string;
   category?: string;
   name: string;
   amountForPayer: number;
   isShared?: boolean;
-  owedBy?: {
-    owedByUid: string;
-    amount: number;
-    isPaid?: boolean;
-  }[];
+  owedBy?: OwedBy[];
 };
 
 type ExpenseListProps = {
@@ -29,9 +31,10 @@ type ExpenseListProps = {
   currency: string;
   onDelete: (id: string) => void;
   onEdit: (expense: ExpenseItem) => void;
+  onTogglePaidStatus?: (updatedExpense: ExpenseItem) => void;
 };
 
-export default function ExpenseList({ expenses, currency, onDelete, onEdit }: ExpenseListProps) {
+export default function ExpenseList({ expenses, currency, onDelete, onEdit, onTogglePaidStatus }: ExpenseListProps) {
   const [tab, setTab] = useState<'personal' | 'split'>('personal');
 
   const confirmDelete = (id: string) => {
@@ -43,12 +46,18 @@ export default function ExpenseList({ expenses, currency, onDelete, onEdit }: Ex
 
   const filteredExpenses =
     tab === 'personal'
-      ? expenses.filter((e) => !e.isShared)
-      : expenses.filter((e) => e.isShared);
+      ? expenses.filter(
+          (e) =>
+            !e.isShared ||
+            (e.isShared && e.owedBy?.some((o) => o.owedByUid === 'me'))
+        )
+      : expenses.filter(
+          (e) =>
+            e.isShared && e.owedBy?.some((o) => o.owedByUid !== 'me')
+        );
 
   return (
     <View>
-      {/* Tabs */}
       <View style={styles.tabRow}>
         <TouchableOpacity
           style={[styles.tabBtn, tab === 'personal' && styles.tabActive]}
@@ -78,7 +87,6 @@ export default function ExpenseList({ expenses, currency, onDelete, onEdit }: Ex
         </TouchableOpacity>
       </View>
 
-      {/* Content */}
       <View>
         {filteredExpenses.length === 0 ? (
           <Text style={styles.noExpenseText}>
@@ -102,7 +110,14 @@ export default function ExpenseList({ expenses, currency, onDelete, onEdit }: Ex
                       marginRight: 8,
                     }}
                   />
-                  <Text style={styles.expenseItem}> {item.name}</Text>
+                  <Text style={styles.expenseItem}>
+                    {item.name} — {currency}
+                    {tab === 'personal' && item.isShared
+                      ? (
+                          item.owedBy?.find((o) => o.owedByUid === 'me')?.amount.toFixed(2) || '0.00'
+                        )
+                      : item.amountForPayer.toFixed(2)}
+                  </Text>
                 </View>
                 <View style={{ flexDirection: 'row', gap: 10 }}>
                   <TouchableOpacity onPress={() => onEdit(item)}>
@@ -114,13 +129,42 @@ export default function ExpenseList({ expenses, currency, onDelete, onEdit }: Ex
                 </View>
               </View>
 
-              {/* Split breakdown */}
-              {item.owedBy?.map((p, i) => (
-                <Text key={i} style={{ paddingLeft: 16, color: '#333' }}>
-                  • {p.owedByUid} owes you {currency}
-                  {p.amount.toFixed(2)}
+              {tab === 'personal' && item.isShared && item.owedBy?.some((p) => p.owedByUid === 'me') && (
+                <Text style={{ paddingLeft: 16, color: '#555' }}>
+                  • Shared expense
                 </Text>
-              ))}
+              )}
+
+              {tab === 'split' &&
+                item.owedBy
+                  ?.filter((p) => p.owedByUid !== 'me')
+                  .map((p, i) => {
+                    const isPaid = p.isPaid;
+                    return (
+                      <View
+                        key={i}
+                        style={{ flexDirection: 'row', alignItems: 'center', paddingLeft: 16, marginBottom: 4 }}
+                      >
+                        <Text style={{ color: '#333', flex: 1 }}>
+                          • {p.owedByUid} owes you {currency}
+                          {p.amount.toFixed(2)} {isPaid ? '(done)' : ''}
+                        </Text>
+                        <TouchableOpacity
+                          onPress={() => {
+                            const newOwedBy = item.owedBy?.map(o =>
+                              o.owedByUid === p.owedByUid ? { ...o, isPaid: !isPaid } : o
+                            );
+                            const updatedExpense = { ...item, owedBy: newOwedBy };
+                            if (onTogglePaidStatus) onTogglePaidStatus(updatedExpense);
+                          }}
+                        >
+                          <Text style={{ color: isPaid ? '#007AFF' : 'green', fontWeight: 'bold' }}>
+                            {isPaid ? 'Undo' : '✓'}
+                          </Text>
+                        </TouchableOpacity>
+                      </View>
+                    );
+                  })}
             </View>
           ))
         )}

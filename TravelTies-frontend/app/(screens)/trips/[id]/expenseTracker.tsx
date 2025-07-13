@@ -11,10 +11,15 @@ import {
 import BudgetChart from './expensecomponents/BudgetChart';
 import ExpenseList from './expensecomponents/ExpenseList';
 import ExpensePieChart from './expensecomponents/ExpensePieChart';
-import Dialog from 'react-native-dialog';
 import AddExpenseModal from './expensecomponents/AddExpenseModal';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { ExpenseItem } from '@/types/ExpenseItem';
+
+// Define OwedBy type locally if needed
+type OwedBy = {
+  owedByUid: string;
+  amount: number;
+};
 
 export default function ExpenseTracker() {
   const [view, setView] = useState<'budget' | 'breakdown'>('budget');
@@ -22,11 +27,10 @@ export default function ExpenseTracker() {
   const [budget, setBudget] = useState(0);
   const [currency, setCurrency] = useState('$');
   const [totalExpenses, setTotalExpenses] = useState(0);
+  const [individualSpent, setIndividualSpent] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [trackerId, setTrackerId] = useState('');
-  const [showDialog, setShowDialog] = useState(false);
-  const [newBudget, setNewBudget] = useState('');
   const [showAddModal, setShowAddModal] = useState(false);
   const [editingExpense, setEditingExpense] = useState<ExpenseItem | null>(null);
   const [knownUsers, setKnownUsers] = useState<{ label: string; uid: string }[]>([]);
@@ -49,14 +53,44 @@ export default function ExpenseTracker() {
       const expensesRes = await fetch(
         `https://travelties-expensetracker.onrender.com/api/expenses/${trackerData._id}`
       );
-      const expensesData = await expensesRes.json();
-
+      const expensesData: ExpenseItem[] = await expensesRes.json();
       setExpenses(expensesData);
+
+      const individualExpenses = expensesData.filter(
+        (e: ExpenseItem) =>
+          !e.isShared ||
+          (e.isShared && e.owedBy?.some((o: OwedBy) => o.owedByUid === 'me'))
+      );
+
+      const spent = individualExpenses.reduce((sum: number, e: ExpenseItem) => {
+        if (!e.isShared) return sum + e.amountForPayer;
+        const myOwed = e.owedBy?.find((o: OwedBy) => o.owedByUid === 'me');
+        return sum + (myOwed?.amount || 0);
+      }, 0);
+
+      setIndividualSpent(spent);
     } catch (err) {
       console.error('Error loading tracker or expenses:', err);
       setError('Failed to load expense data.');
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleEditBudget = async (newBudget: number) => {
+    try {
+      const res = await fetch(
+        `https://travelties-expensetracker.onrender.com/api/expense-tracker/${tripId}`,
+        {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ budget: newBudget }),
+        }
+      );
+      const data = await res.json();
+      setBudget(data.budget);
+    } catch (err) {
+      console.error('Failed to update budget', err);
     }
   };
 
@@ -82,35 +116,6 @@ export default function ExpenseTracker() {
     fetchData();
     loadStoredUsers();
   }, []);
-
-  const handleEditBudget = () => {
-    setNewBudget(budget.toString());
-    setShowDialog(true);
-  };
-
-  const handleCancelDialog = () => {
-    setShowDialog(false);
-    setNewBudget('');
-  };
-
-  const handleSaveBudget = async () => {
-    try {
-      const res = await fetch(
-        `https://travelties-expensetracker.onrender.com/api/expense-tracker/${tripId}`,
-        {
-          method: 'PATCH',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ budget: Number(newBudget) }),
-        }
-      );
-
-      const data = await res.json();
-      setBudget(data.budget);
-      setShowDialog(false);
-    } catch (err) {
-      console.error('Failed to update budget', err);
-    }
-  };
 
   const handleDeleteExpense = async (expenseId: string) => {
     try {
@@ -153,7 +158,7 @@ export default function ExpenseTracker() {
           <BudgetChart
             currency={currency}
             budget={budget}
-            spent={totalExpenses}
+            spent={individualSpent}
             onEditBudget={handleEditBudget}
           />
         ) : (
@@ -170,6 +175,11 @@ export default function ExpenseTracker() {
             currency={currency}
             onDelete={handleDeleteExpense}
             onEdit={handleEditExpense}
+            onTogglePaidStatus={(updatedExpense) => {
+              setExpenses(prev =>
+                prev.map(e => e._id === updatedExpense._id ? updatedExpense : e)
+              );
+            }}
           />
         )}
 
@@ -181,17 +191,6 @@ export default function ExpenseTracker() {
             <Text style={styles.addBtnText}>Add Expense</Text>
           </TouchableOpacity>
         )}
-
-        <Dialog.Container visible={showDialog}>
-          <Dialog.Title>Edit Budget</Dialog.Title>
-          <Dialog.Input
-            value={newBudget}
-            onChangeText={setNewBudget}
-            keyboardType="numeric"
-          />
-          <Dialog.Button label="Cancel" onPress={handleCancelDialog} />
-          <Dialog.Button label="Save" onPress={handleSaveBudget} />
-        </Dialog.Container>
       </ScrollView>
 
       <AddExpenseModal

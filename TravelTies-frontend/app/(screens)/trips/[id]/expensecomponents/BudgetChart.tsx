@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, Dimensions, TouchableOpacity, TextInput } from 'react-native';
-import { ProgressChart } from 'react-native-chart-kit';
+import { AnimatedCircularProgress } from 'react-native-circular-progress';
 
 const screenWidth = Dimensions.get('window').width;
 
@@ -14,14 +14,13 @@ type Props = {
 export default function BudgetChart({ currency, budget, spent, onEditBudget }: Props) {
   const [showBudgetInput, setShowBudgetInput] = useState(false);
   const [newBudget, setNewBudget] = useState(budget.toString());
-  
-  const percentage = budget > 0 ? spent / budget : 0;
 
-  // Dynamic ring color based on percentage spent
+  const percentage = budget > 0 ? (spent / budget) * 100 : 0;
+
   let chartColor = 'green';
-  if (percentage > 1) chartColor = 'red';
-  else if (percentage > 0.9) chartColor = 'orange';
-  else if (percentage > 0.75) chartColor = 'gold';
+  if (percentage > 100) chartColor = 'red';
+  else if (percentage > 90) chartColor = 'orange';
+  else if (percentage > 75) chartColor = '#FEEB1B';
 
   const handleSave = () => {
     const numericValue = parseFloat(newBudget);
@@ -33,18 +32,14 @@ export default function BudgetChart({ currency, budget, spent, onEditBudget }: P
 
   return (
     <View style={styles.container}>
-      <ProgressChart
-        data={{ data: [percentage] }}
-        width={screenWidth - 40}
-        height={240}
-        strokeWidth={16}
-        radius={40}
-        chartConfig={{
-          backgroundGradientFrom: '#fff',
-          backgroundGradientTo: '#fff',
-          color: () => chartColor,
-        }}
-        hideLegend={true}
+      <AnimatedCircularProgress
+        size={200}
+        width={16}
+        fill={percentage > 100 ? 100 : percentage}
+        tintColor={chartColor}
+        backgroundColor="#eee"
+        rotation={0}
+        lineCap="round"
       />
       <Text style={styles.text}>
         {currency}{spent.toFixed(2)} / {currency}{budget.toFixed(2)}
@@ -64,10 +59,7 @@ export default function BudgetChart({ currency, budget, spent, onEditBudget }: P
           </TouchableOpacity>
         </View>
       ) : (
-        <TouchableOpacity 
-          onPress={() => setShowBudgetInput(true)} 
-          style={styles.editBtn}
-        >
+        <TouchableOpacity onPress={() => setShowBudgetInput(true)} style={styles.editBtn}>
           <Text style={styles.editText}>Edit Budget</Text>
         </TouchableOpacity>
       )}
@@ -76,14 +68,14 @@ export default function BudgetChart({ currency, budget, spent, onEditBudget }: P
 }
 
 const styles = StyleSheet.create({
-  container: { 
-    alignItems: 'center', 
-    marginVertical: 10 
+  container: {
+    alignItems: 'center',
+    marginVertical: 10,
   },
-  text: { 
-    fontSize: 18, 
-    fontWeight: 'bold', 
-    marginTop: 10 
+  text: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginTop: 16,
   },
   editBtn: {
     marginTop: 8,

@@ -9,6 +9,8 @@ import {
   StyleSheet,
   Alert,
   Platform,
+  ScrollView,
+  KeyboardAvoidingView,
 } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 
@@ -51,21 +53,19 @@ export default function AddExpenseModal({
 
   const currentUser = { label: 'Me', uid: 'me' };
 
-  // Step 2: Include Current User by Default
   useEffect(() => {
     if (!knownUsers.find(u => u.uid === 'me')) {
       updateKnownUsers([...knownUsers, currentUser]);
     }
   }, []);
 
-  // Initialize form when editing an expense
   useEffect(() => {
     if (editingExpense) {
       setName(editingExpense.name);
       setAmount(editingExpense.amountForPayer.toString());
       setCategory(editingExpense.category || '');
       setIsShared(editingExpense.isShared || false);
-      
+
       if (editingExpense.isShared && editingExpense.owedBy) {
         const owedBy = editingExpense.owedBy;
         if (editingExpense.splitMethod === 'custom') {
@@ -96,6 +96,22 @@ export default function AddExpenseModal({
     if (!name || !amount) {
       Alert.alert('Error', 'Please enter name and amount');
       return;
+    }
+
+    if (isShared && splitMethod === 'custom') {
+      const totalCustomSplit = Object.values(customSplits).reduce((sum, val) => {
+        const num = parseFloat(val);
+        return sum + (isNaN(num) ? 0 : num);
+      }, 0);
+
+      const totalAmount = Number(amount);
+      if (Math.abs(totalCustomSplit - totalAmount) > 0.01) {
+        Alert.alert(
+          'Split Mismatch',
+          `Total custom split ($${totalCustomSplit.toFixed(2)}) does not match total amount ($${totalAmount.toFixed(2)}).`
+        );
+        return;
+      }
     }
 
     let owedBy: { owedByUid: string; amount: number; isPaid: boolean }[] = [];
@@ -136,7 +152,6 @@ export default function AddExpenseModal({
         : 'https://travelties-expensetracker.onrender.com/api/expenses';
 
       const method = editingExpense ? 'PUT' : 'POST';
-      console.log('Saving expense:', { method, url, payload });
 
       const res = await fetch(url, {
         method,
@@ -164,166 +179,181 @@ export default function AddExpenseModal({
 
   return (
     <Modal visible={visible} animationType="fade" transparent>
-      <View style={styles.overlay}>
-        <View style={styles.container}>
-          <Text style={styles.title}>
-            {editingExpense ? 'Edit Expense' : 'Add Expense'}
-          </Text>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        style={styles.overlay}
+      >
+        <View style={styles.innerContainer}>
+          <ScrollView contentContainerStyle={styles.scrollContainer}>
+            <Text style={styles.title}>{editingExpense ? 'Edit Expense' : 'Add Expense'}</Text>
 
-          <TextInput
-            placeholder="Expense Name"
-            style={styles.input}
-            value={name}
-            onChangeText={setName}
-          />
+            <TextInput
+              placeholder="Expense Name"
+              style={styles.input}
+              value={name}
+              onChangeText={setName}
+            />
 
-          <TextInput
-            placeholder="Amount"
-            style={styles.input}
-            keyboardType="numeric"
-            value={amount}
-            onChangeText={setAmount}
-          />
+            <TextInput
+              placeholder="Amount"
+              style={styles.input}
+              keyboardType="numeric"
+              value={amount}
+              onChangeText={setAmount}
+            />
 
-          <View style={Platform.OS === 'ios' ? undefined : styles.pickerWrapper}>
-            <Picker
-              selectedValue={category}
-              onValueChange={(val) => setCategory(val)}
-              style={Platform.OS === 'ios' ? undefined : styles.picker}
-            >
-              <Picker.Item label="-- Select Category (optional) --" value="" />
-              {categoryOptions.map((opt) => (
-                <Picker.Item
-                  key={opt.value}
-                  label={opt.label}
-                  value={opt.value}
-                  color={opt.color}
-                />
-              ))}
-            </Picker>
-          </View>
-
-          <View style={styles.toggleRow}>
-            <TouchableOpacity
-              style={[styles.toggleBtn, !isShared && styles.toggleActive]}
-              onPress={() => setIsShared(false)}
-            >
-              <Text style={!isShared ? styles.toggleTextActive : styles.toggleText}>
-                Individual
-              </Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={[styles.toggleBtn, isShared && styles.toggleActive]}
-              onPress={() => setIsShared(true)}
-            >
-              <Text style={isShared ? styles.toggleTextActive : styles.toggleText}>
-                Shared
-              </Text>
-            </TouchableOpacity>
-          </View>
-
-          {isShared && (
-            <View>
-              <View style={styles.toggleRow}>
-                <TouchableOpacity
-                  style={[styles.toggleBtn, splitMethod === 'even' && styles.toggleActive]}
-                  onPress={() => setSplitMethod('even')}
-                >
-                  <Text style={splitMethod === 'even' ? styles.toggleTextActive : styles.toggleText}>
-                    Even Split
-                  </Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={[styles.toggleBtn, splitMethod === 'custom' && styles.toggleActive]}
-                  onPress={() => setSplitMethod('custom')}
-                >
-                  <Text style={splitMethod === 'custom' ? styles.toggleTextActive : styles.toggleText}>
-                    Custom Split
-                  </Text>
-                </TouchableOpacity>
-              </View>
-
-              {splitMethod === 'even' && (
-                <View style={{ marginBottom: 10 }}>
-                  <Text style={{ fontWeight: 'bold', marginBottom: 5 }}>Select participants:</Text>
-                  {knownUsers.map(user => (
-                    <TouchableOpacity
-                      key={user.uid}
-                      onPress={() => {
-                        if (participants.includes(user.uid)) {
-                          setParticipants(participants.filter(id => id !== user.uid));
-                        } else {
-                          setParticipants([...participants, user.uid]);
-                        }
-                      }}
-                      style={styles.checkboxRow}
-                    >
-                      <Text style={{ color: participants.includes(user.uid) ? 'blue' : 'black' }}>
-                        {participants.includes(user.uid) ? '✅' : '⬜'} {user.label}
-                      </Text>
-                    </TouchableOpacity>
-                  ))}
-                  {/* Step 3: Add new user option */}
-                  <View style={{ marginTop: 10 }}>
-                    <TextInput
-                      placeholder="Add new user (name)"
-                      style={styles.input}
-                      value={newUserName}
-                      onChangeText={setNewUserName}
-                    />
-                    <TouchableOpacity
-                      onPress={() => {
-                        if (newUserName.trim()) {
-                          const newUser = { 
-                            label: newUserName, 
-                            uid: newUserName.toLowerCase().replace(/\s+/g, '_') 
-                          };
-                          if (!knownUsers.some(u => u.uid === newUser.uid)) {
-                            updateKnownUsers([...knownUsers, newUser]);
-                          }
-                          setNewUserName('');
-                        }
-                      }}
-                      style={[styles.btn, styles.saveBtn, { marginTop: 5 }]}
-                    >
-                      <Text style={[styles.btnText, { color: 'white' }]}>Add User</Text>
-                    </TouchableOpacity>
-                  </View>
-                </View>
-              )}
-
-              {splitMethod === 'custom' && (
-                <View style={{ marginBottom: 10 }}>
-                  <Text style={{ fontWeight: 'bold', marginBottom: 5 }}>Custom amount for each:</Text>
-                  {knownUsers.map(user => (
-                    <View key={user.uid} style={styles.customRow}>
-                      <Text style={{ flex: 1 }}>{user.label}</Text>
-                      <TextInput
-                        placeholder="Amount"
-                        keyboardType="numeric"
-                        style={[styles.input, { flex: 1 }]}
-                        value={customSplits[user.uid] || ''}
-                        onChangeText={(val) => setCustomSplits({ ...customSplits, [user.uid]: val })}
-                      />
-                    </View>
-                  ))}
-                </View>
-              )}
+            <View style={Platform.OS === 'ios' ? undefined : styles.pickerWrapper}>
+              <Picker
+                selectedValue={category}
+                onValueChange={(val) => setCategory(val)}
+                style={Platform.OS === 'ios' ? undefined : styles.picker}
+              >
+                <Picker.Item label="-- Select Category (optional) --" value="" />
+                {categoryOptions.map((opt) => (
+                  <Picker.Item
+                    key={opt.value}
+                    label={opt.label}
+                    value={opt.value}
+                    color={opt.color}
+                  />
+                ))}
+              </Picker>
             </View>
-          )}
 
-          <View style={styles.btnRow}>
-            <TouchableOpacity onPress={onClose} style={[styles.btn, styles.cancelBtn]}>
-              <Text style={styles.btnText}>Cancel</Text>
-            </TouchableOpacity>
-            <TouchableOpacity onPress={handleSubmit} style={[styles.btn, styles.saveBtn]}>
-              <Text style={[styles.btnText, { color: 'white' }]}>
-                {editingExpense ? 'Update' : 'Save'}
-              </Text>
-            </TouchableOpacity>
-          </View>
+            <View style={styles.toggleRow}>
+              <TouchableOpacity
+                style={[styles.toggleBtn, !isShared && styles.toggleActive]}
+                onPress={() => setIsShared(false)}
+              >
+                <Text style={!isShared ? styles.toggleTextActive : styles.toggleText}>Individual</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.toggleBtn, isShared && styles.toggleActive]}
+                onPress={() => setIsShared(true)}
+              >
+                <Text style={isShared ? styles.toggleTextActive : styles.toggleText}>Shared</Text>
+              </TouchableOpacity>
+            </View>
+
+            {isShared && (
+              <View>
+                <View style={styles.toggleRow}>
+                  <TouchableOpacity
+                    style={[styles.toggleBtn, splitMethod === 'even' && styles.toggleActive]}
+                    onPress={() => setSplitMethod('even')}
+                  >
+                    <Text style={splitMethod === 'even' ? styles.toggleTextActive : styles.toggleText}>Even Split</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={[styles.toggleBtn, splitMethod === 'custom' && styles.toggleActive]}
+                    onPress={() => setSplitMethod('custom')}
+                  >
+                    <Text style={splitMethod === 'custom' ? styles.toggleTextActive : styles.toggleText}>Custom Split</Text>
+                  </TouchableOpacity>
+                </View>
+
+                {splitMethod === 'even' && (
+                  <View style={{ marginBottom: 10 }}>
+                    <Text style={{ fontWeight: 'bold', marginBottom: 5 }}>Select participants:</Text>
+                    {knownUsers.map(user => (
+                      <TouchableOpacity
+                        key={user.uid}
+                        onPress={() => {
+                          if (participants.includes(user.uid)) {
+                            setParticipants(participants.filter(id => id !== user.uid));
+                          } else {
+                            setParticipants([...participants, user.uid]);
+                          }
+                        }}
+                        style={styles.checkboxRow}
+                      >
+                        <Text style={{ color: participants.includes(user.uid) ? 'blue' : 'black' }}>
+                          {participants.includes(user.uid) ? '✅' : '⬜'} {user.label}
+                        </Text>
+                      </TouchableOpacity>
+                    ))}
+                    <View style={{ marginTop: 10 }}>
+                      <TextInput
+                        placeholder="Add new user (name)"
+                        style={styles.input}
+                        value={newUserName}
+                        onChangeText={setNewUserName}
+                      />
+                      <TouchableOpacity
+                        onPress={() => {
+                          if (newUserName.trim()) {
+                            const newUser = {
+                              label: newUserName,
+                              uid: newUserName.toLowerCase().replace(/\s+/g, '_'),
+                            };
+                            if (!knownUsers.some(u => u.uid === newUser.uid)) {
+                              updateKnownUsers([...knownUsers, newUser]);
+                            }
+                            setNewUserName('');
+                          }
+                        }}
+                        style={[styles.btn, styles.saveBtn, { marginTop: 5 }]}
+                      >
+                        <Text style={[styles.btnText, { color: 'white' }]}>Add User</Text>
+                      </TouchableOpacity>
+                    </View>
+                  </View>
+                )}
+
+                {splitMethod === 'custom' && (
+                  <View style={{ marginBottom: 10 }}>
+                    <Text style={{ fontWeight: 'bold', marginBottom: 5 }}>Custom amount for each:</Text>
+                    {knownUsers.map(user => (
+                      <View key={user.uid} style={styles.customRow}>
+                        <Text style={{ flex: 1 }}>{user.label}</Text>
+                        <TextInput
+                          placeholder="Amount"
+                          keyboardType="numeric"
+                          style={[styles.input, { flex: 1 }]}
+                          value={customSplits[user.uid] || ''}
+                          onChangeText={(val) => setCustomSplits({ ...customSplits, [user.uid]: val })}
+                        />
+                      </View>
+                    ))}
+                    <Text
+                      style={{
+                        marginTop: 5,
+                        fontWeight: 'bold',
+                        color:
+                          Math.abs(
+                            Object.values(customSplits).reduce((sum, val) => {
+                              const num = parseFloat(val);
+                              return sum + (isNaN(num) ? 0 : num);
+                            }, 0) - Number(amount)
+                          ) > 0.01
+                            ? 'red'
+                            : 'green',
+                      }}
+                    >
+                      Total Split: $
+                      {Object.values(customSplits)
+                        .reduce((sum, val) => {
+                          const num = parseFloat(val);
+                          return sum + (isNaN(num) ? 0 : num);
+                        }, 0)
+                        .toFixed(2)}
+                    </Text>
+                  </View>
+                )}
+              </View>
+            )}
+
+            <View style={styles.btnRow}>
+              <TouchableOpacity onPress={onClose} style={[styles.btn, styles.cancelBtn]}>
+                <Text style={styles.btnText}>Cancel</Text>
+              </TouchableOpacity>
+              <TouchableOpacity onPress={handleSubmit} style={[styles.btn, styles.saveBtn]}>
+                <Text style={[styles.btnText, { color: 'white' }]}>Save</Text>
+              </TouchableOpacity>
+            </View>
+          </ScrollView>
         </View>
-      </View>
+      </KeyboardAvoidingView>
     </Modal>
   );
 }
@@ -335,11 +365,15 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  container: {
+  innerContainer: {
     backgroundColor: '#fff',
-    padding: 20,
-    width: '85%',
+    width: '90%',
+    maxHeight: '85%',
     borderRadius: 8,
+    overflow: 'hidden',
+  },
+  scrollContainer: {
+    padding: 20,
   },
   title: { fontSize: 18, fontWeight: 'bold', marginBottom: 12 },
   input: {

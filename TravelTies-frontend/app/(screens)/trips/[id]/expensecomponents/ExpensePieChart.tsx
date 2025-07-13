@@ -4,34 +4,55 @@ import { View, Dimensions, StyleSheet, Text } from 'react-native';
 const screenWidth = Dimensions.get("window").width;
 
 interface ExpensePieChartProps {
-  expenses?: Array<any>; // You might want to replace 'any' with a proper expense type
+  expenses?: Array<any>;
 }
 
 export default function ExpensePieChart({ expenses }: ExpensePieChartProps) {
-  if (!expenses || expenses.length === 0) {
+  const currentUserId = 'me';
+
+  // STEP 1: Filter expenses that appear under the "Individual" tab
+  const filteredExpenses = (expenses || []).flatMap((e) => {
+    if (!e.isShared) {
+      return [{ category: e.category || 'uncategorised', amount: e.amountForPayer }];
+    }
+
+    const myOwed = e.owedBy?.find((o: any) => o.owedByUid === currentUserId);
+    if (myOwed) {
+      return [{ category: e.category || 'uncategorised', amount: myOwed.amount }];
+    }
+
+    return [];
+  });
+
+  // STEP 2: Group by category
+  const grouped = filteredExpenses.reduce<{ [key: string]: number }>((acc, item) => {
+    const cat = item.category;
+    if (!acc[cat]) acc[cat] = 0;
+    acc[cat] += item.amount || 0;
+    return acc;
+  }, {});
+
+  // STEP 3: Filter out zero values
+  const filteredGrouped = Object.fromEntries(
+    Object.entries(grouped).filter(([_, value]) => value > 0)
+  );
+
+  const data = Object.keys(filteredGrouped).map((cat) => ({
+    name: cat,
+    population: filteredGrouped[cat],
+    color: categoryColors[cat] || '#ccc',
+    legendFontColor: '#555',
+    legendFontSize: 14,
+  }));
+
+  // STEP 4: Show fallback if nothing to show
+  if (data.length === 0) {
     return (
       <View style={{ alignItems: 'center', marginTop: 20 }}>
         <Text>No expenses to display yet.</Text>
       </View>
     );
   }
-
-  // Group expenses by category and sum their amounts
-  const grouped = expenses.reduce((acc, expense) => {
-    const cat = expense.category || 'uncategorised';
-    if (!acc[cat]) acc[cat] = 0;
-    acc[cat] += expense.amountForPayer || 0;
-    return acc;
-  }, {} as { [key: string]: number });
-
-  // Prepare data for PieChart
-  const data = Object.keys(grouped).map((cat) => ({
-    name: cat,
-    population: grouped[cat],
-    color: categoryColors[cat] || '#ccc',
-    legendFontColor: '#555',
-    legendFontSize: 14,
-  }));
 
   return (
     <View style={styles.container}>
@@ -51,7 +72,9 @@ export default function ExpensePieChart({ expenses }: ExpensePieChartProps) {
   );
 }
 
-const styles = StyleSheet.create({ container: { alignItems: 'center' } });
+const styles = StyleSheet.create({
+  container: { alignItems: 'center' },
+});
 
 const categoryColors: { [key: string]: string } = {
   transportation: '#007AFF',
