@@ -41,4 +41,4 @@ app.use("/api/aws", awsRoute);
 app.use("/api/trip", tripRoute);
 app.use("/api/expense-tracker", expenseTrackerRoute);
 app.use("/api/expenses", expenseRoute);
-app.use('/api/expenses', require('./routes/expenses')); 
+app.use('/api/expenses', require('./routes/expense.route')); 
