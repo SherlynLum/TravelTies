@@ -83,3 +83,13 @@ exports.deleteExpense = async (req, res) => {
         res.status(500).json({ error: "Failed to delete expense" });
     }
 };
+
+exports.updateExpense = async (req, res) => {
+  try {
+    const updated = await Expense.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    res.json(updated);
+  } catch (err) {
+    res.status(500).json({ error: "Failed to update expense" });
+  }
+};
+
