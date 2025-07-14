@@ -29,6 +29,20 @@ const generateUploadUrl = async (mimeType, folder) => {
     return {key, url}
 }
 
+const generateUploadUrlWithExtension = async (mimeType, extension, folder) => {
+    const name = uuidv4();
+    const key = `${folder}/${name}.${extension}`;
+
+    const command = new PutObjectCommand({
+        Bucket: process.env.AWS_BUCKET_NAME,
+        Key: key,
+        ContentType: mimeType
+    })
+
+    const url = await getSignedUrl(client, command, {expiresIn: 300});
+    return {key, url}
+}
+
 const generateDisplayUrl = async (key) => {
     const command = new GetObjectCommand({
         Bucket: process.env.AWS_BUCKET_NAME,
@@ -49,6 +63,7 @@ const deleteObject = async (key) => {
 
 module.exports = {
     generateUploadUrl,
+    generateUploadUrlWithExtension,
     generateDisplayUrl,
     deleteObject
 };

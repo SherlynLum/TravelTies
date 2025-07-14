@@ -17,11 +17,6 @@ const photoSchema = new mongoose.Schema({
         required: true
     },
 
-    cardId: { // undefined if not uploaded inside an itinerary card
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Card"
-    },
-
     albumId: { // a photo can belongs to multiple albums or no album
         type: [{
             type: mongoose.Schema.Types.ObjectId,

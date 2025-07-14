@@ -1,7 +1,8 @@
 const {generateJoinCode, createTrip, getTripsByUid, getTripsInBin, getOverview, getParticipants,
     getJoinRequests, updateTrip, addParticipantsAndRemoveFromRequests,
     deleteTrip, cancelTrip, restoreTrip, searchActiveTrips, searchBinTrips, addJoinRequest,
-    getJoinCode, removeBuddy
+    getJoinCode, removeBuddy,
+    getCards
 } = require("../services/trip.service.js");
 const {generateUploadUrl} = require("../services/awss3.service.js");
 const {validateTripDates} = require("../validators/trip.validator.js");
@@ -304,6 +305,24 @@ const removeBuddyController = async (req, res) => {
     }
 }
 
+const getCardsController = async (req, res) => {
+    const {id: tripId} = req.params;
+    if (!tripId) {
+        return res.status(400).json({message: "Missing tripId"});
+    }
+    const {tab} = req.query;
+    if (!tab) {
+        return res.status(400).json({message: "Missing tab name"});
+    }
+
+    try {
+        const cards = await getCards({tripId, tab});
+        return res.status(200).json({cards});
+    } catch (e) {
+        return res.status(500).json({message: e.message});
+    }
+}
+
 module.exports = {
     getTripProfilePicUrl,
     createTripController,
@@ -321,5 +340,6 @@ module.exports = {
     searchActiveTripsController,
     searchBinTripsController,
     addJoinRequestController,
-    removeBuddyController
+    removeBuddyController,
+    getCardsController
 };

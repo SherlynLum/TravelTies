@@ -22,16 +22,26 @@ const cardSchema = new mongoose.Schema({
         type: String
     },
 
-    startDate: {
-        type: String
+    startDate: { // store startDate as day number 
+        type: Number,
+        min: 1,
+        validate: {
+            validator: Number.isInteger,
+            message: "startDate must be an integer"
+        }
     },
 
     startTime: {
         type: String
     },
 
-    endDate: {
-        type: String
+    endDate: { // store endDate as day number 
+        type: String,
+        min: 1,
+        validate: {
+            validator: Number.isInteger,
+            message: "endDate must be an integer"
+        }
     },
 
     endTime: {
@@ -58,7 +68,7 @@ const cardSchema = new mongoose.Schema({
         type: String
     },
 
-    picIDs: { 
+    picIds: { 
         type: [{
             type: mongoose.Schema.Types.ObjectId,
             ref: "Photo"
