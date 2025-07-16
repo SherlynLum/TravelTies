@@ -43,3 +43,7 @@ export interface JoinRequestsWithProfile {
     profilePicUrl?: string;
     requestAt: Date
 }
+
+export interface OrderInTab {
+    [key: string]: string[];
+}

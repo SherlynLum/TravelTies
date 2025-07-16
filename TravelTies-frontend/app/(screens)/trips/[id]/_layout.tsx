@@ -83,6 +83,11 @@ export default function Layout() {
                         <Pressable onPress={() => router.back()} hitSlop={14}>
                             <Ionicons name="chevron-back" size={24} color="white" />
                         </Pressable>
+                    ),
+                    headerRight: () => (
+                        <Pressable onPress={() => router.push("/(screens)/trips/[id]/addCard")} hitSlop={14}>
+                            <Ionicons name="add-circle" size={24} color="white" />
+                        </Pressable>
                     )
                 }} />
             <Stack.Screen 

@@ -285,6 +285,25 @@ const updateRequests = async ({token, id, acceptedRequests, declinedUids}) => {
     return backendRes.data.trip;
 }
 
+const getOrderInTab = async ({token, id}) => {
+    const backendRes = await axios.get(
+        `${baseUrl}/api/trip/tabs/${encodeURIComponent(id)}`,
+        {headers: getHeaders(token)}
+    );
+    return backendRes.data.trip;
+}
+
+const getCardsInTab = async ({token, id, tab}) => {
+    const backendRes = await axios.get(
+        `${baseUrl}/api/trip/${encodeURIComponent(id)}/cards`,
+        {
+            headers: getHeaders(token),
+            params: {tab}
+        }
+    );
+    return backendRes.data.cards;
+}
+
 export {
     getActiveTrips,
     getUploadUrl,
@@ -302,6 +321,8 @@ export {
     updateTrip,
     cancelTrip,
     leaveTrip,
-    updateRequests
+    updateRequests,
+    getOrderInTab,
+    getCardsInTab
 }
 

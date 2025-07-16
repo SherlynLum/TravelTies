@@ -4,9 +4,9 @@ const {getTripProfilePicUrl, createTripController, getCurrentUserActiveTrips,
     getCurrentUserBinTrips, getTripOverview, getTripParticipants, getTripJoinRequests,
     updateTripController, updateTripJoinRequests, cancelTripController, restoreTripController, 
     deleteTripPermanently, searchActiveTripsController, searchBinTripsController, 
-    addJoinRequestController, getTripJoinCode,
-    removeBuddyController,
-} = require("../controllers/trip.controller.js")
+    addJoinRequestController, getTripJoinCode, removeBuddyController, getCardsController,
+    getOrderInTabController,
+} = require("../controllers/trip.controller.js");
 const router = express.Router();
 
 router.post("/", firebaseAuthMiddleware, createTripController);
@@ -38,6 +38,12 @@ router.get("/search", firebaseAuthMiddleware, searchActiveTripsController);
 
 router.get("/bin/search", firebaseAuthMiddleware, searchBinTripsController);
 // for testing without middleware: router.get("/test/bin/search", searchBinTripsController);
+
+router.get("/:id/cards", firebaseAuthMiddleware, getCardsController);
+// for testing without middleware: router.get("/test/:id/cards", getCardsController);
+
+router.get("/tabs/:id", firebaseAuthMiddleware, getOrderInTabController);
+// for testing without middleware: router.get("/test/tabs/:id", getOrderInTabController);
 
 router.patch("/:id", firebaseAuthMiddleware, requireParticipants, updateTripController);
 // for testing without middleware: router.patch("/test/:id", requireParticipants, updateTripOverview);

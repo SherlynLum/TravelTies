@@ -1,5 +1,5 @@
 import { View, Text, TouchableOpacity } from 'react-native'
-import React, { useEffect, useState } from 'react'
+import React, { useCallback, useEffect, useState } from 'react'
 import { useAuth } from '@/context/authContext';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
@@ -11,7 +11,7 @@ import { getActiveTrips } from '@/apis/tripApi';
 import { Trip } from '@/types/trips';
 import ActiveTripCard from '@/components/activeTripCard';
 import Loading from '@/components/Loading';
-import { useRouter } from 'expo-router';
+import { useFocusEffect, useRouter } from 'expo-router';
 import SearchActiveTripModal from '@/components/SearchActiveTripModal';
 
 const TripsDashboard = () => {
@@ -37,28 +37,29 @@ const TripsDashboard = () => {
   */
 
 /**/ 
-  useEffect(() => {
-    const getTrips = async () => {
-      try {
-        setLoading(true);
-        const token = await getUserIdToken(user);
-        const activeTrips = await getActiveTrips(token);
-        setPlanningTrips(activeTrips.planning);
-        setOngoingTrips(activeTrips.ongoing);
-        setCompletedTrips(activeTrips.completed);
-        setHasError(false);
-      } catch (e) {
-        console.log(e);
-        setPlanningTrips([]);
-        setOngoingTrips([]);
-        setCompletedTrips([]);
-        setHasError(true);
-      } finally {
-        setLoading(false)
+  useFocusEffect(
+    useCallback(() => {
+      const getTrips = async () => {
+        try {
+          setLoading(true);
+          const token = await getUserIdToken(user);
+          const activeTrips = await getActiveTrips(token);
+          setPlanningTrips(activeTrips.planning);
+          setOngoingTrips(activeTrips.ongoing);
+          setCompletedTrips(activeTrips.completed);
+          setHasError(false);
+        } catch (e) {
+          console.log(e);
+          setPlanningTrips([]);
+          setOngoingTrips([]);
+          setCompletedTrips([]);
+          setHasError(true);
+        } finally {
+          setLoading(false)
+        }
       }
-    }
-    getTrips();
-  }, [])
+      getTrips();
+    }, []));
 /**/
 
   const closeSearchModal = () => {

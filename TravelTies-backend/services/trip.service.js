@@ -199,7 +199,11 @@ const updateOrderInTab = ({oldOrderInTab, oldNoOfDays, newNoOfDays}) => {
     } else if (prevNoOfDays > updatedNoOfDays) {
         for (let i = updatedNoOfDays + 1; i <= prevNoOfDays; i++) {
             const toBeMoved = oldOrderInTab[`day ${i}`];
-            oldOrderInTab["unscheduled"].push(...toBeMoved);
+            for (const card of toBeMoved) {
+                if (!oldOrderInTab["unscheduled"].includes(card)) { // check for repeats as some cards span for a few days
+                    oldOrderInTab["unscheduled"].push(card); 
+                }
+            }
             delete oldOrderInTab[`day ${i}`];
         }
     }
@@ -404,8 +408,13 @@ const addCard = async ({tripId, cardId, startDate, endDate, session}) => {
     return trip;
 }
 
-const getCards = async ({tripId, tab}) => {
+const getOrderInTab = async (tripId) => {
     const trip = await Trip.findById(tripId, {orderInTab: 1});
+    return trip;
+}
+
+const getCards = async ({tripId, tab}) => {
+    const trip = await getOrderInTab(tripId);
     if (!trip) {
         throw new Error("No trip is found");
     }
@@ -463,6 +472,7 @@ module.exports = {
     addJoinRequest,
     removeBuddy,
     addCard,
+    getOrderInTab,
     getCards,
     removeCard
 };
