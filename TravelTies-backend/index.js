@@ -11,6 +11,7 @@ const expenseTrackerRoute = require("./routes/expenseTracker.route");
 const expenseRoute = require("./routes/expense.route");
 const admin = require("firebase-admin");
 const serviceAccount = require("/etc/secrets/serviceAccountKey.json");
+const galleryRoutes = require("./routes/gallery.routes");
 
 //initialise Firebase Admin SDK
 admin.initializeApp({
@@ -42,3 +43,4 @@ app.use("/api/trip", tripRoute);
 app.use("/api/expense-tracker", expenseTrackerRoute);
 app.use("/api/expenses", expenseRoute);
 app.use('/api/expenses', require('./routes/expense.route')); 
+app.use("/api/gallery", galleryRoutes);
