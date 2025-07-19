@@ -8,6 +8,8 @@ router.get("/photos/:tripId", galleryController.getAllPhotos);
 router.delete("/photos", galleryController.deletePhotos);
 router.patch("/photos/move", galleryController.movePhotosToAlbum);
 
+router.post("/debug/:tripId", upload.array("photos", 10), galleryController.debugUpload);
+
 // Albums
 router.get("/albums/:tripId", galleryController.getAllAlbums);
 router.post("/albums/:tripId", galleryController.createAlbum);
