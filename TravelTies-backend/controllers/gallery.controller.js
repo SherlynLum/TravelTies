@@ -176,38 +176,3 @@ exports.removePhotosFromAlbum = async (req, res) => {
     res.status(500).json({ success: false, message: "Failed to remove photos from album" });
   }
 };
-
-exports.debugUpload = async (req, res) => {
-  try {
-    const { tripId } = req.params;
-    const { uploadedByUid } = req.body;
-    const files = req.files;
-
-    console.log("Debug Upload - tripId:", tripId);
-    console.log("Debug Upload - uploadedByUid:", uploadedByUid);
-    console.log("Debug Upload - files:", files ? files.length : "No files");
-    console.log("Debug Upload - AWS Bucket:", process.env.AWS_BUCKET_NAME);
-
-    res.status(200).json({
-      success: true,
-      debug: {
-        tripId,
-        uploadedByUid,
-        fileCount: files ? files.length : 0,
-        hasAWSCreds: {
-          bucket: !!process.env.AWS_BUCKET_NAME,
-          accessKey: !!process.env.AWS_ACCESS_KEY_ID,
-          secretKey: !!process.env.AWS_SECRET_ACCESS_KEY,
-          region: !!process.env.AWS_REGION
-        }
-      }
-    });
-  } catch (error) {
-    console.error("Debug upload error:", error);
-    res.status(500).json({
-      success: false,
-      error: error.message,
-      stack: error.stack
-    });
-  }
-};
