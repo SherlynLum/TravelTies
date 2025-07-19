@@ -98,3 +98,93 @@ exports.movePhotosToAlbum = async (req, res) => {
         res.status(500).json({ success: false, message: "Failed to move photos" });
     }
 };
+
+// Add these functions before the module.exports
+exports.getAllAlbums = async (req, res) => {
+  const { tripId } = req.params;
+  try {
+    const albums = await Album.find({ tripId }).sort({ createdAt: -1 });
+    res.status(200).json({ success: true, albums });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ success: false, message: "Failed to fetch albums" });
+  }
+};
+
+exports.createAlbum = async (req, res) => {
+  const { tripId } = req.params;
+  const { name, createdByUid } = req.body;
+  
+  try {
+    const album = await Album.create({
+      tripId,
+      name,
+      createdByUid
+    });
+    res.status(201).json({ success: true, album });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ success: false, message: "Failed to create album" });
+  }
+};
+
+exports.getAlbumPhotos = async (req, res) => {
+  const { albumId } = req.params;
+  
+  try {
+    const photos = await Photo.find({ albumId: albumId }).sort({ createdAt: -1 });
+    res.status(200).json({ success: true, photos });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ success: false, message: "Failed to fetch album photos" });
+  }
+};
+
+exports.deleteAlbum = async (req, res) => {
+  const { albumId } = req.params;
+  
+  try {
+    // Remove album reference from all photos
+    await Photo.updateMany(
+      { albumId: albumId },
+      { $pull: { albumId: albumId } }
+    );
+    
+    // Delete the album
+    await Album.findByIdAndDelete(albumId);
+    
+    res.status(200).json({ success: true, message: "Album deleted successfully" });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ success: false, message: "Failed to delete album" });
+  }
+};
+
+exports.removePhotosFromAlbum = async (req, res) => {
+  const { albumId } = req.params;
+  const { photoIds } = req.body;
+  
+  try {
+    await Photo.updateMany(
+      { _id: { $in: photoIds } },
+      { $pull: { albumId: albumId } }
+    );
+    
+    res.status(200).json({ success: true, message: "Photos removed from album" });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ success: false, message: "Failed to remove photos from album" });
+  }
+};
+
+module.exports = {
+    getAllPhotos,
+    uploadPhotos,
+    deletePhotos,
+    movePhotosToAlbum,
+    getAllAlbums,
+    createAlbum,
+    getAlbumPhotos,
+    deleteAlbum,
+    removePhotosFromAlbum
+};
