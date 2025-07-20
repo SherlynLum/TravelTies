@@ -7,7 +7,7 @@ import Loading from '../components/Loading.js'
 import CustomKeyboardView from '../components/CustomKeyboardView.js'
 import { pickOnePic } from '@/utils/imagePicker'
 import AdjustPicModal from '@/components/AdjustPicModal';
-import DisplayPicModal from '@/components/DisplayPicModal';
+import DisplayPicModal from '@/components/DisplayProfilePicModal.js';
 import axios, { isAxiosError } from "axios";
 import { useAuth } from '@/context/authContext.js';
 import { Divider, Menu } from 'react-native-paper';
@@ -85,11 +85,11 @@ const Onboard = () => {
                 throw new Error("Failed to retrieve upload link for AWS S3");
             }
 
-            // convert cropped pic uri into binary format to upload
             if (!croppedPicUri) {
                 throw new Error("No profile picture was found");
             }
 
+            // convert cropped pic uri into binary format to upload
             const resource = await fetch(croppedPicUri);
             const blob = await resource.blob();
 

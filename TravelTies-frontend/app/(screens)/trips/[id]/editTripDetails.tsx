@@ -12,7 +12,7 @@ import DateTimePicker, { DateTimePickerAndroid } from "@react-native-community/d
 import AntDesign from '@expo/vector-icons/AntDesign';
 import Entypo from '@expo/vector-icons/Entypo';
 import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
-import { toDisplayDate, toDisplayDay, toFloatingDate, toLocalDateObj } from '@/utils/dateConverter';
+import { toDisplayDate, toDisplayDay, toFloatingDate, toLocalDateObj } from '@/utils/dateTimeConverter';
 import { getProfileWithUrl } from "@/apis/userApi";
 import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
 import Loading from '@/components/Loading';
@@ -238,14 +238,14 @@ const EditTripDetails = () => {
 
     const openStartDatePicker = () => {
         setIsPickingStartDate(true);
-        if (Platform.OS === "android") {
+        if (!ios) {
             DateTimePickerAndroid.open({
                 value: startDate ? startDate : (endDate ? endDate : new Date()),
                 mode: "date",
                 minimumDate: new Date(),
                 onChange: (event, date) => {
                     setIsPickingStartDate(false);
-                    if (date) {
+                    if (event.type === "set" && date) {
                         setStartDate(date);
                     }
                 }
@@ -265,7 +265,7 @@ const EditTripDetails = () => {
                 minimumDate: new Date(),
                 onChange: (event, date) => {
                     setIsPickingEndDate(false)
-                    if (date) {
+                    if (event.type === "set" && date) {
                         setEndDate(date);
                     }
                 }
@@ -377,8 +377,9 @@ const EditTripDetails = () => {
           console.log("Axios error:", isAxiosError(e) && e.response?.data)
           if (isAxiosError(e) && e.response?.data?.datesErr) {
               Alert.alert("Failed to update trip details", e.response.data.message);
+              return;
           }
-          Alert.alert("Failed to update trip details", "Please try again later")
+          Alert.alert("Failed to update trip details", "Please try again later");
       } finally {
           setUpdateLoading(false);
       }

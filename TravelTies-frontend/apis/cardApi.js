@@ -1,9 +1,7 @@
 import axios from "axios";
 import { getDisplayUrl } from "./awsApi";
-import { toLocalDateObj } from "@/utils/dateConverter";
 
 const baseUrl = process.env.EXPO_PUBLIC_BACKEND_URL;
-const MAX_DATE = "9999-12-31"; // gives a super far future date for no date during sorting
 
 const getHeaders = (token) => {
     const header = {
@@ -30,6 +28,27 @@ const deleteCard = async (token, id) => {
     );
 }
 
+const createNoteCard = async ({token, tripId, title, description, startDate, startTime, endDate, 
+    endTime}) => {
+    const backendRes = await axios.post(
+        `${baseUrl}/api/card/note`,
+        {tripId, title, description, startDate, startTime, endDate, endTime},
+        {headers: getHeaders(token)}
+    );
+    return backendRes.data.card;
+}
+
+const getUploadPicUrl = async ({token, mimeType}) => {
+    const backendRes = await axios.get(
+        `${baseUrl}/api/card/pic-url`,
+        {params: {type: mimeType}, headers: getHeaders(token)}
+    );
+    const {key, url} = backendRes.data;
+    return {key, url};
+}
+
 export {
-    deleteCard
+    deleteCard,
+    createNoteCard,
+    getUploadPicUrl
 }

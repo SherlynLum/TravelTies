@@ -1,6 +1,6 @@
 import axios from "axios";
 import { getDisplayUrl } from "./awsApi";
-import { toLocalDateObj } from "@/utils/dateConverter";
+import { toLocalDateObj } from "@/utils/dateTimeConverter";
 
 const baseUrl = process.env.EXPO_PUBLIC_BACKEND_URL;
 const MAX_DATE = "9999-12-31"; // gives a super far future date for no date during sorting
@@ -94,7 +94,7 @@ const getActiveTrips = async (token) => {
 const getUploadUrl = async (token) => {
     const backendRes = await axios.get(
         `${baseUrl}/api/trip/profile-pic-url`,
-        {headers: getHeaders(token)}
+        {params: {type: "image/jpeg"}, headers: getHeaders(token)}
     );
     const {key, url} = backendRes.data;
     return {key, url};

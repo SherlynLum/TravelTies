@@ -4,7 +4,7 @@ const validateCardTime = ({startDate, startTime, endDate, endTime}) => {
             return "End date must be after start date";
         }
         if (startDate === endDate && startTime && endTime && endTime < startTime) {
-            return "End time must be after start time";
+            return "End time must be after start time if start date is same as end date";
         }
     }
 

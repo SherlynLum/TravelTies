@@ -116,7 +116,7 @@ const TransportationCard = ({tab, tripId, _id, title, startDate, startTime, endD
     }
 
     const handleViewOnMap = () => {
-        const options = ["Departure address", "Arrival address", "Cancel"];
+        const options = ["View departure address", "View arrival address", "Cancel"];
         const cancelButtonIndex = 2;
 
         showActionSheetWithOptions({
@@ -138,7 +138,7 @@ const TransportationCard = ({tab, tripId, _id, title, startDate, startTime, endD
                 <Card style={{padding: 0, borderRadius: 16, width: coverWidth}}>
                     <View className="flex flex-col gap-4">
                         {/* cover */}
-                        <View className="w-full rounded-t-xl bg-amber-500 flex items-end justify-center px-3"
+                        <View className="w-full rounded-t-xl bg-emerald-700 flex items-end justify-center px-3"
                         style={{width: coverWidth, height: coverHeight}}>
                             {deleteLoading ? (
                                 <Loading size={hp(5)}/>

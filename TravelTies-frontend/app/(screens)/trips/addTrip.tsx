@@ -12,7 +12,7 @@ import DateTimePicker, { DateTimePickerAndroid } from "@react-native-community/d
 import AntDesign from '@expo/vector-icons/AntDesign';
 import Entypo from '@expo/vector-icons/Entypo';
 import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
-import { toDisplayDate, toDisplayDay, toFloatingDate } from '@/utils/dateConverter';
+import { toDisplayDate, toDisplayDay, toFloatingDate } from '@/utils/dateTimeConverter';
 import { getProfile } from "@/apis/userApi";
 import { useRouter } from 'expo-router';
 import Loading from '@/components/Loading';
@@ -201,14 +201,14 @@ const AddTrip = () => {
 
     const openStartDatePicker = () => {
         setIsPickingStartDate(true);
-        if (Platform.OS === "android") {
+        if (!ios) {
             DateTimePickerAndroid.open({
                 value: startDate ? startDate : (endDate ? endDate : new Date()),
                 mode: "date",
                 minimumDate: new Date(),
                 onChange: (event, date) => {
                     setIsPickingStartDate(false);
-                    if (date) {
+                    if (event.type === "set" && date) {
                         setStartDate(date);
                     }
                 }
@@ -228,7 +228,7 @@ const AddTrip = () => {
                 minimumDate: new Date(),
                 onChange: (event, date) => {
                     setIsPickingEndDate(false)
-                    if (date) {
+                    if (event.type === "set" && date) {
                         setEndDate(date);
                     }
                 }
@@ -333,11 +333,11 @@ const AddTrip = () => {
             router.replace("/tripsDashboard");
         } catch (e) {
             console.log(e);
-            console.log("Axios error:", isAxiosError(e) && e.response?.data)
             if (isAxiosError(e) && e.response?.data?.datesErr) {
                 Alert.alert("Failed to create trip", e.response.data.message);
+                return;
             }
-            Alert.alert("Failed to create trip", "Please try again later")
+            Alert.alert("Failed to create trip", "Please try again later");
         } finally {
             setCreateLoading(false);
         }

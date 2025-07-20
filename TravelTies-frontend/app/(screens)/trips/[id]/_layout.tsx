@@ -4,10 +4,36 @@ import { Stack, useLocalSearchParams, useRouter } from 'expo-router'
 import Ionicons from '@expo/vector-icons/Ionicons';
 import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
+import { useActionSheet } from '@expo/react-native-action-sheet';
 
 export default function Layout() {
     const router = useRouter();
     const {id} = useLocalSearchParams();
+    const { showActionSheetWithOptions } = useActionSheet();
+
+    const handleAddCard = () => {
+        const options = ["Add Note card", "Add Destination card", "Add Transportation card", 
+            "Add General card", "Cancel"];
+        const cancelButtonIndex = 4;
+
+        showActionSheetWithOptions(
+            {
+                options,
+                cancelButtonIndex
+            },
+            (selectedIndex) => {
+                if (selectedIndex === 0) {
+                    router.push(`/(screens)/trips/${id}/addNoteCard`);
+                } else if (selectedIndex === 1) {
+                    router.push(`/(screens)/trips/${id}/addDestinationCard`);
+                } else if (selectedIndex === 2) {
+                    router.push(`/(screens)/trips/${id}/addTransportationCard`);
+                } else if (selectedIndex === 3) {
+                    router.push(`/(screens)/trips/${id}/addGeneralCard`);
+                }
+            }
+        )
+    }
 
     return (
         <Stack> 
@@ -85,7 +111,7 @@ export default function Layout() {
                         </Pressable>
                     ),
                     headerRight: () => (
-                        <Pressable onPress={() => router.push("/(screens)/trips/[id]/addCard")} hitSlop={14}>
+                        <Pressable onPress={handleAddCard} hitSlop={14}>
                             <Ionicons name="add-circle" size={24} color="white" />
                         </Pressable>
                     )
@@ -167,6 +193,78 @@ export default function Layout() {
                     headerLeft: () => (
                         <Pressable onPress={() => router.back()} hitSlop={14}>
                             <Ionicons name="chevron-back" size={24} color="white" />
+                        </Pressable>
+                    )
+                }} />
+            <Stack.Screen 
+                name="addNoteCard"
+                options={{
+                    title: "Add Note card",
+                    headerStyle: {backgroundColor: "#6495ED"},
+                    headerTintColor: "white",
+                    headerTitleStyle: {
+                        fontSize: 16,
+                        fontWeight: "semibold"
+                    },
+                    headerLeft: () => (
+                        <Pressable onPress={() => router.back()} hitSlop={14}>
+                            <Text className="font-semibold text-white text-base">
+                                Cancel
+                            </Text>
+                        </Pressable>
+                    )
+                }} />
+            <Stack.Screen 
+                name="addDestinationCard"
+                options={{
+                    title: "Add Destination card",
+                    headerStyle: {backgroundColor: "#6495ED"},
+                    headerTintColor: "white",
+                    headerTitleStyle: {
+                        fontSize: 16,
+                        fontWeight: "semibold"
+                    },
+                    headerLeft: () => (
+                        <Pressable onPress={() => router.back()} hitSlop={14}>
+                            <Text className="font-semibold text-white text-base">
+                                Cancel
+                            </Text>
+                        </Pressable>
+                    )
+                }} />
+            <Stack.Screen 
+                name="addTransportationCard"
+                options={{
+                    title: "Add Transportation card",
+                    headerStyle: {backgroundColor: "#6495ED"},
+                    headerTintColor: "white",
+                    headerTitleStyle: {
+                        fontSize: 16,
+                        fontWeight: "semibold"
+                    },
+                    headerLeft: () => (
+                        <Pressable onPress={() => router.back()} hitSlop={14}>
+                            <Text className="font-semibold text-white text-base">
+                                Cancel
+                            </Text>
+                        </Pressable>
+                    )
+                }} />
+            <Stack.Screen 
+                name="addGeneralCard"
+                options={{
+                    title: "Add General card",
+                    headerStyle: {backgroundColor: "#6495ED"},
+                    headerTintColor: "white",
+                    headerTitleStyle: {
+                        fontSize: 16,
+                        fontWeight: "semibold"
+                    },
+                    headerLeft: () => (
+                        <Pressable onPress={() => router.back()} hitSlop={14}>
+                            <Text className="font-semibold text-white text-base">
+                                Cancel
+                            </Text>
                         </Pressable>
                     )
                 }} />

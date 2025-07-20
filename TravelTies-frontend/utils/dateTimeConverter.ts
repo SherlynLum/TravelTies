@@ -20,9 +20,22 @@ const toLocalDateObj= (date: string) => {
     return new Date(Number(year), Number(month) - 1, Number(day));
 }
 
+const toTimeStr = (time: Date) => {
+    return time.toLocaleTimeString("en-GB", {hour: "2-digit", minute: "2-digit"});
+}
+
+const timeStrToDate = (time: string) => {
+    const [hours, mins] = time.split(":").map(Number);
+    const now = new Date();
+    now.setHours(hours, mins, 0, 0);
+    return now;
+}
+
 export {
     toFloatingDate,
     toDisplayDate,
     toDisplayDay,
-    toLocalDateObj
+    toLocalDateObj,
+    toTimeStr,
+    timeStrToDate
 }

@@ -41,6 +41,7 @@ export interface GeneralCardPreview {
     tab: string,
     tripId: string,
     _id: string,
+    cardType: string,
     title: string, 
     startDate?: number, 
     startTime?: string, 

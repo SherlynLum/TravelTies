@@ -10,8 +10,8 @@ import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-nat
 import Loading from './Loading';
 import Feather from '@expo/vector-icons/Feather';
 
-const GeneralCard = ({tab, tripId, _id, title, startDate, startTime, endDate, endTime, generalAddress, 
-    removeFromTab} : GeneralCardPreview) => {
+const GeneralCard = ({tab, tripId, _id, cardType, title, startDate, startTime, endDate, endTime, 
+    generalAddress, removeFromTab} : GeneralCardPreview) => {
     const {user, getUserIdToken} = useAuth();
     const [deleteLoading, setDeleteLoading] = useState(false);
     const [viewLoading, setViewLoading] = useState(false);
@@ -120,7 +120,10 @@ const GeneralCard = ({tab, tripId, _id, title, startDate, startTime, endDate, en
                 <Card style={{padding: 0, borderRadius: 16, width: coverWidth}}>
                     <View className="flex flex-col gap-4">
                         {/* cover */}
-                        <View className="w-full rounded-t-xl bg-amber-500 flex items-end justify-center px-3"
+                        <View className={`w-full rounded-t-xl flex items-end justify-center px-3
+                        ${cardType === "attraction" ? "bg-purple-500" : cardType === "accommodation" 
+                            ? "bg-orange-500" : cardType === "food_and_drink" 
+                            ? "bg-lime-600" : "bg-neutral-700"}`}
                         style={{width: coverWidth, height: coverHeight}}>
                             {deleteLoading ? (
                                 <Loading size={hp(5)}/>
