@@ -192,7 +192,7 @@ const Onboard = () => {
         }
     }
 
-    const updateUsernameToDb = async (token: String) => {
+    const updateUsernameToDb = async (token: string) => {
         try {
             // update username to db 
             const usernameRes = await axios.patch(

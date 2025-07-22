@@ -8,25 +8,25 @@ const createNoteCard = async ({tripId, title, description, startDate, startTime,
 }
 
 const createDestinationCard = async ({tripId, title, country, city, description, startDate, startTime, 
-    endDate, endTime, picIds, docKeys, webUrls, session}) => {
+    endDate, endTime, picIds, docs, webUrls, session}) => {
         const newCard = await Card.create({tripId, cardType: "destination", 
-            title, description, startDate, startTime, endDate, endTime, country, city, picIds, docKeys, 
+            title, description, startDate, startTime, endDate, endTime, country, city, picIds, docs, 
             webUrls}, {session});
         return newCard;
 }
 
 const createTransportationCard = async ({tripId, title, description, startDate, startTime, 
-    endDate, endTime, departureAddress, arrivalAddress, picIds, docKeys, webUrls, session}) => {
+    endDate, endTime, departureAddress, arrivalAddress, picIds, docs, webUrls, session}) => {
         const newCard = await Card.create({tripId, cardType: "transportation", title, description, 
-            startDate, startTime, endDate, endTime, departureAddress, arrivalAddress, picIds, docKeys, 
+            startDate, startTime, endDate, endTime, departureAddress, arrivalAddress, picIds, docs, 
             webUrls}, {session});
         return newCard;
 }
 
 const createGeneralCard = async ({tripId, cardType, title, description, startDate, startTime, 
-    endDate, endTime, generalAddress, picIds, docKeys, webUrls, session}) => {
+    endDate, endTime, generalAddress, picIds, docs, webUrls, session}) => {
         const newCard = await Card.create({tripId, cardType, title, description, startDate, startTime, 
-            endDate, endTime, generalAddress, picIds, docKeys, webUrls}, {session});
+            endDate, endTime, generalAddress, picIds, docs, webUrls}, {session});
         return newCard;
 }
 
@@ -36,7 +36,7 @@ const deleteCard = async (id, session) => {
 }
 
 const getCard = async (id) => {
-    const card = await Card.findById(id);
+    const card = await Card.findById(id).populate("picIds", "key");
     return card;
 }
 
@@ -48,11 +48,11 @@ const getCardPreview = async (id) => {
 }
 
 const updateCard = async ({cardId, cardType, title, description, startDate, startTime, 
-    endDate, endTime, generalAddress, departureAddress, arrivalAddress, country, city, picIds, docKeys, 
+    endDate, endTime, generalAddress, departureAddress, arrivalAddress, country, city, picIds, docs, 
     webUrls, session}) => {
         const card = await Card.findByIdAndUpdate(cardId,
             {$set: {cardType, title, description, startDate, startTime, endDate, endTime, 
-                generalAddress, departureAddress, arrivalAddress, country, city, picIds, docKeys, 
+                generalAddress, departureAddress, arrivalAddress, country, city, picIds, docs, 
                 webUrls}},
             {session, new: true, runValidators: true}
         )

@@ -1,7 +1,6 @@
-import { View, Text, TextInput, Alert, TouchableOpacity, Platform, KeyboardAvoidingView, Switch } from 'react-native'
+import { View, Text, TextInput, Alert, TouchableOpacity, Platform, KeyboardAvoidingView, Switch, Pressable, ScrollView } from 'react-native'
 import React, { useCallback, useEffect, useLayoutEffect, useState } from 'react'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import { Pressable, ScrollView } from 'react-native-gesture-handler';
 import { useAuth } from '@/context/authContext';
 import { getOrderInTab } from '@/apis/tripApi';
 import { isAxiosError } from 'axios';
@@ -23,6 +22,7 @@ const AddNoteCard = () => {
     const [title, setTitle] = useState("Note");
     const [description, setDescription] = useState("");
     const [daysLoading, setDaysLoading] = useState(false);
+    const [daysErr, setDaysErr] = useState(false);
     const [createLoading, setCreateLoading] = useState(false);
     const {user, getUserIdToken} = useAuth();
 
@@ -47,38 +47,60 @@ const AddNoteCard = () => {
     const [endPickerOpen, setEndPickerOpen] = useState(false);
 
     useEffect(() => {
-      if (!startDateToggleOn) {
-        setStartDate(null);
-        return;
-      }
-      if (!endDateToggleOn) {
-        setEndDate(null);
-        return;
-      }
-      const getDays = async () => {
-        try {
-          setDaysLoading(true);
-          const token = await getUserIdToken(user);
-          const trip = await getOrderInTab({token, id});
-          if (!trip) {
-            throw new Error("No trip is found");
-          }
-          const days = Object.keys(trip.orderInTab).filter(tab => tab !== "unscheduled")
-            .map(day => ({label: day.charAt(0).toUpperCase() + day.slice(1), 
-              value: Number(day.split(" ")[1])}));
-          setData(days);
-        } catch (e) {
-          setData([]);
-          console.log(e);
-          Alert.alert("Add note card", "Unable to load this trip’s duration, so start and end dates cannot be set");
-          setStartDateToggleOn(false);
-          setStartDate(null);
-          setEndDateToggleOn(false);
-          setEndDate(null);
-        } finally {
-          setDaysLoading(false);
-        }}
-      getDays();
+        if (!startDateToggleOn) {
+            setStartDate(null);
+        }
+        if (!endDateToggleOn) {
+            setEndDate(null);
+        }
+        if (!startDateToggleOn && !endDateToggleOn) {
+            return;
+        }
+        const getDays = async () => {
+            try {
+                setDaysLoading(true);
+                const token = await getUserIdToken(user);
+                const trip = await getOrderInTab({token, id});
+                if (!trip) {
+                    throw new Error("No trip is found");
+                }
+                const days = Object.keys(trip.orderInTab).filter(tab => tab !== "unscheduled")
+                    .map(day => ({label: day.charAt(0).toUpperCase() + day.slice(1), 
+                        value: Number(day.split(" ")[1])}));
+                const daysValues = days.map(day => day.value);
+                setData(days);
+                let err = [];
+                if (startDate && !daysValues.includes(startDate)) {
+                    setStartDate(null);
+                    err.push("Card start date was outside the trip duration and has been reset");
+                }
+                if (endDate && !daysValues.includes(endDate)) {
+                    setEndDate(null);
+                    err.push("Card end date was outside the trip duration and has been reset");
+                }
+                if (err.length === 2) {
+                    Alert.alert("Add Note card", "Card start date and end date were outside the trip duration and have been reset");
+                } else if (err.length === 1) {
+                    Alert.alert("Add Note card", err[0]);
+                } 
+                setDaysErr(false);
+            } catch (e) {
+                setData([]);
+                console.log(e);
+                Alert.alert("Add Note card", "Unable to load this trip’s duration, so start and end dates cannot be changed");
+                if (!startDate) {
+                    setStartDateToggleOn(false);
+                    setStartDate(null);
+                }
+                if (!endDate) {
+                    setEndDateToggleOn(false);
+                    setEndDate(null);
+                }
+                setDaysErr(true);
+            } finally {
+                setDaysLoading(false);
+            }}
+        getDays();
     }, [startDateToggleOn, endDateToggleOn]);
 
   const openStartTimePicker = () => {
@@ -148,14 +170,14 @@ const AddNoteCard = () => {
       if (!card) {
         throw new Error("No card is created");
       }
-      router.replace("./itinerary");
+      router.replace(`/trips/${id}/itinerary`);
     } catch (e) {
       console.log(e);
       if (isAxiosError(e) && e.response?.data?.timeErr) {
-        Alert.alert("Failed to create note card", e.response.data.message);
+        Alert.alert("Failed to create Note card", e.response.data.message);
         return;
       }
-      Alert.alert("Failed to create note card", "Please try again later");
+      Alert.alert("Failed to create Note card", "Please try again later");
     } finally {
       setCreateLoading(false);
     }
@@ -163,16 +185,16 @@ const AddNoteCard = () => {
 
   const handleCreate = useCallback(async () => {
     if (!title) {
-      Alert.alert("Failed to create note card", "Title cannot be empty");
+      Alert.alert("Failed to create Note card", "Title cannot be empty");
       return;
     }
     if (startDate && endDate) {
       if (endDate < startDate) {
-        Alert.alert("Failed to create note card", "End date must be after start date");
+        Alert.alert("Failed to create Note card", "End date must be after start date");
         return;
       }
       if (startDate === endDate && startTimeStr && endTimeStr && endTimeStr < startTimeStr) {
-        Alert.alert("Failed to create note card", 
+        Alert.alert("Failed to create Note card", 
           "End time must be after start time if start date is same as end date");
         return;
       }
@@ -220,8 +242,6 @@ const AddNoteCard = () => {
                 autoCapitalize="none"
                 onChangeText={setTitle}
                 className="flex-1 font-medium text-black text-base"
-                placeholder="Title of your note card"
-                placeholderTextColor={"gray"}
                 style={{textAlignVertical: "center"}}
               />
             </View>
@@ -239,7 +259,7 @@ const AddNoteCard = () => {
                <View className="flex justify-center items-center">
                   <Loading size={hp(7)} />
                 </View>
-              ) : (
+              ) : !daysErr ? (
               <Dropdown
               style={{height: 50, backgroundColor: "white", paddingHorizontal: 16, borderRadius: 5,
                 borderColor: "black", borderWidth: 1}}
@@ -250,12 +270,18 @@ const AddNoteCard = () => {
               valueField="value"
               placeholder="Select start date"
               placeholderStyle={{color: "gray"}}
-              selectedTextStyle={{fontWeight: 500, color: "black", fontSize: 16}}
-              inputSearchStyle={{fontWeight: 500, color: "black", fontSize: 16}}
+              selectedTextStyle={{fontWeight: "500", color: "black", fontSize: 16}}
+              inputSearchStyle={{fontWeight: "500", color: "black", fontSize: 16}}
               value={startDate}
               onChange={item => setStartDate(item.value)}
               />
-            ))}
+            ) : (startDate && (
+              <View className="bg-white border border-black px-4 rounded-[5px] h-[50px]">
+                  <Text className="flex-1 font-medium text-black text-base text-left">
+                      {startDate}
+                  </Text>
+              </View>
+            )))}
           </View>
 
           {/* start time */}
@@ -323,7 +349,7 @@ const AddNoteCard = () => {
                <View className="flex justify-center items-center">
                   <Loading size={hp(7)} />
                 </View>
-              ) : (
+              ) : !daysErr ? (
               <Dropdown
               style={{height: 50, backgroundColor: "white", paddingHorizontal: 16, borderRadius: 5,
                 borderColor: "black", borderWidth: 1}}
@@ -334,12 +360,18 @@ const AddNoteCard = () => {
               valueField="value"
               placeholder="Select end date"
               placeholderStyle={{color: "gray"}}
-              selectedTextStyle={{fontWeight: 500, color: "black", fontSize: 16}}
-              inputSearchStyle={{fontWeight: 500, color: "black", fontSize: 16}}
+              selectedTextStyle={{fontWeight: "500", color: "black", fontSize: 16}}
+              inputSearchStyle={{fontWeight: "500", color: "black", fontSize: 16}}
               value={endDate}
               onChange={item => setEndDate(item.value)}
               />
-            ))}
+            ) : (endDate && (
+              <View className="bg-white border border-black px-4 rounded-[5px] h-[50px]">
+                  <Text className="flex-1 font-medium text-black text-base text-left">
+                      {endDate}
+                  </Text>
+              </View>
+            )))}
           </View>
 
           {/* end time */}

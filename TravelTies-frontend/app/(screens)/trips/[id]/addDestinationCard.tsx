@@ -1,7 +1,6 @@
-import { View, Text, TextInput, Alert, TouchableOpacity, Platform, KeyboardAvoidingView, Switch, Image} from 'react-native'
+import { View, Text, TextInput, Alert, TouchableOpacity, Platform, KeyboardAvoidingView, Switch, Image, Linking, FlatList, Pressable, ScrollView} from 'react-native'
 import React, { useEffect, useLayoutEffect, useState, useCallback} from 'react'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import { FlatList, Pressable, ScrollView } from 'react-native-gesture-handler';
 import { useAuth } from '@/context/authContext';
 import { getOrderInTab } from '@/apis/tripApi';
 import { isAxiosError } from 'axios';
@@ -12,13 +11,17 @@ import Loading from '@/components/Loading';
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
 import { Dropdown } from 'react-native-element-dropdown';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
-import { createNoteCard, getUploadPicUrl } from '@/apis/cardApi';
+import { getUploadPicUrl, getUploadDocUrl, createDestinationCard } from '@/apis/cardApi';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { pickPics } from '@/utils/imagePicker';
 import mime from 'mime';
 import { ImageManipulator, SaveFormat } from 'expo-image-manipulator';
 import Entypo from '@expo/vector-icons/Entypo';
 import DisplayPhotoModal from '@/components/DisplayPhotoModal';
+import { uploadPhotos } from '@/apis/photoApi';
+import { Divider, Menu } from 'react-native-paper';
+import { Doc, DocWithType } from '@/types/cards';
+import { getDocumentAsync } from 'expo-document-picker';
 
 const AddDestinationCard = () => {
     const navigation = useNavigation();
@@ -32,6 +35,7 @@ const AddDestinationCard = () => {
     const [city, setCity] = useState("");
     const [description, setDescription] = useState("");
     const [daysLoading, setDaysLoading] = useState(false);
+    const [daysErr, setDaysErr] = useState(false);
     const [createLoading, setCreateLoading] = useState(false);
     const {user, getUserIdToken} = useAuth();
 
@@ -60,6 +64,17 @@ const AddDestinationCard = () => {
     const [imageLoading, setImageLoading] = useState(false);
     const [displayModalOpen, setDisplayModalOpen] = useState(false);
     const [displayUri, setDisplayUri] = useState("");
+    const [uploadSomePicErr, setUploadSomePicErr] = useState(false); // if certain images failed to upload, will allow user proceed to finish creating card
+    const [uploadAllPicErr, setUploadAllPicErr] = useState(false); // if the outer try block for uploadImages fail, not allow user proceed to create the card
+    const [picIds, setPicIds] = useState<string[]>([]);
+
+    const [urls, setUrls] = useState<string[]>([]);
+
+    const [docsWithType, setDocsWithType] = useState<DocWithType[]>([]);
+    const [docLoading, setDocLoading] = useState(false);
+    const [uploadSomeDocErr, setUploadSomeDocErr] = useState(false); // if certain docs failed to upload, will allow user proceed to finish creating card
+    const [uploadAllDocErr, setUploadAllDocErr] = useState(false); // if the outer try block for uploadFiles fail, not allow user proceed to create the card
+    const [docs, setDocs] = useState<Doc[]>([]);
 
     useEffect(() => {
         if (!isTyping) {
@@ -72,39 +87,61 @@ const AddDestinationCard = () => {
     }, [country, city, isTyping])
 
     useEffect(() => {
-        if (!startDateToggleOn) {
-            setStartDate(null);
-            return;
-        }
-        if (!endDateToggleOn) {
-            setEndDate(null);
-            return;
-        }
-        const getDays = async () => {
-            try {
-                setDaysLoading(true);
-                const token = await getUserIdToken(user);
-                const trip = await getOrderInTab({token, id});
-                if (!trip) {
-                    throw new Error("No trip is found");
-                }
-                const days = Object.keys(trip.orderInTab).filter(tab => tab !== "unscheduled")
-                    .map(day => ({label: day.charAt(0).toUpperCase() + day.slice(1), 
-                    value: Number(day.split(" ")[1])}));
-                setData(days);
-            } catch (e) {
-                setData([]);
-                console.log(e);
-                Alert.alert("Add note card", "Unable to load this trip’s duration, so start and end dates cannot be set");
-                setStartDateToggleOn(false);
+            if (!startDateToggleOn) {
                 setStartDate(null);
-                setEndDateToggleOn(false);
+            }
+            if (!endDateToggleOn) {
                 setEndDate(null);
-            } finally {
-                setDaysLoading(false);
-            }}
-        getDays();
-    }, [startDateToggleOn, endDateToggleOn]);
+            }
+            if (!startDateToggleOn && !endDateToggleOn) {
+                return;
+            }
+            const getDays = async () => {
+                try {
+                    setDaysLoading(true);
+                    const token = await getUserIdToken(user);
+                    const trip = await getOrderInTab({token, id});
+                    if (!trip) {
+                        throw new Error("No trip is found");
+                    }
+                    const days = Object.keys(trip.orderInTab).filter(tab => tab !== "unscheduled")
+                        .map(day => ({label: day.charAt(0).toUpperCase() + day.slice(1), 
+                            value: Number(day.split(" ")[1])}));
+                    const daysValues = days.map(day => day.value);
+                    setData(days);
+                    let err = [];
+                    if (startDate && !daysValues.includes(startDate)) {
+                        setStartDate(null);
+                        err.push("Card start date was outside the trip duration and has been reset");
+                    }
+                    if (endDate && !daysValues.includes(endDate)) {
+                        setEndDate(null);
+                        err.push("Card end date was outside the trip duration and has been reset");
+                    }
+                    if (err.length === 2) {
+                        Alert.alert("Add Destination card", "Card start date and end date were outside the trip duration and have been reset");
+                    } else if (err.length === 1) {
+                        Alert.alert("Add Destination card", err[0]);
+                    } 
+                    setDaysErr(false);
+                } catch (e) {
+                    setData([]);
+                    console.log(e);
+                    Alert.alert("Add Destination card", "Unable to load this trip’s duration, so start and end dates cannot be changed");
+                    if (!startDate) {
+                        setStartDateToggleOn(false);
+                        setStartDate(null);
+                    }
+                    if (!endDate) {
+                        setEndDateToggleOn(false);
+                        setEndDate(null);
+                    }
+                    setDaysErr(true);
+                } finally {
+                    setDaysLoading(false);
+                }}
+            getDays();
+        }, [startDateToggleOn, endDateToggleOn]);
 
     const openStartTimePicker = () => {
         if (!ios) {
@@ -204,20 +241,12 @@ const AddDestinationCard = () => {
                             }])
                         return;
                     }
-                    Alert.alert("Add photos", "An error occured when loading the photo(s) you just uploaded", 
-                        [{
-                            text: "Remove failed photos",
-                            onPress: () => {
-                                setImages(prev => {
-                                    const existingUris = new Set(prev.map(pic => pic.uri));
-                                    const newSuccessfulPics = successfulPics.filter(pic => !existingUris.has(pic.uri));
-                                    return [...prev, ...newSuccessfulPics];
-                                })
-                            }
-                        }, {
-                            text: "Cancel upload"
-                        }])
-                    return;
+                    Alert.alert("Add photos", "Some photos have unknown file types and were skipped. You can try adding them later")
+                    setImages(prev => {
+                        const existingUris = new Set(prev.map(pic => pic.uri));
+                        const newSuccessfulPics = successfulPics.filter(pic => !existingUris.has(pic.uri));
+                        return [...prev, ...newSuccessfulPics];
+                    })
                 }
                 const successfulPics = pics.map(pic => ({...pic, mimeType: pic.mimeType!})); // all pics are successful actually in this case
                 setImages(prev => {
@@ -264,9 +293,9 @@ const AddDestinationCard = () => {
         setDisplayUri("");
     }
 
-    const uploadPhotos = async () => {
+    const uploadImages = async () => {
         try{
-            const token = getUserIdToken(user);
+            const token = await getUserIdToken(user);
             const keys = await Promise.all(images.map(async (image) => {
                 try {
                     const {key, url} = await getUploadPicUrl({token, mimeType: image.mimeType});
@@ -283,63 +312,234 @@ const AddDestinationCard = () => {
                         body: blob,
                     });
                     if (!response.ok) {
-                        throw new Error("Failed to upload user profile picture to AWS S3");
+                        throw new Error("Failed to upload this photo to AWS S3");
                     }
-                    return {key, url}
+                    return key;
                 } catch {
-                    return "Failed to upload"
+                    setUploadSomePicErr(true);
+                    return null;
                 }
-            }))
+            }));
+            const successfulKeys = keys.filter(key => key !== null);
+            const picIdsRes = await uploadPhotos({token, tripId: id, keys: successfulKeys});
+            setPicIds(picIdsRes);
+            setUploadAllPicErr(false);
+            return true;
+        } catch (e) {
+            console.log(e);
+            setUploadAllPicErr(true);
+            Alert.alert("Failed to upload all selected photos", "Please try again later");
+            return false;
+        }
+    }
+
+    const addUrl = () => {
+        setUrls(prev => [...prev, ""]);
+    };
+
+    const updateUrl = (text: string, index: number) => {
+        setUrls(prev => {
+            const urls = [...prev];
+            urls[index] = text;
+            return urls;
+        })
+    };
+
+    const deleteUrl = (index: number) => {
+        setUrls(prev => {
+            const urls = [...prev];
+            urls.splice(index, 1);
+            return urls;
+        })
+    };
+
+    const handleDeleteUrl = (index: number) => {
+        Alert.alert("Delete url", "Are you sure you want to delete this url?", [
+            {
+                text: "No",
+                style: "cancel"
+            }, 
+            {
+                text: "Yes",
+                style: "destructive",
+                onPress: () => deleteUrl(index)
+            }
+        ])
+    }
+
+    const addDoc = async () => {
+        setDocLoading(true);
+        const res = await getDocumentAsync({
+            type: ["application/pdf", "application/msword", 
+                "application/vnd.openxmlformats-officedocument.wordprocessingml.document", "text/plain"],
+            copyToCacheDirectory: true,
+            multiple: true
+        });
+        if (res.canceled) {
+            return;
+        }
+        const newDocs = res.assets.map(doc => ({uri: doc.uri, name: doc.name, mimeType: doc.mimeType}));
+        if (newDocs.some(doc => !doc.mimeType)) {
+            Alert.alert("Add document", "Some files have unknown file types and were skipped. You can try adding them later.");
+            const docsWithType = newDocs.filter(doc => doc.mimeType)
+                .map(doc => ({...doc, mimeType: doc.mimeType!}));
+            setDocsWithType(prev => {
+                const existingUris = new Set(prev.map(doc => doc.uri));
+                const nonRepeatDocs = docsWithType.filter(doc => !existingUris.has(doc.uri));
+                return [...prev, ...nonRepeatDocs];
+            });
+            return;
+        }
+        const docsWithTypeGuard = newDocs.map(doc => ({...doc, mimeType: doc.mimeType!}));
+        setDocsWithType(prev => {
+            const existingUris = new Set(prev.map(doc => doc.uri));
+            const nonRepeatDocs = docsWithTypeGuard.filter(doc => !existingUris.has(doc.uri));
+            return [...prev, ...nonRepeatDocs];
+        });
+        setDocLoading(false);
+    }
+
+    const openDoc = async (uri: string, name: string) => {
+        try {
+            const canOpen = await Linking.canOpenURL(uri);
+            if (canOpen) {
+                await Linking.openURL(uri);
+            } else {
+                Alert.alert("Open file", `No app found to open ${name}`);
+            }
+        } catch (e) {
+            console.log(e);
+            Alert.alert("Open file", `Failed to open ${name}`);
+        }
+    }
+
+    const deleteDoc = (uri: string) => {
+        setDocsWithType(prev => prev.filter(doc => doc.uri !== uri));
+    };
+
+    const handleDeleteDoc = (uri: string, name: string) => {
+        Alert.alert("Delete document", `Are you sure you want to delete ${name}?`, [
+            {
+                text: "No",
+                style: "cancel"
+            }, 
+            {
+                text: "Yes",
+                style: "destructive",
+                onPress: () => deleteDoc(uri)
+            }
+        ])
+    }
+
+    const uploadFiles = async () => {
+        try{
+            const token = await getUserIdToken(user);
+            const documents = await Promise.all(docsWithType.map(async (doc) => {
+                try {
+                    const {key, url} = await getUploadDocUrl({token, mimeType: doc.mimeType});
+                    if (!key || !url) {
+                        throw new Error("Failed to retrieve upload link for AWS S3");
+                    }
+                    const resource = await fetch(doc.uri);
+                    const blob = await resource.blob();
+                    const response = await fetch(url, {
+                        method: "PUT",
+                        headers: {
+                            "Content-Type": doc.mimeType,
+                        },
+                        body: blob,
+                    });
+                    if (!response.ok) {
+                        throw new Error("Failed to upload this file to AWS S3");
+                    }
+                    return {name: doc.name, key};
+                } catch {
+                    setUploadSomeDocErr(true);
+                    return null;
+                }
+            }));
+            const successfulDocs = documents.filter(doc => doc !== null);
+            setDocs(successfulDocs);
+            setUploadAllDocErr(false);
+            return true;
+        } catch (e) {
+            console.log(e);
+            setUploadAllDocErr(true);
+            Alert.alert("Failed to upload all documents", "Please try again later");
+            return false;
         }
     }
 
     const createCard = useCallback(async () => {
         try {
+            setCreateLoading(true);
             const token = await getUserIdToken(user);
-            const card = await createNoteCard({token, tripId: id, title,
+            if (uploadAllPicErr) {
+                const uploadPicRes = await uploadImages();
+                if (!uploadPicRes) {
+                    throw new Error("Failed to create Destination card due to failure in uploading photos");
+                }
+            }
+            if (uploadAllDocErr) {
+                const uploadDocRes = await uploadFiles();
+                if (!uploadDocRes) {
+                    throw new Error("Failed to create Destination card due to failure in uploading documents");
+                }
+            }
+            if (uploadSomePicErr || uploadSomeDocErr) {
+                Alert.alert("Upload photos and documents", 
+                "Some photos and documents couldn't be uploaded and were skipped. You can try adding them again from the card detail page.")
+            }
+            const card = await createDestinationCard({token, tripId: id, title, country, city,
                 startDate: startDate || undefined,
                 startTime: startTimeStr || undefined,
                 endDate: endDate || undefined,
                 endTime: endTimeStr || undefined,
-                description: description || undefined
+                description: description || undefined,
+                picIds: picIds,
+                docs,
+                webUrls: urls
             });
             if (!card) {
                 throw new Error("No card is created");
             }
-            router.replace("./itinerary");
+            router.replace(`/trips/${id}/itinerary`);
         } catch (e) {
             console.log(e);
             if (isAxiosError(e) && e.response?.data?.timeErr) {
-                Alert.alert("Failed to create note card", e.response.data.message);
+                Alert.alert("Failed to create Destination card", e.response.data.message);
                 return;
             }
-            Alert.alert("Failed to create note card", "Please try again later");
+            Alert.alert("Failed to create Destination card", "Please try again later");
         } finally {
             setCreateLoading(false);
         }
-      }, [title, startDate, startTimeStr, endDate, endTimeStr, description])
+    }, [title, country, city, description, startDate, startTimeStr, endDate, endTimeStr, picIds, docs, urls])
     
-      const handleCreate = useCallback(async () => {
+    const handleCreate = useCallback(async () => {
         if (!title) {
-            Alert.alert("Failed to create note card", "Title cannot be empty");
+            Alert.alert("Failed to create Destination card", "Title cannot be empty");
             return;
+        }
+        if (!country) {
+            Alert.alert("Failed to create Destination card", "Destination card must specify a country")
         }
         if (startDate && endDate) {
             if (endDate < startDate) {
-                Alert.alert("Failed to create note card", "End date must be after start date");
+                Alert.alert("Failed to create Destination card", "End date must be after start date");
                 return;
             }
             if (startDate === endDate && startTimeStr && endTimeStr && endTimeStr < startTimeStr) {
-                Alert.alert("Failed to create note card", 
+                Alert.alert("Failed to create Destination card", 
                     "End time must be after start time if start date is same as end date");
                 return;
             }
         }
         setCreateLoading(true);
         await createCard();
-      }, [title, startDate, endDate, startTimeStr, endTimeStr, createCard])
+    }, [title, startDate, endDate, startTimeStr, endTimeStr, createCard])
     
-      useLayoutEffect(() => {
+    useLayoutEffect(() => {
         navigation.setOptions({
             headerRight: () => (
                 <Pressable onPress={handleCreate} hitSlop={14} disabled={createLoading}>
@@ -349,7 +549,7 @@ const AddDestinationCard = () => {
                 </Pressable>
             )
         })
-      }, [navigation, handleCreate, createLoading])
+    }, [navigation, handleCreate, createLoading])
 
   return (
     createLoading ? (
@@ -381,8 +581,6 @@ const AddDestinationCard = () => {
                                 setTitle(value);
                             }}
                             className="flex-1 font-medium text-black text-base"
-                            placeholder="This trip's destination"
-                            placeholderTextColor={"gray"}
                             style={{textAlignVertical: "center"}}
                         />
                     </View>
@@ -437,7 +635,7 @@ const AddDestinationCard = () => {
                         <View className="flex justify-center items-center">
                             <Loading size={hp(7)} />
                         </View>
-                    ) : (
+                    ) : !daysErr ? (
                         <Dropdown
                         style={{height: 50, backgroundColor: "white", paddingHorizontal: 16, borderRadius: 5,
                             borderColor: "black", borderWidth: 1}}
@@ -448,12 +646,18 @@ const AddDestinationCard = () => {
                         valueField="value"
                         placeholder="Select start date"
                         placeholderStyle={{color: "gray"}}
-                        selectedTextStyle={{fontWeight: 500, color: "black", fontSize: 16}}
-                        inputSearchStyle={{fontWeight: 500, color: "black", fontSize: 16}}
+                        selectedTextStyle={{fontWeight: "500", color: "black", fontSize: 16}}
+                        inputSearchStyle={{fontWeight: "500", color: "black", fontSize: 16}}
                         value={startDate}
                         onChange={item => setStartDate(item.value)}
                         />
-                    ))}
+                    ) : (startDate && (
+                        <View className="bg-white border border-black px-4 rounded-[5px] h-[50px]">
+                            <Text className="flex-1 font-medium text-black text-base text-left">
+                                {startDate}
+                            </Text>
+                        </View>
+                    )))}
                 </View>
 
                 {/* start time */}
@@ -521,7 +725,7 @@ const AddDestinationCard = () => {
                         <View className="flex justify-center items-center">
                             <Loading size={hp(7)} />
                         </View>
-                    ) : (
+                    ) : !daysErr ? (
                         <Dropdown
                         style={{height: 50, backgroundColor: "white", paddingHorizontal: 16, borderRadius: 5,
                             borderColor: "black", borderWidth: 1}}
@@ -532,11 +736,18 @@ const AddDestinationCard = () => {
                         valueField="value"
                         placeholder="Select end date"
                         placeholderStyle={{color: "gray"}}
-                        selectedTextStyle={{fontWeight: 500, color: "black", fontSize: 16}}
-                        inputSearchStyle={{fontWeight: 500, color: "black", fontSize: 16}}
+                        selectedTextStyle={{fontWeight: "500", color: "black", fontSize: 16}}
+                        inputSearchStyle={{fontWeight: "500", color: "black", fontSize: 16}}
                         value={endDate}
                         onChange={item => setEndDate(item.value)}
                         />
+                    ) : (endDate && (
+                        <View className="bg-white border border-black px-4 rounded-[5px] h-[50px]">
+                            <Text className="flex-1 font-medium text-black text-base text-left">
+                                {endDate}
+                            </Text>
+                        </View>
+                    )
                     ))}
                 </View>
 
@@ -617,15 +828,23 @@ const AddDestinationCard = () => {
                         <Text className="font-semibold text-lg text-left">
                             Photos
                         </Text>
-                        <TouchableOpacity hitSlop={10}>
-                            <Ionicons name="add-circle" size={24} color="#3B82F6" />
-                        </TouchableOpacity>
+                        <Menu visible={menuOpen} onDismiss={() => setMenuOpen(false)}
+                        anchor={
+                            <Pressable onPress={() => setMenuOpen(true)} hitSlop={10}>
+                                <Ionicons name="add-circle" size={24} color="#3B82F6" />
+                            </Pressable>
+                        }
+                        contentStyle={{borderRadius: 10, backgroundColor: "white", elevation: 3}}>
+                            <Menu.Item title="Take photo" onPress={() => addImages("camera")} />
+                            <Divider />
+                            <Menu.Item title="Choose from gallery" onPress={() => addImages("gallery")} />
+                        </Menu>
                     </View>
                     <FlatList
                     data={images}
                     numColumns={3}
                     keyExtractor={(item) => item.uri}
-                    columnWrapperClassName="justify-between mb-2.5"
+                    columnWrapperClassName="justify-between mb-3"
                     renderItem={({item}) => (
                         <TouchableOpacity className="relative" onPress={() => openDisplayModal(item.uri)}>
                             <Image
@@ -640,7 +859,72 @@ const AddDestinationCard = () => {
                             </Pressable>
                         </TouchableOpacity>
                     )}
-                    />
+                    showsVerticalScrollIndicator={false}/> 
+                    { imageLoading &&
+                        <Loading size={hp(8)} /> 
+                    }   
+                </View>
+
+                {/* urls */}
+                <View className="flex flex-col gap-3">
+                    <View className="flex flex-row gap-2">
+                        <Text className="font-semibold text-lg text-left">
+                            Url(s)
+                        </Text>
+                        <Pressable hitSlop={10} onPress={addUrl}>
+                            <Ionicons name="add-circle" size={24} color="#3B82F6" />
+                        </Pressable>
+                    </View>
+                    {urls.map((url, index) => (
+                        <View
+                        key={`${url}-${index}`}
+                        className="flex flex-row justify-between items-center">
+                            <View className="flex-1 bg-white border border-black px-4 rounded-[5px] h-[50px] mr-3">
+                                <TextInput
+                                    value={url}
+                                    autoCapitalize="none"
+                                    onChangeText={(text) => updateUrl(text, index)}
+                                    className="flex-1 font-medium text-black text-base"
+                                    style={{textAlignVertical: "center"}}
+                                />
+                            </View>
+                            <Pressable hitSlop={10} onPress={() => handleDeleteUrl(index)}>
+                                <Entypo name="circle-with-cross" size={24} color="red"/>
+                            </Pressable>
+                        </View>
+                    ))}          
+                </View>
+
+                {/* documents */}
+                <View className="flex flex-col gap-3">
+                    <View className="flex flex-row gap-2">
+                        <Text className="font-semibold text-lg text-left">
+                            Documents
+                        </Text>
+                        <Pressable hitSlop={10} onPress={addDoc}>
+                            <Ionicons name="add-circle" size={24} color="#3B82F6" />
+                        </Pressable>
+                    </View>
+                    {docsWithType.map((doc) => (
+                        <View
+                        key={doc.uri}
+                        className="flex flex-row justify-between items-center gap-5">
+                            <Pressable hitSlop={14} onPress={() => openDoc(doc.uri, doc.name)}>
+                                {({pressed}) => (
+                                    <Text className={`flex-1 font-medium text-base 
+                                        ${pressed ? "text-gray-700" : "text-blue-600"}`}>
+                                        {doc.name}
+                                    </Text>
+                                )}
+                            </Pressable>
+                            <Pressable hitSlop={10} onPress={() => handleDeleteDoc(doc.uri, doc.name)}>
+                                <Entypo name="circle-with-cross" size={24} color="red"/>
+                            </Pressable>
+                        </View>
+                    ))}    
+                    { docLoading &&
+                        <Loading size={hp(8)} /> 
+                    }         
                 </View>
             </View>
         </ScrollView>

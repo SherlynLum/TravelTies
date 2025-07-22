@@ -38,6 +38,6 @@ mongoose.connect(process.env.DB_URL).then(() => {
 app.use("/api/user", userRoute);
 app.use("/api/aws", awsRoute);
 app.use("/api/trip", tripRoute);
-app.use("/api/photo", photoRoute);
+app.use("/api/photo", photoRoute); // for photos uploaded from Itinerary screens
 app.use("/api/card", itineraryRoute);
 

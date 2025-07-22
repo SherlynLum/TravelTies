@@ -1,10 +1,9 @@
-import { View, Text, TouchableOpacity } from 'react-native'
+import { View, Text, TouchableOpacity, FlatList } from 'react-native'
 import React, { useCallback, useState } from 'react'
 import { useAuth } from '@/context/authContext';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
-import { FlatList} from 'react-native-gesture-handler';
 import { getBinTrips } from '@/apis/tripApi';
 import { getDisplayUrl } from '@/apis/awsApi';
 import { BinTrip } from '@/types/trips';

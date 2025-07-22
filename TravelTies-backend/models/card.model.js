@@ -1,5 +1,22 @@
 const mongoose = require('mongoose');
 
+const docSchema = new mongoose.Schema(
+    {
+        name: {
+            type: String,
+            required: true
+        },
+
+        key: {
+            type: String,
+            required: true
+        }
+    }, 
+    {
+        _id: false
+    }
+);
+
 const cardSchema = new mongoose.Schema({
     tripId: {
         type: mongoose.Schema.Types.ObjectId,
@@ -76,8 +93,8 @@ const cardSchema = new mongoose.Schema({
         default: []
     },
 
-    docKeys: { // array of AWS S3 keys to access uploaded documents
-        type: [String],
+    docs: { 
+        type: [docSchema],
         default: []
     },
 

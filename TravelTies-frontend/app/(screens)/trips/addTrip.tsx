@@ -1,7 +1,6 @@
-import { View, Text, TextInput, Alert, Image, Dimensions, TouchableOpacity, Platform, KeyboardAvoidingView } from 'react-native'
+import { View, Text, TextInput, Alert, Image, Dimensions, TouchableOpacity, Platform, KeyboardAvoidingView, FlatList, Pressable, ScrollView } from 'react-native'
 import React, { useEffect, useRef, useState } from 'react'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import { FlatList, Pressable, ScrollView } from 'react-native-gesture-handler';
 import { useAuth } from '@/context/authContext';
 import { pickOnePic } from '@/utils/imagePicker';
 import { createTrip, getUploadUrl } from '@/apis/tripApi';
@@ -310,8 +309,7 @@ const AddTrip = () => {
                 if (!uploadSuccess) {
                     const uploadRes = await uploadCroppedPic(token);
                     if (!uploadRes) {
-                        setCreateLoading(false);
-                        return; // early exit if failed to upload
+                        throw new Error("Failed to upload trip profile picture");
                     }
                 }
             }

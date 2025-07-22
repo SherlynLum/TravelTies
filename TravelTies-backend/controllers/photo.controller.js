@@ -1,6 +1,6 @@
-const {uploadPhotos} = require("../services/photo.service.js");
+const {uploadPhotosForItinerary} = require("../services/photo.service.js");
 
-const uploadPhotosController = async (req, res) => {
+const uploadPhotosForItineraryController = async (req, res) => {
     const uid = req.user.uid;
     // testing without middleware: const uid = req.body.uid;
     const {tripId, keys} = req.body;
@@ -9,7 +9,7 @@ const uploadPhotosController = async (req, res) => {
     }
 
     try {
-        const picIds = await uploadPhotos({uid, tripId, keys});
+        const picIds = await uploadPhotosForItinerary({uid, tripId, keys});
         if (!picIds || picIds.length === 0) {
             return res.status(500).json({message: "No photo objects were created"});
         }
@@ -20,5 +20,5 @@ const uploadPhotosController = async (req, res) => {
 }
 
 module.exports = {
-    uploadPhotosController
+    uploadPhotosForItineraryController
 }

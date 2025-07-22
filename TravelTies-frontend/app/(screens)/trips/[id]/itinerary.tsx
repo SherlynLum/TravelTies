@@ -1,9 +1,8 @@
-import { View, Text, TouchableOpacity, Alert } from 'react-native'
+import { View, Text, TouchableOpacity, Alert, FlatList } from 'react-native'
 import React, { useCallback, useEffect, useState } from 'react'
 import { useAuth } from '@/context/authContext';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
-import { FlatList} from 'react-native-gesture-handler';
 import { getCardsInTab, getOrderInTab } from '@/apis/tripApi';
 import Loading from '@/components/Loading';
 import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';

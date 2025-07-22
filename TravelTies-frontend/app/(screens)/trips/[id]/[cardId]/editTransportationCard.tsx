@@ -5,13 +5,13 @@ import { useAuth } from '@/context/authContext';
 import { getOrderInTab } from '@/apis/tripApi';
 import { isAxiosError } from 'axios';
 import DateTimePicker, { DateTimePickerAndroid } from "@react-native-community/datetimepicker";
-import { toTimeStr } from '@/utils/dateTimeConverter';
+import { timeStrToDate, toTimeStr } from '@/utils/dateTimeConverter';
 import { useLocalSearchParams, useNavigation, useRouter } from 'expo-router';
 import Loading from '@/components/Loading';
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
 import { Dropdown } from 'react-native-element-dropdown';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
-import { getUploadPicUrl, getUploadDocUrl, createTransportationCard } from '@/apis/cardApi';
+import { getUploadPicUrl, getUploadDocUrl, getCard, updateCard } from '@/apis/cardApi';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { pickPics } from '@/utils/imagePicker';
 import mime from 'mime';
@@ -20,13 +20,14 @@ import Entypo from '@expo/vector-icons/Entypo';
 import DisplayPhotoModal from '@/components/DisplayPhotoModal';
 import { uploadPhotos } from '@/apis/photoApi';
 import { Divider, Menu } from 'react-native-paper';
-import { Doc, DocWithType } from '@/types/cards';
+import { Doc, DocWithType, DocWithUrl } from '@/types/cards';
 import { getDocumentAsync } from 'expo-document-picker';
+import { handleDelete } from '@/utils/handleDelete';
 
-const AddTransportationCard = () => {
+const EditTransportationCard = () => {
     const navigation = useNavigation();
     const insets = useSafeAreaInsets();
-    const {id} = useLocalSearchParams();
+    const {id, cardId} = useLocalSearchParams();
     const router = useRouter();
     const ios = Platform.OS === 'ios';
     const [title, setTitle] = useState("");
@@ -35,7 +36,7 @@ const AddTransportationCard = () => {
     const [description, setDescription] = useState("");
     const [daysLoading, setDaysLoading] = useState(false);
     const [daysErr, setDaysErr] = useState(false);
-    const [createLoading, setCreateLoading] = useState(false);
+    const [loading, setLoading] = useState(false);
     const {user, getUserIdToken} = useAuth();
 
     const [data, setData] = useState<{label: string, value: number}[]>([]);
@@ -59,7 +60,9 @@ const AddTransportationCard = () => {
     const [endPickerOpen, setEndPickerOpen] = useState(false);
 
     const [menuOpen, setMenuOpen] = useState(false);
-    const [images, setImages] = useState<{uri: string, mimeType: string}[]>([]);
+    const [newImages, setNewImages] = useState<{uri: string, mimeType: string}[]>([]);
+    const [oldImages, setOldImages] = useState<{_id: string, key: string, url: string}[]>([]);
+    const [imagesToDisplay, setImagesToDisplay] = useState<string[]>([]); 
     const [imageLoading, setImageLoading] = useState(false);
     const [displayModalOpen, setDisplayModalOpen] = useState(false);
     const [displayUri, setDisplayUri] = useState("");
@@ -69,11 +72,76 @@ const AddTransportationCard = () => {
 
     const [urls, setUrls] = useState<string[]>([]);
 
-    const [docsWithType, setDocsWithType] = useState<DocWithType[]>([]);
+    const [newDocs, setNewDocs] = useState<DocWithType[]>([]);
+    const [docsToDisplay, setDocsToDisplay] = useState<(DocWithType | DocWithUrl)[]>([]);
     const [docLoading, setDocLoading] = useState(false);
     const [uploadSomeDocErr, setUploadSomeDocErr] = useState(false); // if certain docs failed to upload, will allow user proceed to finish creating card
     const [uploadAllDocErr, setUploadAllDocErr] = useState(false); // if the outer try block for uploadFiles fail, not allow user proceed to create the card
     const [docs, setDocs] = useState<Doc[]>([]);
+
+    useEffect(() => {
+        setLoading(true);
+
+        const getCurrentCard = async () => {
+            try {
+                const token = await getUserIdToken(user);
+                const currentCard = await getCard({token, cardId});
+
+                if (!currentCard) {
+                    throw new Error("No card is found");
+                }
+                setTitle(currentCard.title);
+                if (currentCard.departureAddress) {
+                    setDepartureAddress(currentCard.departureAddress);
+                }
+                if (currentCard.arrivalAddress) {
+                    setArrivalAddress(currentCard.arrivalAddress);
+                }
+                if (currentCard.startDate) {
+                    setStartDateToggleOn(true);
+                    setStartDate(currentCard.startDate);
+                }
+                if (currentCard.startTime) {
+                    setStartTimeToggleOn(true);
+                    setStartTime(timeStrToDate(currentCard.startTime));
+                }
+                if (currentCard.endDate) {
+                    setEndDateToggleOn(true);
+                    setEndDate(currentCard.endDate);
+                }
+                if (currentCard.endTime) {
+                    setEndTimeToggleOn(true);
+                    setEndTime(timeStrToDate(currentCard.endTime));
+                }
+                if (currentCard.description) {
+                    setDescription(currentCard.description);
+                }
+                if (currentCard.picIds.length > 0 && currentCard.picUrls.length > 0) {
+                    setImagesToDisplay(currentCard.picUrls);
+                    setOldImages(currentCard.picIds);
+                    setPicIds(currentCard.picIds.map((pic: {_id: string, key: string}) => pic._id));
+                } 
+                if (currentCard.webUrls.length > 0) {
+                    setUrls(currentCard.webUrls);
+                }
+                if (currentCard.docs.length > 0) {
+                    setDocsToDisplay(currentCard.docs);
+                    setDocs(currentCard.docs.map((doc: DocWithUrl) => ({name: doc.name, key: doc.key})));
+                }
+            } catch (e) {
+                console.log(e)
+                Alert.alert("Update Transportation card", 
+                    "Cannot load this Transportation card",
+                    [{
+                        text: "Back to card detail screen",
+                        onPress: () => router.back()
+                    }])
+            } finally {
+                setLoading(false);
+            }
+        };
+        getCurrentCard();
+    }, [])
 
     useEffect(() => {
         if (!startDateToggleOn) {
@@ -108,15 +176,15 @@ const AddTransportationCard = () => {
                     err.push("Card end date was outside the trip duration and has been reset");
                 }
                 if (err.length === 2) {
-                    Alert.alert("Add Transportation card", "Card start date and end date were outside the trip duration and have been reset");
+                    Alert.alert("Update Transportation card", "Card start date and end date were outside the trip duration and have been reset");
                 } else if (err.length === 1) {
-                    Alert.alert("Add Transportation card", err[0]);
+                    Alert.alert("Update Transportation card", err[0]);
                 } 
                 setDaysErr(false);
             } catch (e) {
                 setData([]);
                 console.log(e);
-                Alert.alert("Add Transportation card", "Unable to load this trip’s duration, so start and end dates cannot be changed");
+                Alert.alert("Update Transportation card", "Unable to load this trip’s duration, so start and end dates cannot be changed");
                 if (!startDate) {
                     setStartDateToggleOn(false);
                     setStartDate(null);
@@ -231,17 +299,29 @@ const AddTransportationCard = () => {
                         return;
                     }
                     Alert.alert("Add photos", "Some photos have unknown file types and were skipped. You can try adding them later")
-                    setImages(prev => {
+                    setNewImages(prev => {
                         const existingUris = new Set(prev.map(pic => pic.uri));
                         const newSuccessfulPics = successfulPics.filter(pic => !existingUris.has(pic.uri));
                         return [...prev, ...newSuccessfulPics];
+                    });
+                    setImagesToDisplay(prev => {
+                        const existingPic = new Set(prev);
+                        const picsToBeAdded = successfulPics.map(pic => pic.uri)
+                            .filter(uri => !existingPic.has(uri));
+                        return [...prev, ...picsToBeAdded];
                     })
                 }
                 const successfulPics = pics.map(pic => ({...pic, mimeType: pic.mimeType!})); // all pics are successful actually in this case
-                setImages(prev => {
+                setNewImages(prev => {
                     const existingUris = new Set(prev.map(pic => pic.uri));
                     const newSuccessfulPics = successfulPics.filter(pic => !existingUris.has(pic.uri));
                     return [...prev, ...newSuccessfulPics];
+                });
+                setImagesToDisplay(prev => {
+                    const existingPic = new Set(prev);
+                    const picsToBeAdded = successfulPics.map(pic => pic.uri)
+                        .filter(uri => !existingPic.has(uri));
+                    return [...prev, ...picsToBeAdded];
                 })
             } else if (response.message) {
                 Alert.alert("Add photos", response.message);
@@ -260,21 +340,15 @@ const AddTransportationCard = () => {
     }
 
     const deletePhoto = (uri: string) => {
-        setImages(prev => prev.filter(pic => pic.uri !== uri));
+        setNewImages(prev => prev.filter(pic => pic.uri !== uri));
+        const id = oldImages.find(pic => pic.url === uri)?._id;
+        setOldImages(prev => prev.filter(pic => pic.url !== uri));
+        setImagesToDisplay(prev => prev.filter(pic => pic !== uri));
+        setPicIds(prev => prev.filter(picId => picId !== id));
     }
 
     const handleDeletePhoto = (uri: string) => {
-        Alert.alert("Delete photo", "Are you sure you want to delete this photo?", [
-            {
-                text: "No",
-                style: "cancel"
-            }, 
-            {
-                text: "Yes",
-                style: "destructive",
-                onPress: () => deletePhoto(uri)
-            }
-        ])
+        handleDelete("Delete photo", "Are you sure you want to delete this photo?", () => deletePhoto(uri))
     }
 
     const closeDisplayModal = () => {
@@ -285,7 +359,7 @@ const AddTransportationCard = () => {
     const uploadImages = async () => {
         try{
             const token = await getUserIdToken(user);
-            const keys = await Promise.all(images.map(async (image) => {
+            const keys = await Promise.all(newImages.map(async (image) => {
                 try {
                     const {key, url} = await getUploadPicUrl({token, mimeType: image.mimeType});
                     if (!key || !url) {
@@ -311,7 +385,7 @@ const AddTransportationCard = () => {
             }));
             const successfulKeys = keys.filter(key => key !== null);
             const picIdsRes = await uploadPhotos({token, tripId: id, keys: successfulKeys});
-            setPicIds(picIdsRes);
+            setPicIds(prev => [...prev, ...picIdsRes]);
             setUploadAllPicErr(false);
             return true;
         } catch (e) {
@@ -343,17 +417,7 @@ const AddTransportationCard = () => {
     };
 
     const handleDeleteUrl = (index: number) => {
-        Alert.alert("Delete url", "Are you sure you want to delete this url?", [
-            {
-                text: "No",
-                style: "cancel"
-            }, 
-            {
-                text: "Yes",
-                style: "destructive",
-                onPress: () => deleteUrl(index)
-            }
-        ])
+        handleDelete("Delete url", "Are you sure you want to delete this url?", () => deleteUrl(index))
     }
 
     const addDoc = async () => {
@@ -372,17 +436,29 @@ const AddTransportationCard = () => {
             Alert.alert("Add document", "Some files have unknown file types and were skipped. You can try adding them later.");
             const docsWithType = newDocs.filter(doc => doc.mimeType)
                 .map(doc => ({...doc, mimeType: doc.mimeType!}));
-            setDocsWithType(prev => {
+            setNewDocs(prev => {
                 const existingUris = new Set(prev.map(doc => doc.uri));
                 const nonRepeatDocs = docsWithType.filter(doc => !existingUris.has(doc.uri));
+                return [...prev, ...nonRepeatDocs];
+            });
+            setDocsToDisplay(prev => {
+                // only newly added docs might contain repeats so just need to check those have uris which are newly added
+                const existingDocs = new Set(prev.filter(doc => "uri" in doc).map(doc => doc.uri));
+                const nonRepeatDocs = docsWithType.filter(doc => !existingDocs.has(doc.uri));
                 return [...prev, ...nonRepeatDocs];
             });
             return;
         }
         const docsWithTypeGuard = newDocs.map(doc => ({...doc, mimeType: doc.mimeType!}));
-        setDocsWithType(prev => {
+        setNewDocs(prev => {
             const existingUris = new Set(prev.map(doc => doc.uri));
             const nonRepeatDocs = docsWithTypeGuard.filter(doc => !existingUris.has(doc.uri));
+            return [...prev, ...nonRepeatDocs];
+        });
+        setDocsToDisplay(prev => {
+            // only newly added docs might contain repeats so just need to check those have uris which are newly added
+            const existingDocs = new Set(prev.filter(doc => "uri" in doc).map(doc => doc.uri));
+            const nonRepeatDocs = docsWithTypeGuard.filter(doc => !existingDocs.has(doc.uri));
             return [...prev, ...nonRepeatDocs];
         });
         setDocLoading(false);
@@ -403,27 +479,26 @@ const AddTransportationCard = () => {
     }
 
     const deleteDoc = (uri: string) => {
-        setDocsWithType(prev => prev.filter(doc => doc.uri !== uri));
+        setNewDocs(prev => prev.filter(doc => doc.uri !== uri));
+        setDocsToDisplay(prev => prev.filter(doc => {
+            if ("uri" in doc) {
+                return doc.uri !== uri;
+            } else if ("url" in doc) {
+                return doc.url !== uri;
+            } else {
+                return true;
+            }
+        }))
     };
 
     const handleDeleteDoc = (uri: string, name: string) => {
-        Alert.alert("Delete document", `Are you sure you want to delete ${name}?`, [
-            {
-                text: "No",
-                style: "cancel"
-            }, 
-            {
-                text: "Yes",
-                style: "destructive",
-                onPress: () => deleteDoc(uri)
-            }
-        ])
+        handleDelete("Delete document", `Are you sure you want to delete ${name}?`, () => deleteDoc(uri))
     }
 
     const uploadFiles = async () => {
         try{
             const token = await getUserIdToken(user);
-            const documents = await Promise.all(docsWithType.map(async (doc) => {
+            const documents = await Promise.all(newDocs.map(async (doc) => {
                 try {
                     const {key, url} = await getUploadDocUrl({token, mimeType: doc.mimeType});
                     if (!key || !url) {
@@ -448,7 +523,7 @@ const AddTransportationCard = () => {
                 }
             }));
             const successfulDocs = documents.filter(doc => doc !== null);
-            setDocs(successfulDocs);
+            setDocs([...docs, ...successfulDocs]);
             setUploadAllDocErr(false);
             return true;
         } catch (e) {
@@ -459,88 +534,91 @@ const AddTransportationCard = () => {
         }
     }
 
-    const createCard = useCallback(async () => {
+    const updateCurrentCard = useCallback(async () => {
         try {
-            setCreateLoading(true);
+            setLoading(true);
             const token = await getUserIdToken(user);
             if (uploadAllPicErr) {
                 const uploadPicRes = await uploadImages();
                 if (!uploadPicRes) {
-                    throw new Error("Failed to create destination card due to failure in uploading photos");
+                    throw new Error("Failed to update Transportation card due to failure in uploading photos");
                 }
             }
             if (uploadAllDocErr) {
                 const uploadDocRes = await uploadFiles();
                 if (!uploadDocRes) {
-                    throw new Error("Failed to create destination card due to failure in uploading documents");
+                    throw new Error("Failed to update Transportation card due to failure in uploading documents");
                 }
             }
             if (uploadSomePicErr || uploadSomeDocErr) {
                 Alert.alert("Upload photos and documents", 
                 "Some photos and documents couldn't be uploaded and were skipped. You can try adding them again from the card detail page.")
             }
-            const card = await createTransportationCard({token, tripId: id, title, departureAddress, 
-                arrivalAddress,
+            const card = await updateCard({token, cardId, cardType: "transportation", title,
                 startDate: startDate || undefined,
                 startTime: startTimeStr || undefined,
                 endDate: endDate || undefined,
                 endTime: endTimeStr || undefined,
                 description: description || undefined,
-                picIds: picIds,
+                generalAddress: undefined,
+                departureAddress,
+                arrivalAddress,
+                country: undefined,
+                city: undefined,
+                picIds,
                 docs,
                 webUrls: urls
             });
             if (!card) {
                 throw new Error("No card is created");
             }
-            router.replace(`/trips/${id}/itinerary`);
+            router.replace(`/trips/${id}/${cardId}/cardDetails`);
         } catch (e) {
             console.log(e);
             if (isAxiosError(e) && e.response?.data?.timeErr) {
-                Alert.alert("Failed to create destination card", e.response.data.message);
+                Alert.alert("Failed to update Transportation card", e.response.data.message);
                 return;
             }
-            Alert.alert("Failed to create destination card", "Please try again later");
+            Alert.alert("Failed to update Transportation card", "Please try again later");
         } finally {
-            setCreateLoading(false);
+            setLoading(false);
         }
-    }, [title, departureAddress, arrivalAddress, description, startDate, startTimeStr, endDate, endTimeStr,
-        picIds, docs, urls])
+    }, [title, departureAddress, arrivalAddress, description, startDate, startTimeStr, endDate, endTimeStr, picIds, docs, urls])
     
-    const handleCreate = useCallback(async () => {
+    const handleUpdate = useCallback(async () => {
         if (!title) {
-            Alert.alert("Failed to create Transportation card", "Title cannot be empty");
+            Alert.alert("Failed to update Transportation card", "Title cannot be empty");
             return;
         }
         if (startDate && endDate) {
             if (endDate < startDate) {
-                Alert.alert("Failed to create Transportation card", "End date must be after start date");
+                Alert.alert("Failed to update Transportation card", "End date must be after start date");
                 return;
             }
             if (startDate === endDate && startTimeStr && endTimeStr && endTimeStr < startTimeStr) {
-                Alert.alert("Failed to create Transportation card", 
+                Alert.alert("Failed to update Transportation card", 
                     "End time must be after start time if start date is same as end date");
                 return;
             }
         }
-        setCreateLoading(true);
-        await createCard();
-    }, [title, startDate, endDate, startTimeStr, endTimeStr, createCard])
+        setLoading(true);
+        await updateCurrentCard();
+    }, [title, startDate, endDate, startTimeStr, endTimeStr, updateCurrentCard])
     
     useLayoutEffect(() => {
         navigation.setOptions({
             headerRight: () => (
-                <Pressable onPress={handleCreate} hitSlop={14} disabled={createLoading}>
+                <Pressable onPress={handleUpdate} hitSlop={14} disabled={loading}>
                     <Text className="font-semibold text-white text-base">
-                        Create
+                        Save
                     </Text>
                 </Pressable>
             )
         })
-    }, [navigation, handleCreate, createLoading])
+    }, [navigation, handleUpdate, loading])
 
   return (
-    createLoading ? (
+    loading ? (
         <View className="flex-1 justify-center items-center">
             <Loading size={hp(12)} />
         </View>
@@ -604,7 +682,7 @@ const AddTransportationCard = () => {
                         />
                     </View>
                 </View>
-
+                
                 {/* start date */}
                 <View className="flex flex-col gap-3">
                     <View className="flex flex-row justify-start items-center gap-5">
@@ -628,8 +706,8 @@ const AddTransportationCard = () => {
                         valueField="value"
                         placeholder="Select start date"
                         placeholderStyle={{color: "gray"}}
-                        selectedTextStyle={{fontWeight: "500", color: "black", fontSize: 16}}
-                        inputSearchStyle={{fontWeight: "500", color: "black", fontSize: 16}}
+                        selectedTextStyle={{fontWeight: 500, color: "black", fontSize: 16}}
+                        inputSearchStyle={{fontWeight: 500, color: "black", fontSize: 16}}
                         value={startDate}
                         onChange={item => setStartDate(item.value)}
                         />
@@ -718,8 +796,8 @@ const AddTransportationCard = () => {
                         valueField="value"
                         placeholder="Select end date"
                         placeholderStyle={{color: "gray"}}
-                        selectedTextStyle={{fontWeight: "500", color: "black", fontSize: 16}}
-                        inputSearchStyle={{fontWeight: "500", color: "black", fontSize: 16}}
+                        selectedTextStyle={{fontWeight: 500, color: "black", fontSize: 16}}
+                        inputSearchStyle={{fontWeight: 500, color: "black", fontSize: 16}}
                         value={endDate}
                         onChange={item => setEndDate(item.value)}
                         />
@@ -729,7 +807,8 @@ const AddTransportationCard = () => {
                                 {endDate}
                             </Text>
                         </View>
-                    )))}
+                    )
+                    ))}
                 </View>
 
                 {/* end time */}
@@ -822,18 +901,18 @@ const AddTransportationCard = () => {
                         </Menu>
                     </View>
                     <FlatList
-                    data={images}
+                    data={imagesToDisplay}
                     numColumns={3}
-                    keyExtractor={(item) => item.uri}
+                    keyExtractor={(item) => item}
                     columnWrapperClassName="justify-between mb-3"
                     renderItem={({item}) => (
-                        <TouchableOpacity className="relative" onPress={() => openDisplayModal(item.uri)}>
+                        <TouchableOpacity className="relative" onPress={() => openDisplayModal(item)}>
                             <Image
-                            source={{uri: item.uri}}
+                            source={{uri: item}}
                             className="w-[100px] h-[100px] border-neutral-400 border-2"
                             resizeMode="cover"/>
                             <Pressable
-                            onPress={() => handleDeletePhoto(item.uri)}
+                            onPress={() => handleDeletePhoto(item)}
                             className="absolute top-0 right-0 w-6 h-6 bg-neutral-400 flex justify-center 
                             items-center" hitSlop={10}>
                                 <Entypo name="cross" size={20} color="white"/>
@@ -886,11 +965,16 @@ const AddTransportationCard = () => {
                             <Ionicons name="add-circle" size={24} color="#3B82F6" />
                         </Pressable>
                     </View>
-                    {docsWithType.map((doc) => (
+                    {docsToDisplay.map((doc, index) => (
                         <View
-                        key={doc.uri}
+                        key={`${doc.name}-${index}`}
                         className="flex flex-row justify-between items-center gap-5">
-                            <Pressable hitSlop={14} onPress={() => openDoc(doc.uri, doc.name)}>
+                            <Pressable hitSlop={14} onPress={() => {
+                                if ("uri" in doc) {
+                                    openDoc(doc.uri, doc.name);
+                                } else {
+                                    openDoc(doc.url, doc.name);
+                            }}}>
                                 {({pressed}) => (
                                     <Text className={`flex-1 font-medium text-base 
                                         ${pressed ? "text-gray-700" : "text-blue-600"}`}>
@@ -898,7 +982,12 @@ const AddTransportationCard = () => {
                                     </Text>
                                 )}
                             </Pressable>
-                            <Pressable hitSlop={10} onPress={() => handleDeleteDoc(doc.uri, doc.name)}>
+                            <Pressable hitSlop={10} onPress={() => {
+                                if ("uri" in doc) {
+                                    handleDeleteDoc(doc.uri, doc.name);
+                                } else {
+                                    handleDeleteDoc(doc.url, doc.name);
+                            }}}>
                                 <Entypo name="circle-with-cross" size={24} color="red"/>
                             </Pressable>
                         </View>
@@ -916,4 +1005,4 @@ const AddTransportationCard = () => {
   )
 }
 
-export default AddTransportationCard
+export default EditTransportationCard

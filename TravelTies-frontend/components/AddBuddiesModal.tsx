@@ -1,9 +1,8 @@
-import { View, Text, Modal, Pressable, Image, Platform, TouchableOpacity, Switch, TextInput, Alert } from 'react-native';
+import { View, Text, Modal, Pressable, Image, Platform, TouchableOpacity, Switch, TextInput, Alert, FlatList } from 'react-native';
 import React, { useEffect, useMemo, useState } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { TripParticipantWithProfile } from '@/types/trips';
-import { FlatList } from 'react-native-gesture-handler';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { useAuth } from '@/context/authContext';
 import { User } from "@/types/users";

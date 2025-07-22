@@ -1,9 +1,8 @@
-import { View, Text, Modal, Pressable, Image, Platform, TouchableOpacity, Switch, Alert } from 'react-native';
+import { View, Text, Modal, Pressable, Image, Platform, TouchableOpacity, Switch, Alert, FlatList } from 'react-native';
 import React, { useEffect, useMemo, useState } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { JoinRequestsWithProfile, TripParticipant, TripParticipantWithProfile } from '@/types/trips';
-import { FlatList } from 'react-native-gesture-handler';
 import { Divider } from 'react-native-paper';
 import { useAuth } from '@/context/authContext';
 import { getRequests, updateRequests } from '@/apis/tripApi';

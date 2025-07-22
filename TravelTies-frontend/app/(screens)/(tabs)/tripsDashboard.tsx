@@ -1,4 +1,4 @@
-import { View, Text, TouchableOpacity } from 'react-native'
+import { View, Text, TouchableOpacity, FlatList } from 'react-native'
 import React, { useCallback, useState } from 'react'
 import { useAuth } from '@/context/authContext';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -6,7 +6,6 @@ import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-nat
 import Ionicons from '@expo/vector-icons/Ionicons';
 import Feather from '@expo/vector-icons/Feather';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
-import { FlatList} from 'react-native-gesture-handler';
 import { getActiveTrips } from '@/apis/tripApi';
 import { Trip } from '@/types/trips';
 import ActiveTripCard from '@/components/activeTripCard';

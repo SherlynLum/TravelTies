@@ -21,10 +21,15 @@ const getUrl = async (token, key) => {
     }
 }
 
-const uploadPhoto = async (token, tripId, keys) => {
-    
+const uploadPhotos = async ({token, tripId, keys}) => {
+    const backendRes = await axios.post(
+        `${baseUrl}/api/photo`,
+        {tripId, keys},
+        {headers: getHeaders(token)}
+    );
+    return backendRes.data.picIds;
 }
 
 export {
-    
+    uploadPhotos
 }

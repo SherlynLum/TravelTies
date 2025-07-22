@@ -1,9 +1,8 @@
-import { View, Text, Modal, Pressable, TextInput } from 'react-native';
+import { View, Text, Modal, Pressable, TextInput, FlatList } from 'react-native';
 import React, { useEffect, useState } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { Trip } from '@/types/trips';
-import { FlatList } from 'react-native-gesture-handler';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { useAuth } from '@/context/authContext';
 import Loading from './Loading';

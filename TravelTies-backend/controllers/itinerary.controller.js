@@ -1,5 +1,6 @@
 const {generateUploadUrl, generateUploadUrlWithExtension} = require("../services/awss3.service.js");
-const { createNoteCard, createDestinationCard, createTransportationCard, createGeneralCard, deleteCard, updateCard } = require("../services/itinerary.service.js");
+const { createNoteCard, createDestinationCard, createTransportationCard, createGeneralCard, deleteCard, 
+    updateCard, getCard } = require("../services/itinerary.service.js");
 const { addCard, removeCard } = require("../services/trip.service.js");
 const { validateCardTime } = require("../validators/itinerary.validator.js");
 const ALLOWED_IMAGE_TYPES = new Set(["image/jpeg", "image/png", "image/webp", "image/heic", "image/heif"]);
@@ -99,7 +100,7 @@ const createNoteCardController = async (req, res) => {
 
 const createDestinationCardController = async (req, res) => {
     const {tripId, title, country, city, description, startDate, startTime, endDate, endTime, picIds, 
-        docKeys, webUrls} = req.body;
+        docs, webUrls} = req.body;
 
     if (!tripId) {
         return res.status(400).json({message: "Missing tripId"});
@@ -123,7 +124,7 @@ const createDestinationCardController = async (req, res) => {
 
     try {
         const card = await createDestinationCard({tripId, country, city, description, startDate, startTime, 
-    endDate, endTime, picIds, docKeys, webUrls, session});
+    endDate, endTime, picIds, docs, webUrls, session});
         if (!card) {
             throw new Error("No destination card is created");
         }
@@ -144,7 +145,7 @@ const createDestinationCardController = async (req, res) => {
 
 const createTransportationCardController = async (req, res) => {
     const {tripId, title, description, startDate, startTime, endDate, endTime, departureAddress, 
-        arrivalAddress, picIds, docKeys, webUrls} = req.body;
+        arrivalAddress, picIds, docs, webUrls} = req.body;
 
     if (!tripId) {
         return res.status(400).json({message: "Missing tripId"});
@@ -164,7 +165,7 @@ const createTransportationCardController = async (req, res) => {
 
     try {
         const card = await createTransportationCard({tripId, title, description, startDate, startTime, 
-            endDate, endTime, departureAddress, arrivalAddress, picIds, docKeys, webUrls, session});
+            endDate, endTime, departureAddress, arrivalAddress, picIds, docs, webUrls, session});
         if (!card) {
             throw new Error("No transportation card is created");
         }
@@ -185,7 +186,7 @@ const createTransportationCardController = async (req, res) => {
 
 const createGeneralCardController = async (req, res) => {
     const {tripId, cardType, title, description, startDate, startTime, endDate, endTime, 
-        generalAddress, picIds, docKeys, webUrls} = req.body;
+        generalAddress, picIds, docs, webUrls} = req.body;
 
     if (!tripId) {
         return res.status(400).json({message: "Missing tripId"});
@@ -209,7 +210,7 @@ const createGeneralCardController = async (req, res) => {
 
     try {
         const card = await createGeneralCard({tripId, cardType, title, description, startDate, 
-            startTime, endDate, endTime, generalAddress, picIds, docKeys, webUrls, session});
+            startTime, endDate, endTime, generalAddress, picIds, docs, webUrls, session});
         if (!card) {
             throw new Error("No general card is created");
         }
@@ -265,7 +266,7 @@ const getCardController = async (req, res) => {
     }
 
     try {
-        const card = await card(id);
+        const card = await getCard(id);
         if (!card) {
             return res.status(404).json({message: "No card is found"})
         }
@@ -281,7 +282,7 @@ const updateCardController = async (req, res) => {
         return res.status(400).json({message: "Missing cardId"});
     }
     const {cardType, title, description, startDate, startTime, endDate, endTime, generalAddress, 
-        departureAddress, arrivalAddress, country, city, picIds, docKeys, webUrls} = req.body;
+        departureAddress, arrivalAddress, country, city, picIds, docs, webUrls} = req.body;
     if (!cardType) {
         return res.status(400).json({message: "Missing card type"});
     }
@@ -304,7 +305,7 @@ const updateCardController = async (req, res) => {
     try {
         const card = await updateCard({cardId, cardType, title, description, startDate, startTime, 
             endDate, endTime, generalAddress, departureAddress, arrivalAddress, country, city, picIds, 
-            docKeys, webUrls, session});
+            docs, webUrls, session});
         if (!card) {
             return res.status(500).json({message: "No card is found"});
         }

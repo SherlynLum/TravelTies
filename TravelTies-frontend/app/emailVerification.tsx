@@ -146,7 +146,7 @@ const EmailVerification = () => {
                   <View className="items-center justify-center">
                     <Pressable onPress={checkVerification} hitSlop={14}>
                       <Text style={{fontSize: hp(1.8)}} className="font-bold text-blue-500">
-                        I've already verified
+                        {"I've already verified"}
                       </Text>
                     </Pressable>
                   </View>
