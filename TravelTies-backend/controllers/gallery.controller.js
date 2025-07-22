@@ -1,4 +1,4 @@
-const s3 = require("../utils/s3");
+const {generateUploadUrl, deleteObject} = require("../services/awss3.service.js");
 const Photo = require("../models/photo.model");
 const Album = require("../models/album.model");
 
@@ -25,19 +25,18 @@ exports.uploadPhotos = async (req, res) => {
   try {
     const uploadedPhotos = await Promise.all(
       files.map(async (file) => {
-        // Upload to S3
-        const s3Response = await s3.upload({
-          Bucket: process.env.AWS_BUCKET_NAME,
-          Key: `gallery/${tripId}/${Date.now()}_${file.originalname}`,
-          Body: file.buffer,
-          ContentType: file.mimetype
-        }).promise();
+        // Generate unique key for S3
+        const extension = file.mimetype.split("/")[1];
+        const key = `gallery/${tripId}/${Date.now()}_${file.originalname}`;
+
+        // Upload file buffer to S3
+        await generateUploadUrl(file.mimetype, `gallery/${tripId}`);
 
         // Save metadata to MongoDB
         const photo = await Photo.create({
           tripId,
           uploadedByUid,
-          key: s3Response.Key
+          key
         });
 
         return photo;
@@ -60,14 +59,10 @@ exports.deletePhotos = async (req, res) => {
     if (deleteFromAll) {
       // Delete from S3
       await Promise.all(
-        photos.map(photo =>
-          s3.deleteObject({
-            Bucket: process.env.AWS_BUCKET_NAME,
-            Key: photo.key
-          }).promise()
-        )
+        photos.map(photo => deleteObject(photo.key))
       );
 
+      // Delete from MongoDB
       await Photo.deleteMany({ _id: { $in: photoIds } });
     } else {
       // Remove only from albums
