@@ -22,6 +22,8 @@ import { uploadPhotos } from '@/apis/photoApi';
 import { Divider, Menu } from 'react-native-paper';
 import { Doc, DocWithType } from '@/types/cards';
 import { getDocumentAsync } from 'expo-document-picker';
+import { v4 as uuidv4 } from "uuid";
+import { handleDelete } from '@/utils/handleDelete';
 
 const AddTransportationCard = () => {
     const navigation = useNavigation();
@@ -67,7 +69,7 @@ const AddTransportationCard = () => {
     const [uploadAllPicErr, setUploadAllPicErr] = useState(false); // if the outer try block for uploadImages fail, not allow user proceed to create the card
     const [picIds, setPicIds] = useState<string[]>([]);
 
-    const [urls, setUrls] = useState<string[]>([]);
+    const [urls, setUrls] = useState<{id: string, url: string}[]>([]);
 
     const [docsWithType, setDocsWithType] = useState<DocWithType[]>([]);
     const [docLoading, setDocLoading] = useState(false);
@@ -323,37 +325,19 @@ const AddTransportationCard = () => {
     }
 
     const addUrl = () => {
-        setUrls(prev => [...prev, ""]);
+        setUrls(prev => [...prev, {id: uuidv4(), url: ""}]);
     };
 
-    const updateUrl = (text: string, index: number) => {
-        setUrls(prev => {
-            const urls = [...prev];
-            urls[index] = text;
-            return urls;
-        })
+    const updateUrl = (text: string, id: string) => {
+        setUrls(prev => prev.map(obj => obj.id !== id ? obj : {id, url: text}));
     };
 
-    const deleteUrl = (index: number) => {
-        setUrls(prev => {
-            const urls = [...prev];
-            urls.splice(index, 1);
-            return urls;
-        })
+    const deleteUrl = (id: string) => {
+        setUrls(prev => prev.filter(obj => obj.id !== id));
     };
 
-    const handleDeleteUrl = (index: number) => {
-        Alert.alert("Delete url", "Are you sure you want to delete this url?", [
-            {
-                text: "No",
-                style: "cancel"
-            }, 
-            {
-                text: "Yes",
-                style: "destructive",
-                onPress: () => deleteUrl(index)
-            }
-        ])
+    const handleDeleteUrl = (id: string) => {
+        handleDelete("Delete url", "Are you sure you want to delete this url?", () => deleteUrl(id))
     }
 
     const addDoc = async () => {
@@ -856,20 +840,20 @@ const AddTransportationCard = () => {
                             <Ionicons name="add-circle" size={24} color="#3B82F6" />
                         </Pressable>
                     </View>
-                    {urls.map((url, index) => (
+                    {urls.map((obj) => (
                         <View
-                        key={`${url}-${index}`}
+                        key={obj.id}
                         className="flex flex-row justify-between items-center">
                             <View className="flex-1 bg-white border border-black px-4 rounded-[5px] h-[50px] mr-3">
                                 <TextInput
-                                    value={url}
+                                    value={obj.url}
                                     autoCapitalize="none"
-                                    onChangeText={(text) => updateUrl(text, index)}
+                                    onChangeText={(text) => updateUrl(text, obj.id)}
                                     className="flex-1 font-medium text-black text-base"
                                     style={{textAlignVertical: "center"}}
                                 />
                             </View>
-                            <Pressable hitSlop={10} onPress={() => handleDeleteUrl(index)}>
+                            <Pressable hitSlop={10} onPress={() => handleDeleteUrl(obj.id)}>
                                 <Entypo name="circle-with-cross" size={24} color="red"/>
                             </Pressable>
                         </View>
