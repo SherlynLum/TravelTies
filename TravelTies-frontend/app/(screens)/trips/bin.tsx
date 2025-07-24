@@ -11,6 +11,7 @@ import Loading from '@/components/Loading';
 import { useFocusEffect } from 'expo-router';
 import BinTripCard from '@/components/binTripCard';
 import SearchBinTripModal from '@/components/SearchBinTripModal';
+import { StatusBar } from 'expo-status-bar'
 
 const Bin = () => {
   const {user, getUserIdToken} = useAuth();
@@ -89,6 +90,12 @@ const Bin = () => {
   }
 
   return (
+    <>
+    <StatusBar 
+      translucent
+      backgroundColor='transparent'
+      style="dark"
+        />
     <View className="flex-1 bg-white" style={{paddingBottom: insets.bottom}}>
       <View className="flex flex-col px-5 pt-3 pb-3 gap-5">
         {/* search bar */}
@@ -137,6 +144,7 @@ const Bin = () => {
       <SearchBinTripModal isVisible={searchModalOpen} closeModal={closeSearchModal} 
         removeFromBin={removeFromBin} />
     </View>
+    </>
   )
 }
 

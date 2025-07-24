@@ -304,6 +304,38 @@ const getCardsInTab = async ({token, id, tab}) => {
     return backendRes.data.cards;
 }
 
+const getTripsStats = async (token) => {
+    const backendRes = await axios.get(
+        `${baseUrl}/api/trip`,
+        {headers: getHeaders(token)}
+    );
+    const trips = backendRes.data.trips;
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0); // set today's time to midnight compare only date part as startDate and endDate are floating dates at midnight
+
+    const planning = [];
+    const ongoing = [];
+    const completed = [];
+
+    trips.forEach(trip => {
+        if (!trip.startDate ) { // backend ensures if no startDate, then no endDate
+            planning.push(trip);
+        } else {
+            const startDate = toLocalDateObj(trip.startDate);
+            const endDate = toLocalDateObj(trip.endDate);
+            if (startDate > today) {
+                planning.push(trip);
+            } else if (endDate < today) {
+                completed.push(trip);
+            } else {
+                ongoing.push(trip);
+            }
+        }
+    });
+    return {planning: planning.length, ongoing: ongoing.length, completed: completed.length};
+}
+
 export {
     getActiveTrips,
     getUploadUrl,
@@ -323,6 +355,7 @@ export {
     leaveTrip,
     updateRequests,
     getOrderInTab,
-    getCardsInTab
+    getCardsInTab,
+    getTripsStats
 }
 

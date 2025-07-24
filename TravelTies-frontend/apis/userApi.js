@@ -84,9 +84,28 @@ const searchFriends = async (token, searchTerm) => {
     return resultsWithPicUrl;
 }
 
+const getPreference = async (token) => {
+    const backendRes = await axios.get(
+        `${baseUrl}/api/user/preference`,
+        {headers: getHeaders(token)}
+    );
+    return backendRes.data.preference;
+}
+
+const updatePreference = async ({token, notificationEnabled, theme}) => {
+    const backendRes = await axios.patch(
+        `${baseUrl}/api/user/preference`,
+        {notificationEnabled, theme},
+        {headers: getHeaders(token)}
+    );
+    return backendRes.data.preference;
+}
+
 export {
     getProfile,
     getProfileWithUrl,
     getFriends,
-    searchFriends
+    searchFriends,
+    getPreference,
+    updatePreference
 }

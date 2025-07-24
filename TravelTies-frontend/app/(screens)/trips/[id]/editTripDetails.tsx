@@ -420,6 +420,7 @@ const EditTripDetails = () => {
 
     const cancelThisTrip = async () => {
       try {
+        setExitLoading(true);
         const token = await getUserIdToken(user);
         const res = await cancelTrip({token, id});
         if (!res) {
@@ -429,6 +430,8 @@ const EditTripDetails = () => {
       } catch (e) {
         console.log(e);
         Alert.alert("Cancel trip", `Failed to cancel ${name}`)
+      } finally {
+        setExitLoading(false);
       }
     }
 
@@ -450,6 +453,7 @@ const EditTripDetails = () => {
 
     const leaveThisTrip = async () => {
       try {
+        setExitLoading(true);
         const token = await getUserIdToken(user);
         const res = await leaveTrip({token, id});
         if (!res) {
@@ -459,6 +463,8 @@ const EditTripDetails = () => {
       } catch (e) {
         console.log(e);
         Alert.alert("Leave trip", `Failed to leave ${name}`)
+      } finally {
+        setExitLoading(false);
       }
     }
 
