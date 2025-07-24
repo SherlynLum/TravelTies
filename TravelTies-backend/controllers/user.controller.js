@@ -2,12 +2,13 @@ const validateUsername = require("../validators/username.validator.js");
 const {signUpOrSignIn, checkUsernameUniqueness, updateUsername, updateProfilePic, 
     getUsernamePic, getFriends, searchFriends, searchUsers, getUiPreference,
     updateUiPreference, getFriendRequests, removeFriends, removeFriend, acceptRequests, beAccepted,
-    sendRequests, receiveRequest, rate, getStripeAccount, updateStripeAccount
+    sendRequests, receiveRequest, rate, getStripeAccount, updateStripeAccount,
+    removeStripeAccount
 } = require("../services/user.service.js");
 const {generateUploadUrl} = require("../services/awss3.service.js");
 const mongoose = require('mongoose');
 const admin = require("firebase-admin");
-const { getAccountDetails, createAccount, createLinkForOnboard, createLinkForUpdate } = require("../services/stripe.service.js");
+const { getAccountDetails, createAccount, createLinkForOnboard, createLinkForUpdate, disconnectAccount } = require("../services/stripe.service.js");
 
 const syncUser = async (req, res) => {
     const uid = req.user.uid;
@@ -407,6 +408,26 @@ const getStripeUpdateUrl = async (req, res) => {
     }
 }
 
+const unlinkStripeAccount = async (req, res) => {
+    const uid = req.user.uid;
+    // testing without middleware: const uid = req.query.uid;
+    if (!uid) {
+        return res.status(400).json({message: "Missing uid"});
+    }
+    const {accountId} = req.params;
+    if (!accountId) {
+        return res.status(400).json({message: "Missing account id"});
+    }
+
+    try {
+        await disconnectAccount(accountId);
+        await removeStripeAccount(uid);
+        return res.sendStatus(200);
+    } catch (e) {
+        return res.status(500).json({message: e.message});
+    }
+}
+
 module.exports = {
     syncUser,
     getProfilePicUrl,
@@ -426,5 +447,6 @@ module.exports = {
     rateUs,
     getOrUpdateStripeAccount,
     getStripeOnboardUrl,
-    getStripeUpdateUrl
+    getStripeUpdateUrl,
+    unlinkStripeAccount
 };

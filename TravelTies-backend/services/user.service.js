@@ -249,7 +249,7 @@ const updateStripeAccount = async ({uid, account}) => {
     return updatedUser;
 } 
 
-const removeStripeAccount = async ({uid}) => {
+const removeStripeAccount = async (uid) => {
     const updatedUser = await User.findOneAndUpdate({uid},
         {$unset: {stripeAccount: ""}},
         {new: true, runValidators: true}

@@ -5,7 +5,8 @@ const {syncUser, getProfilePicUrl, updateUsernameController, updateProfilePicCon
     getUiPreferenceController, updateUiPreferenceController, getFriendRequestsController,
     removeFriendsOrRequests, acceptRequestsController, addFriends, linkEmail, rateUs,
     getStripeOnboardUrl, getOrUpdateStripeAccount,
-    getStripeUpdateUrl
+    getStripeUpdateUrl,
+    unlinkStripeAccount
 } = require("../controllers/user.controller.js");
 const router = express.Router();
 
@@ -65,4 +66,8 @@ router.post("/stripe", firebaseAuthMiddleware, getStripeOnboardUrl); // also cre
 
 router.get("/stripe/update-url", firebaseAuthMiddleware, getStripeUpdateUrl); 
 // for testing without middleware: router.get("/test/stripe/update-url", getStripeUpdateUrl);
+
+router.delete("/stripe", firebaseAuthMiddleware, unlinkStripeAccount); // delete stripe account 
+// for testing without middleware: router.delete("/test/stripe", unlinkStripeAccount);
+
 module.exports = router;
