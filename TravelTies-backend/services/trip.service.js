@@ -83,7 +83,7 @@ const getTripsInBin = async (uid) => {
     return trips;
 }
 
-const getOverview = async (tripId) => {
+const getOverviewById = async (tripId) => {
     const tripOverview = await Trip.findOne({_id: tripId}, 
         {
             name: 1,
@@ -94,6 +94,19 @@ const getOverview = async (tripId) => {
             noOfNights: 1,
             noOfParticipants: {$size: "$tripParticipants"},
         })
+    return tripOverview;
+}
+
+const getOverviewByJoinCode = async (joinCode) => {
+    const tripOverview = await Trip.findOne({joinCode}, {
+            name: 1,
+            profilePicKey: 1,
+            startDate: 1,
+            endDate: 1, 
+            noOfDays: 1,
+            noOfNights: 1,
+            noOfParticipants: {$size: "$tripParticipants"},
+        });
     return tripOverview;
 }
 
@@ -455,7 +468,8 @@ module.exports = {
     createTrip,
     getTripsByUid,
     getTripsInBin,
-    getOverview,
+    getOverviewById,
+    getOverviewByJoinCode,
     getJoinCode,
     getParticipants,
     getJoinRequests,

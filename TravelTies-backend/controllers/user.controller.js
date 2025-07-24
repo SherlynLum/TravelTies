@@ -1,8 +1,12 @@
 const validateUsername = require("../validators/username.validator.js");
 const {signUpOrSignIn, checkUsernameUniqueness, updateUsername, updateProfilePic, 
-    getUsernamePic, getFriends, searchFriends, searchUsers
+    getUsernamePic, getFriends, searchFriends, searchUsers, getUiPreference,
+    updateUiPreference, getFriendRequests, removeFriends, removeFriend, acceptRequests, beAccepted,
+    sendRequests, receiveRequest, rate
 } = require("../services/user.service.js");
 const {generateUploadUrl} = require("../services/awss3.service.js");
+const mongoose = require('mongoose');
+const admin = require("firebase-admin");
 
 const syncUser = async (req, res) => {
     const uid = req.user.uid;
@@ -169,6 +173,164 @@ const searchNonFriends = async (req, res) => {
     }
 }
 
+const getUiPreferenceController = async (req, res) => {
+    const uid = req.user.uid;
+    if (!uid) {
+        return res.status(400).json({message: "Missing uid"});
+    }
+    
+    try {
+        const preference = await getUiPreference(uid);
+        if (!preference) {
+            return res.status(404).json({message: "User not found"});
+        }
+        return res.status(200).json({preference})
+    } catch (e) {
+        return res.status(500).json({message: e.message});
+    }
+}
+
+const updateUiPreferenceController = async (req, res) => {
+    const uid = req.user.uid;
+    const {notificationEnabled, theme} = req.body;
+    if (!uid) {
+        return res.status(400).json({message: "Missing uid"});
+    }
+    
+    try {
+        const preference = await updateUiPreference({uid, notificationEnabled, theme});
+        if (!preference) {
+            return res.status(404).json({message: "User not found"});
+        }
+        return res.status(200).json({preference})
+    } catch (e) {
+        return res.status(500).json({message: e.message});
+    }
+}
+
+const getFriendRequestsController = async (req, res) => {
+    const uid = req.user.uid;
+    // testing without middleware: const uid = req.query.uid;
+    if (!uid) {
+        return res.status(400).json({message: "Missing uid"});
+    }
+
+    try {
+        const requests = await getFriendRequests(uid);
+        return res.status(200).json({requests});
+    } catch (e) {
+        return res.status(500).json({message: e.message});
+    }
+}
+
+const removeFriendsOrRequests = async (req, res) => {
+    const currentUid = req.user.uid;
+    // testing without middleware: const uid = req.query.uid;
+    if (!currentUid) {
+        return res.status(400).json({message: "Missing uid"});
+    }
+    const {uidsToBeRemoved} = req.body
+
+    const session = await mongoose.startSession();
+    session.startTransaction();
+
+    try {
+        await removeFriends({uid: currentUid, uidsToBeRemoved, session});
+        for (const exFriendUid of uidsToBeRemoved) {
+            await removeFriend({uid: exFriendUid, uidToBeRemoved: currentUid, session})
+        }
+        await session.commitTransaction();
+        return res.sendStatus(200);
+    } catch (e) {
+        await session.abortTransaction();
+        return res.status(500).json({message: e.message});
+    } finally {
+        session.endSession();
+    }
+}
+
+const acceptRequestsController = async (req, res) => {
+    const currentUid = req.user.uid;
+    // testing without middleware: const uid = req.query.uid;
+    if (!currentUid) {
+        return res.status(400).json({message: "Missing uid"});
+    }
+    const {acceptUids} = req.body
+
+    const session = await mongoose.startSession();
+    session.startTransaction();
+
+    try {
+        await acceptRequests({uid: currentUid, acceptUids, session});
+        for (const newFriendUid of acceptUids) {
+            await beAccepted({uid: newFriendUid, acceptedByUid: currentUid, session});
+        }
+        await session.commitTransaction();
+        return res.sendStatus(200);
+    } catch (e) {
+        await session.abortTransaction();
+        return res.status(500).json({message: e.message});
+    } finally {
+        session.endSession();
+    }
+}
+
+const addFriends = async (req, res) => {
+    const currentUid = req.user.uid;
+    // testing without middleware: const uid = req.query.uid;
+    if (!currentUid) {
+        return res.status(400).json({message: "Missing uid"});
+    }
+    const {sendRequestsToUids} = req.body
+
+    const session = await mongoose.startSession();
+    session.startTransaction();
+
+    try {
+        await sendRequests({uid: currentUid, sendRequestsToUids, session});
+        for (const receiveRequestUid of sendRequestsToUids) {
+            await receiveRequest({uid: receiveRequestUid, receiveRequestFromUid: currentUid, session});
+        }
+        await session.commitTransaction();
+        return res.sendStatus(200);
+    } catch (e) {
+        await session.abortTransaction();
+        return res.status(500).json({message: e.message});
+    } finally {
+        session.endSession();
+    }
+}
+
+const linkEmail = async (req, res) => {
+    const uid = req.user.uid;
+    const {email, password} = req.body;
+    if (!uid || !email || !password) {
+        return res.status(400).json({message: "Missing uid or email or password"});
+    }
+    try {
+        const firebaseUser = await admin.auth().updateUser(uid, {
+            email, password, emailVerified: false
+        });
+        return res.status(200).json({firebaseUser});
+    } catch (e) {
+        return res.status(500).json({errCode: e.code});
+    }
+}
+
+const rateUs = async (req, res) => {
+    const uid = req.user.uid;
+    const {rating} = req.body;
+    if (!rating || !Number.isInteger(rating) || rating < 0 || rating > 5) {
+        return res.status(400).json({message: "Invalid rating"});
+    }
+    try {
+        const res = await rate({uid, rating});
+        return res.sendStatus(201);
+    } catch (e) {
+        return res.status(500).json({message: e.message});
+    }
+}
+
 module.exports = {
     syncUser,
     getProfilePicUrl,
@@ -177,5 +339,13 @@ module.exports = {
     getCurrentUserProfile,
     getFriendsController,
     searchFriendsController,
-    searchNonFriends
+    searchNonFriends,
+    getUiPreferenceController,
+    updateUiPreferenceController,
+    getFriendRequestsController,
+    removeFriendsOrRequests,
+    acceptRequestsController,
+    addFriends,
+    linkEmail,
+    rateUs
 };

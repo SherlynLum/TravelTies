@@ -1,9 +1,7 @@
-const {generateJoinCode, createTrip, getTripsByUid, getTripsInBin, getOverview, getParticipants,
+const {generateJoinCode, createTrip, getTripsByUid, getTripsInBin, getOverviewById, getParticipants,
     getJoinRequests, updateTrip, addParticipantsAndRemoveFromRequests,
     deleteTrip, cancelTrip, restoreTrip, searchActiveTrips, searchBinTrips, addJoinRequest,
-    getJoinCode, removeBuddy,
-    getCards,
-    getOrderInTab
+    getJoinCode, removeBuddy, getCards, getOrderInTab, getOverviewByJoinCode,
 } = require("../services/trip.service.js");
 const {generateUploadUrl} = require("../services/awss3.service.js");
 const {validateTripDates} = require("../validators/trip.validator.js");
@@ -84,10 +82,23 @@ const getCurrentUserBinTrips = async (req, res) => {
     }
 }
 
-const getTripOverview = async (req, res) => {
+const getTripOverviewById = async (req, res) => {
     const {id} = req.params; 
     try {
-        const tripOverview = await getOverview(id);
+        const tripOverview = await getOverviewById(id);
+        if (!tripOverview) {
+            return res.status(404).json({message: "No trip is found"})
+        }
+        return res.status(200).json({trip: tripOverview});
+    } catch (e) {
+        return res.status(500).json({message: e.message})
+    }
+}
+
+const getTripOverviewByJoinCode = async (req, res) => {
+    const {code} = req.params; 
+    try {
+        const tripOverview = await getOverviewByJoinCode(code);
         if (!tripOverview) {
             return res.status(404).json({message: "No trip is found"})
         }
@@ -345,7 +356,8 @@ module.exports = {
     createTripController,
     getCurrentUserActiveTrips,
     getCurrentUserBinTrips,
-    getTripOverview,
+    getTripOverviewById,
+    getTripOverviewByJoinCode,
     getTripJoinCode,
     getTripParticipants,
     getTripJoinRequests, 
