@@ -3,7 +3,9 @@ const {firebaseAuthMiddleware} = require("../middlewares/auth.middleware.js");
 const {syncUser, getProfilePicUrl, updateUsernameController, updateProfilePicController,
     getCurrentUserProfile, getFriendsController, searchFriendsController, searchNonFriends,
     getUiPreferenceController, updateUiPreferenceController, getFriendRequestsController,
-    removeFriendsOrRequests, acceptRequestsController, addFriends, linkEmail, rateUs
+    removeFriendsOrRequests, acceptRequestsController, addFriends, linkEmail, rateUs,
+    getStripeOnboardUrl, getOrUpdateStripeAccount,
+    getStripeUpdateUrl
 } = require("../controllers/user.controller.js");
 const router = express.Router();
 
@@ -55,4 +57,12 @@ router.patch("/requests/send", firebaseAuthMiddleware, addFriends);
 router.patch("/link-email", firebaseAuthMiddleware, linkEmail);
 // for testing without middleware: router.patch("/test/link-email", linkEmail);
 
+router.get("/stripe", firebaseAuthMiddleware, getOrUpdateStripeAccount); // get and also upadte db with the latest stripe details
+// for testing without middleware: router.get("/test/stripe", getOrUpdateStripeAccount);
+
+router.post("/stripe", firebaseAuthMiddleware, getStripeOnboardUrl); // also create account if do not have yet
+// for testing without middleware: router.post("/test/stripe", getStripeOnboardUrl);
+
+router.get("/stripe/update-url", firebaseAuthMiddleware, getStripeUpdateUrl); 
+// for testing without middleware: router.get("/test/stripe/update-url", getStripeUpdateUrl);
 module.exports = router;

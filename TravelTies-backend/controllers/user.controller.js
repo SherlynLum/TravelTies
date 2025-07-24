@@ -2,11 +2,12 @@ const validateUsername = require("../validators/username.validator.js");
 const {signUpOrSignIn, checkUsernameUniqueness, updateUsername, updateProfilePic, 
     getUsernamePic, getFriends, searchFriends, searchUsers, getUiPreference,
     updateUiPreference, getFriendRequests, removeFriends, removeFriend, acceptRequests, beAccepted,
-    sendRequests, receiveRequest, rate
+    sendRequests, receiveRequest, rate, getStripeAccount, updateStripeAccount
 } = require("../services/user.service.js");
 const {generateUploadUrl} = require("../services/awss3.service.js");
 const mongoose = require('mongoose');
 const admin = require("firebase-admin");
+const { getAccountDetails, createAccount, createLinkForOnboard, createLinkForUpdate } = require("../services/stripe.service.js");
 
 const syncUser = async (req, res) => {
     const uid = req.user.uid;
@@ -319,6 +320,10 @@ const linkEmail = async (req, res) => {
 
 const rateUs = async (req, res) => {
     const uid = req.user.uid;
+    // testing without middleware: const uid = req.query.uid;
+    if (!uid) {
+        return res.status(400).json({message: "Missing uid"});
+    }
     const {rating} = req.body;
     if (!rating || !Number.isInteger(rating) || rating < 0 || rating > 5) {
         return res.status(400).json({message: "Invalid rating"});
@@ -326,6 +331,77 @@ const rateUs = async (req, res) => {
     try {
         const res = await rate({uid, rating});
         return res.sendStatus(201);
+    } catch (e) {
+        return res.status(500).json({message: e.message});
+    }
+}
+
+const getOrUpdateStripeAccount = async (req, res) => {
+    const uid = req.user.uid;
+    // testing without middleware: const uid = req.query.uid;
+    if (!uid) {
+        return res.status(400).json({message: "Missing uid"});
+    }
+
+    try {
+        const account = await getStripeAccount(uid);
+        if (!account) {
+            return res.status(200).json({hasStripeAccount: false});
+        }
+
+        const accountId = account.stripeAccountId;
+        const latestAccountDetails = await getAccountDetails(accountId);
+        await updateStripeAccount({uid, account: latestAccountDetails});
+        if (!latestAccountDetails.details_submitted) {
+            return res.status(200).json({hasStripeAccount: true, hasOnboard: false, accountId});
+        } else {
+            return res.status(200).json({hasStripeAccount: true, hasOnboard: true, accountId});
+        }
+    } catch (e) {
+        return res.status(500).json({message: e.message});
+    }
+}
+
+const getStripeOnboardUrl = async (req, res) => {
+    const uid = req.user.uid;
+    // testing without middleware: const uid = req.query.uid;
+    if (!uid) {
+        return res.status(400).json({message: "Missing uid"});
+    }
+    const {needCreateAccount, accountId} = req.body;
+
+    try {
+        if (!needCreateAccount && !accountId) {
+            return res.status(400).json({message: "Account id must be provided if Stripe account has already been created"})
+        }
+        let id = accountId;
+        if (needCreateAccount) {
+            const account = await createAccount();
+            await updateStripeAccount({uid, account});
+            id = account.id;
+        } 
+        const url = await createLinkForOnboard(id);
+        if (!url) {
+            throw new Error("No onboard url is returned");
+        }
+        return res.status(200).json({url})
+    } catch (e) {
+        return res.status(500).json({message: e.message});
+    }
+}
+
+const getStripeUpdateUrl = async (req, res) => {
+    const {id} = req.query;
+    if (!id) {
+        return res.status(400).json({message: "Missing Stripe account id"});
+    }
+
+    try {
+        const url = await createLinkForUpdate(id);
+        if (!url) {
+            throw new Error("No onboard url is returned");
+        }
+        return res.status(200).json({url})
     } catch (e) {
         return res.status(500).json({message: e.message});
     }
@@ -347,5 +423,8 @@ module.exports = {
     acceptRequestsController,
     addFriends,
     linkEmail,
-    rateUs
+    rateUs,
+    getOrUpdateStripeAccount,
+    getStripeOnboardUrl,
+    getStripeUpdateUrl
 };
