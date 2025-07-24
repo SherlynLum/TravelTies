@@ -8,14 +8,22 @@ const StripePages = () => {
 
   useEffect(() => {
     const state = new URLSearchParams(window.location.search).get("state");
-    if (state === "refresh") {
+    if (state === "refresh-onboard") {
       setTitle("Stripe onboarding incomplete");
       setMessage("Please go back to TravelTies and re-tap");
       setButtonName(`"Connect with Stripe"`)
-    } else if (state === "complete") {
+    } else if (state === "complete-onboard") {
       setTitle("Stripe onboarding complete");
       setMessage("Please go back to TravelTies and tap");
       setButtonName(`"I've completed onboarding in Stripe"`)
+    } else if (state === "refresh-update") {
+      setTitle("Updated Stripe details not saved");
+      setMessage("To edit your Stripe details again, please go back to TravelTies and re-tap");
+      setButtonName(`"Open Stripe"`)
+    } else if (state === "complete-update") {
+      setTitle("Successfully updated Stripe details");
+      setMessage("Feel free to go back to TravelTies");
+      setButtonName("");
     }
   }, []);
 
@@ -27,7 +35,7 @@ const StripePages = () => {
       </h3>
       <p style={{fontSize: "clamp(1rem, 4vw, 1.2rem)", lineHeight: "1.7", width: "100%", 
         margin: "1rem"}}>
-        {message} <strong>{buttonName}</strong>
+        {message} {buttonName && <strong>{buttonName}</strong>}
       </p>
     </div>
   )

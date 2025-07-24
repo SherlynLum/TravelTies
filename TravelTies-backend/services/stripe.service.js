@@ -16,8 +16,8 @@ const createAccount = async () => {
 const createLinkForOnboard = async (accountId) => {
     const link = await stripe.accountLinks.create({
         account: accountId,
-        refresh_url: "https://travelties-fce2c.web.app?state=refresh",
-        return_url: "https://travelties-fce2c.web.app?state=complete",
+        refresh_url: "https://travelties-fce2c.web.app?state=refresh-onboard",
+        return_url: "https://travelties-fce2c.web.app?state=complete-onboard",
         type: "account_onboarding"
     });
     return link.url;
@@ -26,8 +26,8 @@ const createLinkForOnboard = async (accountId) => {
 const createLinkForUpdate = async (accountId) => {
     const link = await stripe.accountLinks.create({
         account: accountId,
-        refresh_url: "https://travelties-fce2c.web.app?state=refresh",
-        return_url: "https://travelties-fce2c.web.app?state=complete",
+        refresh_url: "https://travelties-fce2c.web.app?state=refresh-update",
+        return_url: "https://travelties-fce2c.web.app?state=complete-update",
         type: "account_update"
     });
     return link.url;
