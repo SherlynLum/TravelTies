@@ -185,32 +185,18 @@ const removeFriend = async ({uid, uidToBeRemoved, session}) => {
     return updatedUser;
 }
 
-const removeFriends = async ({uid, uidsToBeRemoved, session}) => {
-    const updatedUser = await User.findOneAndUpdate({uid}, 
-        {$pull: {friends: {friendUid: {$in: uidsToBeRemoved}}}}, 
-        {session, new: true, runValidators: true});
-    return updatedUser;
-}
-
-const acceptRequests = async ({uid, acceptUids, session}) => {
+const acceptRequest = async ({uid, acceptUid, session}) => {
     const updatedUser = await User.findOneAndUpdate({uid}, 
         {$set: {"friends.$[friend].status": "friends"}}, 
-        {arrayFilters: [{"friend.friendUid": {$in: acceptUids}}], session, new: true, 
+        {arrayFilters: [{"friend.friendUid": acceptUid}], session, new: true, 
             runValidators: true});
     return updatedUser;
 }
 
-const beAccepted = async ({uid, acceptedByUid, session}) => {
-    const updatedUser = await User.findOneAndUpdate({uid},
-        {$set: {"friends.$[friend].status": "friends"}},
-        {arrayFilters: [{"friend.friendUid": acceptedByUid}], session, new: true, runValidators: true});
-    return updatedUser;
-}
-
-const sendRequests = async ({uid, sendRequestsToUids, session}) => {
+const sendRequest = async ({uid, sendRequestToUid, session}) => {
     const updatedUser = await User.findOneAndUpdate({uid},
         {$set: {"friends.$[friend].status": "request_sent"}},
-        {arrayFilters: [{"friend.friendUid": {$in: sendRequestsToUids}}], session, new: true, 
+        {arrayFilters: [{"friend.friendUid": sendRequestToUid}], session, new: true, 
             runValidators: true});
     return updatedUser;
 }
@@ -270,10 +256,8 @@ module.exports = {
     updateUiPreference,
     getFriendRequests,
     removeFriend,
-    removeFriends,
-    acceptRequests,
-    beAccepted,
-    sendRequests,
+    acceptRequest,
+    sendRequest,
     receiveRequest,
     rate,
     getStripeAccount,

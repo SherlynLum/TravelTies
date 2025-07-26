@@ -16,9 +16,9 @@ const DisplayPhotoModal : React.FC<DisplayPicModalProps> = ({isVisible, picUri, 
     <Modal visible={isVisible} animationType="slide">
         <SafeAreaView className="flex-1 bg-black">
             <StatusBar 
-                    translucent
-                    backgroundColor="transparent"
-                    style="light"
+                translucent
+                backgroundColor="transparent"
+                style="light"
             />
 
             {/* header */}

@@ -3,7 +3,7 @@ const {firebaseAuthMiddleware} = require("../middlewares/auth.middleware.js");
 const {syncUser, getProfilePicUrl, updateUsernameController, updateProfilePicController,
     getCurrentUserProfile, getFriendsController, searchFriendsController, searchNonFriends,
     getUiPreferenceController, updateUiPreferenceController, getFriendRequestsController,
-    removeFriendsOrRequests, acceptRequestsController, addFriends, linkEmail, rateUs,
+    removeFriendOrRequest, acceptRequestController, addFriend, linkEmail, rateUs,
     getStripeOnboardUrl, getOrUpdateStripeAccount,
     getStripeUpdateUrl,
     unlinkStripeAccount
@@ -46,14 +46,14 @@ router.patch("/preference", firebaseAuthMiddleware, updateUiPreferenceController
 router.get("/requests", firebaseAuthMiddleware, getFriendRequestsController);
 // for testing without middleware: router.get("/test/requests", getFriendRequestsController);
 
-router.patch("/friends-or-requests/remove", firebaseAuthMiddleware, removeFriendsOrRequests);
-// for testing without middleware: router.patch("/test/friends-or-requests/remove", removeFriendsOrRequests);
+router.patch("/friend-or-request/remove", firebaseAuthMiddleware, removeFriendOrRequest);
+// for testing without middleware: router.patch("/test/friend-or-request/remove", removeFriendOrRequest);
 
-router.patch("/requests/accept", firebaseAuthMiddleware, acceptRequestsController);
-// for testing without middleware: router.patch("/test/requests/accept", acceptRequestsController);
+router.patch("/request/accept", firebaseAuthMiddleware, acceptRequestController);
+// for testing without middleware: router.patch("/test/request/accept", acceptRequestController);
 
-router.patch("/requests/send", firebaseAuthMiddleware, addFriends);
-// for testing without middleware: router.patch("/test/requests/send", addFriends);
+router.patch("/request/send", firebaseAuthMiddleware, addFriend);
+// for testing without middleware: router.patch("/test/request/send", addFriend);
 
 router.patch("/link-email", firebaseAuthMiddleware, linkEmail);
 // for testing without middleware: router.patch("/test/link-email", linkEmail);

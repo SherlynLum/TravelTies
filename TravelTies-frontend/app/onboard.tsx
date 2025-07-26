@@ -225,7 +225,7 @@ const Onboard = () => {
 
     const handleSubmit = async () => {
         if (!usernameRef.current) {
-            Alert.alert('Sign in', 'Please fill in username');
+            Alert.alert('Onboard', 'Please fill in username');
             return;
         }
 

@@ -1,8 +1,8 @@
 const validateUsername = require("../validators/username.validator.js");
 const {signUpOrSignIn, checkUsernameUniqueness, updateUsername, updateProfilePic, 
     getUsernamePic, getFriends, searchFriends, searchUsers, getUiPreference,
-    updateUiPreference, getFriendRequests, removeFriends, removeFriend, acceptRequests, beAccepted,
-    sendRequests, receiveRequest, rate, getStripeAccount, updateStripeAccount,
+    updateUiPreference, getFriendRequests, removeFriend, acceptRequest,
+    sendRequest, receiveRequest, rate, getStripeAccount, updateStripeAccount,
     removeStripeAccount
 } = require("../services/user.service.js");
 const {generateUploadUrl} = require("../services/awss3.service.js");
@@ -225,22 +225,20 @@ const getFriendRequestsController = async (req, res) => {
     }
 }
 
-const removeFriendsOrRequests = async (req, res) => {
+const removeFriendOrRequest = async (req, res) => {
     const currentUid = req.user.uid;
     // testing without middleware: const uid = req.query.uid;
     if (!currentUid) {
         return res.status(400).json({message: "Missing uid"});
     }
-    const {uidsToBeRemoved} = req.body
+    const {exFriendUid} = req.body
 
     const session = await mongoose.startSession();
     session.startTransaction();
 
     try {
-        await removeFriends({uid: currentUid, uidsToBeRemoved, session});
-        for (const exFriendUid of uidsToBeRemoved) {
-            await removeFriend({uid: exFriendUid, uidToBeRemoved: currentUid, session})
-        }
+        await removeFriend({uid: currentUid, uidToBeRemoved: exFriendUid, session});
+        await removeFriend({uid: exFriendUid, uidToBeRemoved: currentUid, session});
         await session.commitTransaction();
         return res.sendStatus(200);
     } catch (e) {
@@ -251,22 +249,20 @@ const removeFriendsOrRequests = async (req, res) => {
     }
 }
 
-const acceptRequestsController = async (req, res) => {
+const acceptRequestController = async (req, res) => {
     const currentUid = req.user.uid;
     // testing without middleware: const uid = req.query.uid;
     if (!currentUid) {
         return res.status(400).json({message: "Missing uid"});
     }
-    const {acceptUids} = req.body
+    const {newFriendUid} = req.body
 
     const session = await mongoose.startSession();
     session.startTransaction();
 
     try {
-        await acceptRequests({uid: currentUid, acceptUids, session});
-        for (const newFriendUid of acceptUids) {
-            await beAccepted({uid: newFriendUid, acceptedByUid: currentUid, session});
-        }
+        await acceptRequest({uid: currentUid, acceptUid: newFriendUid, session});
+        await acceptRequest({uid: newFriendUid, acceptUid: currentUid, session});
         await session.commitTransaction();
         return res.sendStatus(200);
     } catch (e) {
@@ -277,22 +273,20 @@ const acceptRequestsController = async (req, res) => {
     }
 }
 
-const addFriends = async (req, res) => {
+const addFriend = async (req, res) => {
     const currentUid = req.user.uid;
     // testing without middleware: const uid = req.query.uid;
     if (!currentUid) {
         return res.status(400).json({message: "Missing uid"});
     }
-    const {sendRequestsToUids} = req.body
+    const {sendRequestToUid} = req.body
 
     const session = await mongoose.startSession();
     session.startTransaction();
 
     try {
-        await sendRequests({uid: currentUid, sendRequestsToUids, session});
-        for (const receiveRequestUid of sendRequestsToUids) {
-            await receiveRequest({uid: receiveRequestUid, receiveRequestFromUid: currentUid, session});
-        }
+        await sendRequest({uid: currentUid, sendRequestToUid, session});
+        await receiveRequest({uid: sendRequestToUid, receiveRequestFromUid: currentUid, session});
         await session.commitTransaction();
         return res.sendStatus(200);
     } catch (e) {
@@ -326,7 +320,7 @@ const rateUs = async (req, res) => {
         return res.status(400).json({message: "Missing uid"});
     }
     const {rating} = req.body;
-    if (!rating || !Number.isInteger(rating) || rating < 0 || rating > 5) {
+    if (!rating || !Number.isInteger(rating) || rating < 1 || rating > 5) {
         return res.status(400).json({message: "Invalid rating"});
     }
     try {
@@ -347,7 +341,7 @@ const getOrUpdateStripeAccount = async (req, res) => {
     try {
         const account = await getStripeAccount(uid);
         if (!account) {
-            return res.status(200).json({hasStripeAccount: false});
+            return res.status(200).json({hasStripeAccount: false, hasOnboard: false});
         }
 
         const accountId = account.stripeAccountId;
@@ -414,13 +408,13 @@ const unlinkStripeAccount = async (req, res) => {
     if (!uid) {
         return res.status(400).json({message: "Missing uid"});
     }
-    const {accountId} = req.params;
-    if (!accountId) {
+    const {id} = req.query;
+    if (!id) {
         return res.status(400).json({message: "Missing account id"});
     }
 
     try {
-        await disconnectAccount(accountId);
+        await disconnectAccount(id);
         await removeStripeAccount(uid);
         return res.sendStatus(200);
     } catch (e) {
@@ -440,9 +434,9 @@ module.exports = {
     getUiPreferenceController,
     updateUiPreferenceController,
     getFriendRequestsController,
-    removeFriendsOrRequests,
-    acceptRequestsController,
-    addFriends,
+    removeFriendOrRequest,
+    acceptRequestController,
+    addFriend,
     linkEmail,
     rateUs,
     getOrUpdateStripeAccount,

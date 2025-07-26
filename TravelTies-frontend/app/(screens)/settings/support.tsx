@@ -27,7 +27,7 @@ const Support = () => {
         <StatusBar 
             translucent
             backgroundColor="transparent"
-            style="dark"
+            style="light"
         />
         <ScrollView className="flex-1 flex-col gap-10 items-start justify-center px-5 pt-3 bg-white" 
         contentContainerStyle={{paddingBottom: insets.bottom}}>

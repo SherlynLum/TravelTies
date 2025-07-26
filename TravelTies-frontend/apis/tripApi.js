@@ -112,7 +112,7 @@ const createTrip = async ({token, name, profilePicKey, startDate, endDate, noOfD
 
 const getTripOverview = async ({token, id}) => {
     const backendRes = await axios.get(
-        `${baseUrl}/api/trip/overview/${encodeURIComponent(id)}`,
+        `${baseUrl}/api/trip/overview/id/${encodeURIComponent(id)}`,
         {headers: getHeaders(token)}
     );
     return backendRes.data.trip;
@@ -120,7 +120,7 @@ const getTripOverview = async ({token, id}) => {
 
 const getTripOverviewWithUrl = async ({token, id}) => {
     const backendRes = await axios.get(
-        `${baseUrl}/api/trip/overview/${encodeURIComponent(id)}`,
+        `${baseUrl}/api/trip/overview/id/${encodeURIComponent(id)}`,
         {headers: getHeaders(token)}
     );
     const trip = backendRes.data.trip;
@@ -336,6 +336,28 @@ const getTripsStats = async (token) => {
     return {planning: planning.length, ongoing: ongoing.length, completed: completed.length};
 }
 
+const getTripOverviewByJoinCode = async ({token, joinCode}) => {
+    const backendRes = await axios.get(
+        `${baseUrl}/api/trip/overview/joincode/${encodeURIComponent(joinCode)}`,
+        {headers: getHeaders(token)}
+    );
+    const trip = backendRes.data.trip;
+    if (!trip.profilePicKey) {
+        return trip;
+    }
+    const profilePicUrl = await getProfilePicUrl(token, trip.profilePicKey);
+    return {...trip, profilePicUrl};
+}
+
+const joinTrip = async ({token, id}) => {
+    const backendRes = await axios.patch(
+        `${baseUrl}/api/trip/request/${encodeURIComponent(id)}`,
+        {},
+        {headers: getHeaders(token)}
+    );
+    return backendRes.data.trip;
+}
+
 export {
     getActiveTrips,
     getUploadUrl,
@@ -356,6 +378,8 @@ export {
     updateRequests,
     getOrderInTab,
     getCardsInTab,
-    getTripsStats
+    getTripsStats,
+    getTripOverviewByJoinCode,
+    joinTrip
 }
 

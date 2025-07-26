@@ -125,22 +125,38 @@ export default function Layout() {
                         </Pressable>
                     )
                 }} />
-        <Stack.Screen 
-            name="support"
-            options={{
-                title: "Tutorial & Support",
-                headerStyle: {backgroundColor: "#6495ED"},
-                headerTintColor: "white",
-                headerTitleStyle: {
-                    fontSize: 16,
-                    fontWeight: "bold"
-                },
-                headerLeft: () => (
-                    <Pressable onPress={() => router.back()} hitSlop={14} className="pr-5">
-                        <Ionicons name="chevron-back" size={24} color="white" />
-                    </Pressable>
-                )
-            }} />
+            <Stack.Screen 
+                name="support"
+                options={{
+                    title: "Tutorial & Support",
+                    headerStyle: {backgroundColor: "#6495ED"},
+                    headerTintColor: "white",
+                    headerTitleStyle: {
+                        fontSize: 16,
+                        fontWeight: "bold"
+                    },
+                    headerLeft: () => (
+                        <Pressable onPress={() => router.back()} hitSlop={14} className="pr-5">
+                            <Ionicons name="chevron-back" size={24} color="white" />
+                        </Pressable>
+                    )
+                }} />
+            <Stack.Screen 
+                name="unableResetPassword"
+                options={{
+                    title: "Reset password",
+                    headerStyle: {backgroundColor: "#6495ED"},
+                    headerTintColor: "white",
+                    headerTitleStyle: {
+                        fontSize: 16,
+                        fontWeight: "bold"
+                    },
+                    headerLeft: () => (
+                        <Pressable onPress={() => router.push("/profile")} hitSlop={14} className="pr-5">
+                            <Ionicons name="chevron-back" size={24} color="white" />
+                        </Pressable>
+                    )
+                }} />
         </Stack>
     )
 }

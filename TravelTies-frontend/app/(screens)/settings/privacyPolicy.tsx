@@ -10,9 +10,9 @@ const PrivacyPolicy = () => {
         <StatusBar 
             translucent
             backgroundColor="transparent"
-            style="dark"
+            style="light"
         />
-        <ScrollView className="flex-1 flex-col gap-4 items-start justify-center px-5 pt-3 bg-white" 
+        <ScrollView className="flex-1 flex-col gap-4 items-start justify-start px-5 pt-3 bg-white" 
         contentContainerStyle={{paddingBottom: insets.bottom}}>
             <Text className="text-2xl text-black font-semibold text-start tracking-wide">
                 Privacy policy

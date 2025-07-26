@@ -281,10 +281,10 @@ const addJoinRequestController = async (req, res) => {
     if (!uid) {
         return res.status(400).json({message: "Missing uid"});
     }
-    const {code: joinCode} = req.params;
+    const {id} = req.params;
 
     try {
-        const updatedTrip = await addJoinRequest({uid, joinCode});
+        const updatedTrip = await addJoinRequest({uid, id});
         return res.status(200).json({trip: updatedTrip});
     } catch (e) {
         let message = e.message;

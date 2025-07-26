@@ -350,8 +350,8 @@ const searchBinTrips = async ({uid, searchTerm}) => {
     return searchResults;
 }
 
-const addJoinRequest = async ({uid, joinCode}) => {
-    const trip = await Trip.findOne({joinCode}, {tripParticipants: 1, joinRequests: 1});
+const addJoinRequest = async ({uid, id}) => {
+    const trip = await Trip.findById(id, {tripParticipants: 1, joinRequests: 1});
     if (!trip) {
         throw new Error("No trip is found");
     }
@@ -366,7 +366,7 @@ const addJoinRequest = async ({uid, joinCode}) => {
     }
 
     const requestTimestamp = new Date();
-    const updatedTrip = await Trip.findOneAndUpdate({joinCode},
+    const updatedTrip = await Trip.findByIdAndUpdate(id,
         {$push: {joinRequests: {
             requesterUid: uid,
             requestTimestamp

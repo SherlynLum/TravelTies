@@ -24,8 +24,8 @@ router.get("/bin", firebaseAuthMiddleware, getCurrentUserBinTrips);
 router.get("/overview/id/:id", firebaseAuthMiddleware, getTripOverviewById);
 // for testing without middleware: router.get("/test/overview/id/:id", getTripOverviewById);
 
-router.get("/overview/joinCode/:code", firebaseAuthMiddleware, getTripOverviewByJoinCode);
-// for testing without middleware: router.get("/test/overview/joinCode/:code", getTripOverviewByJoinCode);
+router.get("/overview/joincode/:code", firebaseAuthMiddleware, getTripOverviewByJoinCode);
+// for testing without middleware: router.get("/test/overview/joincode/:code", getTripOverviewByJoinCode);
 
 router.get("/joincode/:id", firebaseAuthMiddleware, getTripJoinCode);
 // for testing without middleware: router.get("/test/joincode/:id, getTripJoinCode);
@@ -52,8 +52,8 @@ router.patch("/:id", firebaseAuthMiddleware, requireParticipants, updateTripCont
 // for testing without middleware: router.patch("/test/:id", requireParticipants, updateTripOverview);
 
 // for user to request to join this trip
-router.patch("/request/:code", firebaseAuthMiddleware, addJoinRequestController);
-// for testing without middleware: router.patch("/test/request/:code", addJoinRequestController);
+router.patch("/request/:id", firebaseAuthMiddleware, addJoinRequestController);
+// for testing without middleware: router.patch("/test/request/:id", addJoinRequestController);
 
 router.patch("/requests/:id", firebaseAuthMiddleware, requireCreatorOrAdmin, updateTripJoinRequests);
 // for testing without middleware: router.patch("/test/requests/:id", requireCreatorOrAdmin, updateTripJoinRequests);
