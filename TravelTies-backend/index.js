@@ -10,7 +10,7 @@ const tripRoute = require("./routes/trip.route.js");
 const photoRoute = require("./routes/photo.route.js");
 const itineraryRoute = require("./routes/itinerary.route.js");
 const admin = require("firebase-admin");
-const serviceAccount = require("./serviceAccountKey.json");
+const serviceAccount = require("/etc/secrets/serviceAccountKey.json");
 
 //initialise Firebase Admin SDK
 admin.initializeApp({
@@ -27,8 +27,9 @@ app.use(express.urlencoded({extended: true}));
 //connect to database
 mongoose.connect(process.env.DB_URL).then(() => {
     console.log('Connected to database!');
-    app.listen(3000, () => {
-        console.log('Server is running on port 3000');
+    const port = process.env.PORT || 3000;
+    app.listen(port, () => {
+        console.log(`Server is running on port ${port}`);
     });
 }).catch(() => {
     console.log('Connection failed!');
