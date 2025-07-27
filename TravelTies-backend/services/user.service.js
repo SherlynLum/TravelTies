@@ -195,17 +195,23 @@ const acceptRequest = async ({uid, acceptUid, session}) => {
 
 const sendRequest = async ({uid, sendRequestToUid, session}) => {
     const updatedUser = await User.findOneAndUpdate({uid},
-        {$set: {"friends.$[friend].status": "request_sent"}},
-        {arrayFilters: [{"friend.friendUid": sendRequestToUid}], session, new: true, 
-            runValidators: true});
+        {$addToSet: {friends: {
+            friendUid: sendRequestToUid,
+            status: "request_sent",
+            requestTime: new Date
+        }}},
+        {session, new: true, runValidators: true});
     return updatedUser;
 }
 
 const receiveRequest = async ({uid, receiveRequestFromUid, session}) => {
     const updatedUser = await User.findOneAndUpdate({uid},
-        {$set: {"friends.$[friend].status": "request_received"}},
-        {arrayFilters: [{"friend.friendUid": receiveRequestFromUid}], session, new: true, 
-            runValidators: true});
+        {$addToSet: {friends: {
+            friendUid: receiveRequestFromUid,
+            status: "request_received",
+            requestTime: new Date
+        }}},
+        {session, new: true, runValidators: true});
     return updatedUser;
 }
 
