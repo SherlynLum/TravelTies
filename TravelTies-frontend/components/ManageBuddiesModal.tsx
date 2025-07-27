@@ -1,6 +1,6 @@
 import { View, Text, Modal, Pressable, Image, Platform, TouchableOpacity, Switch, Alert, FlatList } from 'react-native';
 import React, { useState } from 'react';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { TripParticipantWithProfile } from '@/types/trips';
 import AddBuddiesModal from './AddBuddiesModal';
@@ -15,6 +15,7 @@ type ManageBuddiesProps = {
 }
 
 const ManageBuddiesModal = ({isVisible, buddies, currentUid, closeModal, complete} : ManageBuddiesProps) => {
+    const insets = useSafeAreaInsets();
     const HEADER_HEIGHT = Platform.OS === "ios" ? 44 : 56;
     const [updatedBuddies, setUpdatedBuddies] = useState(buddies);
     const [addModalOpen, setAddModalOpen] = useState(false);
@@ -66,13 +67,12 @@ const ManageBuddiesModal = ({isVisible, buddies, currentUid, closeModal, complet
 
   return (
     <Modal visible={isVisible} animationType="slide">
-        <SafeAreaView className="flex-1 bg-header">
-            <StatusBar 
+        <StatusBar 
                 translucent
                 backgroundColor="transparent"
                 style="light"
             />
-
+        <View className="flex-1 bg-header" style={{paddingTop: insets.top}}>
             {/* header */}
             <View style={{paddingHorizontal: 16, height: HEADER_HEIGHT, width: "100%"}}
             className="flex-row items-center justify-between">
@@ -93,7 +93,7 @@ const ManageBuddiesModal = ({isVisible, buddies, currentUid, closeModal, complet
                 </Pressable>
             </View>
 
-            <View className="flex-1 bg-white">
+            <View className="flex-1 bg-white" style={{paddingBottom: insets.bottom}}>
                 {/* add button to open add modal */}
                 <View className="px-5 py-5 items-center justify-center">
                     <TouchableOpacity onPress={() => setAddModalOpen(true)}
@@ -110,7 +110,7 @@ const ManageBuddiesModal = ({isVisible, buddies, currentUid, closeModal, complet
                 data={updatedBuddies}
                 renderItem={({item}) => {
                     return (
-                    <View className="flex flex-row w-full justify-between items-center">
+                    <View className="flex flex-row w-full justify-between items-center py-3">
                         <View className="flex flex-row justify-start items-center gap-2"> 
                             <Image source={!item.profilePicUrl 
                             ? require("../assets/images/default-user-profile-pic.png")
@@ -134,7 +134,7 @@ const ManageBuddiesModal = ({isVisible, buddies, currentUid, closeModal, complet
                             ) : (
                                 <View className="flex flex-row gap-2">
                                     {/* admin toggle */}
-                                    <View className="flex flex-row gap-1">
+                                    <View className="flex flex-row gap-1 items-center">
                                         <Text className="font-medium text-base text-gray-500">
                                             {"Admin: "}
                                         </Text>
@@ -165,13 +165,13 @@ const ManageBuddiesModal = ({isVisible, buddies, currentUid, closeModal, complet
                         </Text>
                     </View>
                 }
-                contentContainerStyle={{flexGrow: 1, paddingHorizontal: 20, paddingVertical: 20}}
+                contentContainerStyle={{flexGrow: 1, paddingHorizontal: 20}}
                 ItemSeparatorComponent={() => <Divider />}
                 />
             </View>
             <AddBuddiesModal isVisible={addModalOpen} buddies={updatedBuddies} 
             closeModal={closeAddModal} complete={completeAddModal}/>
-        </SafeAreaView>
+        </View>
     </Modal>
   )
 }

@@ -23,6 +23,7 @@ import { Divider, Menu } from 'react-native-paper';
 import { Doc, DocWithType, DocWithUrl } from '@/types/cards';
 import { getDocumentAsync } from 'expo-document-picker';
 import { handleDelete } from '@/utils/handleDelete';
+import "react-native-get-random-values";
 import { v4 as uuidv4 } from "uuid";
 
 const EditGeneralCard = () => {
@@ -879,7 +880,7 @@ const EditGeneralCard = () => {
                     <Text className="font-semibold text-lg text-left">
                         Description
                     </Text>
-                    <View className="bg-white border border-black px-4 py-4 rounded-[5px]">
+                    <View className="bg-white border border-black px-4 py-3 rounded-[5px]">
                         <TextInput
                             multiline
                             numberOfLines={8}
@@ -887,7 +888,7 @@ const EditGeneralCard = () => {
                             autoCapitalize="none"
                             onChangeText={setDescription}
                             className="flex-1 font-medium text-black text-base"
-                            style={{textAlignVertical: "top"}}
+                            style={{textAlignVertical: "top", minHeight: 200}}
                         />
                     </View>
                 </View>
@@ -929,7 +930,8 @@ const EditGeneralCard = () => {
                             </Pressable>
                         </TouchableOpacity>
                     )}
-                    showsVerticalScrollIndicator={false}/> 
+                    showsVerticalScrollIndicator={false}
+                    scrollEnabled={false}/> 
                     { imageLoading &&
                         <Loading size={hp(8)} /> 
                     }   

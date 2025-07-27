@@ -23,6 +23,7 @@ import { Divider, Menu } from 'react-native-paper';
 import { Doc, DocWithType } from '@/types/cards';
 import { getDocumentAsync } from 'expo-document-picker';
 import { handleDelete } from '@/utils/handleDelete';
+import "react-native-get-random-values";
 import { v4 as uuidv4 } from "uuid";
 
 const AddGeneralCard = () => {
@@ -596,7 +597,7 @@ const AddGeneralCard = () => {
                   <Text className="font-semibold text-lg text-left">
                       Address
                   </Text>
-                  <View className="bg-white border border-black px-4 rounded-[5px] h-[50px]">
+                  <View className="bg-white border border-black px-4 rounded-[5px] h-[50px] flex-row items-center">
                     <TextInput
                       multiline
                       value={generalAddress}
@@ -793,7 +794,7 @@ const AddGeneralCard = () => {
                     <Text className="font-semibold text-lg text-left">
                         Description
                     </Text>
-                    <View className="bg-white border border-black px-4 py-4 rounded-[5px]">
+                    <View className="bg-white border border-black px-4 py-3 rounded-[5px]">
                         <TextInput
                             multiline
                             numberOfLines={8}
@@ -801,7 +802,7 @@ const AddGeneralCard = () => {
                             autoCapitalize="none"
                             onChangeText={setDescription}
                             className="flex-1 font-medium text-black text-base"
-                            style={{textAlignVertical: "top"}}
+                            style={{textAlignVertical: "top", minHeight: 200}}
                         />
                     </View>
                 </View>
@@ -828,7 +829,7 @@ const AddGeneralCard = () => {
                     data={images}
                     numColumns={3}
                     keyExtractor={(item) => item.uri}
-                    columnWrapperClassName="justify-between mb-3"
+                    columnWrapperClassName="items-center justify-center mb-3"
                     renderItem={({item}) => (
                         <TouchableOpacity className="relative" onPress={() => openDisplayModal(item.uri)}>
                             <Image
@@ -843,7 +844,8 @@ const AddGeneralCard = () => {
                             </Pressable>
                         </TouchableOpacity>
                     )}
-                    showsVerticalScrollIndicator={false}/> 
+                    showsVerticalScrollIndicator={false}
+                    scrollEnabled={false}/> 
                     { imageLoading &&
                         <Loading size={hp(8)} /> 
                     }   

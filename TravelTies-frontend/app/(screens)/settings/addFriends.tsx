@@ -35,12 +35,6 @@ const AddFriends = () => {
                 setHasError(false);
             } catch (e) {
                 console.log(e);
-                if (isAxiosError(e)) {
-                    console.log("Message:", e.message);
-                    console.log("Status:", e.response?.status);
-                    console.log("Data:", e.response?.data);
-                    console.log("Headers:", e.response?.headers);
-                }
                 setHasError(true);
             } finally {
                 setLoading(false);
@@ -68,9 +62,9 @@ const AddFriends = () => {
             backgroundColor="transparent"
             style="light"
         />
-        <View className="flex-1 flex-col gap-4 bg-white" style={{paddingBottom: insets.bottom}}>
+        <View className="flex-1 flex-col bg-white" style={{paddingBottom: insets.bottom}}>
             {/* search bar */}
-            <View className="py-5 items-center justify-start px-5 pt-6 bg-white">
+            <View className="py-5 items-center justify-start px-5 bg-white">
                 <View className="flex flex-row items-center justify-start px-4 bg-gray-200 h-11
                 rounded-5 gap-4">
                     <FontAwesome name="search" size={15} color="#9CA3AF"/>

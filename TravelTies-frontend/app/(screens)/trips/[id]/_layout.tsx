@@ -40,6 +40,7 @@ export default function Layout() {
             <Stack.Screen 
                 name="overview"
                 options={{
+                    title: "",
                     headerStyle: {backgroundColor: "#6495ED"},
                     headerTintColor: "white",
                     headerTitleStyle: {
@@ -264,22 +265,6 @@ export default function Layout() {
                             <Text className="font-semibold text-white text-base">
                                 Cancel
                             </Text>
-                        </Pressable>
-                    )
-                }} />
-            <Stack.Screen 
-                name="[cardId]"
-                options={{
-                    title: "",
-                    headerStyle: {backgroundColor: "#6495ED"},
-                    headerTintColor: "white",
-                    headerTitleStyle: {
-                        fontSize: 16,
-                        fontWeight: "semibold"
-                    },
-                    headerLeft: () => (
-                        <Pressable onPress={() => router.back()} hitSlop={14}>
-                            <Ionicons name="chevron-back" size={24} color="white" />
                         </Pressable>
                     )
                 }} />
