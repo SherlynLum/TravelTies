@@ -156,9 +156,8 @@ const searchFriendsController = async (req, res) => {
 }
 
 const searchNonFriends = async (req, res) => {
-    // const uid = req.user.uid;
-    // testing without middleware: 
-    const uid = req.query.uid;
+    const uid = req.user.uid;
+    // testing without middleware: const uid = req.query.uid;
     if (!uid) {
         return res.status(400).json({message: "Missing uid"});
     }

@@ -172,9 +172,9 @@ const ManageRequestsModal = ({isVisible, id, closeModal} : ManageRequestsProps) 
                         <View className="flex flex-row w-full justify-between items-center">
                             <View className="flex flex-row justify-start items-center gap-2"> 
                                 <Image source={!item.profilePicUrl 
-                                ? require("../../../assets/images/default-user-profile-pic.png")
+                                ? require("../assets/images/default-user-profile-pic.png")
                                 : item.profilePicUrl === "Failed to load" 
-                                ? require("../../../assets/images/image-error-icon.png")
+                                ? require("../assets/images/image-error-icon.png")
                                 : {uri: item.profilePicUrl}}
                                 className="border-neutral-400 border-2 w-[40px] h-[40px] rounded-[20px]" />
                                 <Text className="font-medium text-base text-black">

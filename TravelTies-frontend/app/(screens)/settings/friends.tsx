@@ -134,8 +134,23 @@ const Friends = () => {
             backgroundColor="transparent"
             style="light"
         />
-        <View className="flex-1 flex-col gap-4 items-center justify-center pt-3 bg-white" 
+        <View className="flex-1 flex-col gap-3 items-center justify-center pt-6 bg-white" 
         style={{paddingBottom: insets.bottom}}>
+            {/* tabs */}
+            <View className="flex flex-row gap-10 items-center justify-center px-5">
+            {["My friends", "Requests"].map(tabName => (
+                <TouchableOpacity
+                key={tabName} onPress={() => setTab(tabName)} hitSlop={5}
+                className={`bg-white justify-center items-center shadow-sm h-[35px] px-8 rounded-[30px] 
+                ${tab === tabName ? "border-blue-500 border-2": "border-gray-500 border"}`}>
+                    <Text className={`font-semibold ${tab === tabName ? "text-blue-500" : "text-gray-500"}
+                    text-sm`}>
+                        {tabName}
+                    </Text>
+                </TouchableOpacity>
+            ))}
+            </View>
+
             {/* search bar */}
             {tab === "My friends" && (
                 <View className="px-5 py-5 items-center justify-center bg-white">
@@ -154,21 +169,6 @@ const Friends = () => {
                     </View>
                 </View>
             )}
-
-            {/* tabs */}
-            <View className="flex flex-row justify-between items-center">
-            {["My friends", "Requests"].map(tabName => (
-                <TouchableOpacity
-                key={tabName} onPress={() => setTab(tabName)} hitSlop={5}
-                className={`bg-white justify-center items-center shadow-sm h-[35px] px-8 rounded-[30px] 
-                ${tab === tabName ? "border-blue-500 border-2": "border-gray-500 border"}`}>
-                    <Text className={`font-semibold ${tab === tabName ? "text-blue-500" : "text-gray-500"}
-                    text-sm`}>
-                        {tabName}
-                    </Text>
-                </TouchableOpacity>
-            ))}
-            </View>
 
             {/* friends list or requests list */}
             {loading ? (

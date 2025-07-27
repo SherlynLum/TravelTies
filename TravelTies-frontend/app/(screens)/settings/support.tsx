@@ -29,8 +29,9 @@ const Support = () => {
             backgroundColor="transparent"
             style="light"
         />
-        <ScrollView className="flex-1 flex-col gap-10 items-start justify-center px-5 pt-3 bg-white" 
-        contentContainerStyle={{paddingBottom: insets.bottom}}>
+        <ScrollView className="flex-1 flex-col px-5 pt-5 bg-white" 
+        contentContainerStyle={{paddingBottom: insets.bottom, alignItems: "flex-start", 
+            justifyContent:"center", rowGap: 60}}>
             <View className="flex flex-col gap-5 items-start justify-center w-full">
                 <Text className="text-2xl text-black font-semibold text-start tracking-wide">
                     Tutorial

@@ -114,7 +114,7 @@ const GeneralCard = ({tab, tripId, _id, cardType, title, startDate, startTime, e
     }
 
   return (
-    <Link href={`/trips/${tripId}/${_id}`} asChild>
+    <Link href={`/trips/${tripId}/${_id}/cardDetails`} asChild>
         <TouchableOpacity className="rounded-xl items-center">
             <View className="pb-5" style={{paddingHorizontal: 18}}>
                 <Card style={{padding: 0, borderRadius: 16, width: coverWidth}}>

@@ -525,7 +525,7 @@ const EditTripDetails = () => {
                 </Text>
                 <Image source={croppedPicUri ? {uri: croppedPicUri} : // if croppedPicUri exists, means users change the previous profile pic
                     tripProfilePicUrl ? {uri: tripProfilePicUrl} : // next check whether there is a previously uploaded profile pic if no croppedPicUri
-                    require("../../../assets/images/default-trip-profile-pic.png")}
+                    require("../../../../assets/images/default-trip-profile-pic.png")}
                     style={{width: imageWidth, height: imageHeight}}
                     className="border-neutral-400 border-1" />
                 <View className="items-center">
@@ -735,9 +735,9 @@ const EditTripDetails = () => {
                     <View className="flex flex-col gap-2 justify-center items-start">
                         <View className="flex flex-row gap-3 justify-start items-center w-full">
                             <Image source={!userProfilePicUrl 
-                            ? require("../../../assets/images/default-user-profile-pic.png")
+                            ? require("../../../../assets/images/default-user-profile-pic.png")
                             : userProfilePicUrl === "Failed to load" 
-                            ? require("../../../assets/images/error-icon.png")
+                            ? require("../../../../assets/images/error-icon.png")
                             : {uri: userProfilePicUrl}}
                             className="border-neutral-400 border-2 w-[40px] h-[40px] rounded-[20px]" />
 
@@ -754,9 +754,9 @@ const EditTripDetails = () => {
                                 data={buddies.filter(buddy => buddy.participantUid !== currentUid)}
                                 renderItem={({item}) => (
                                     <Image source={!item.profilePicUrl 
-                                    ? require("../../../assets/images/default-user-profile-pic.png")
+                                    ? require("../../../../assets/images/default-user-profile-pic.png")
                                     : item.profilePicUrl === "Failed to load" 
-                                    ? require("../../../assets/images/error-icon.png")
+                                    ? require("../../../../assets/images/error-icon.png")
                                     : {uri: item.profilePicUrl}}
                                     className="border-neutral-400 border-2 w-[40px] h-[40px] rounded-[20px]" />
                                 )}

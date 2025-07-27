@@ -37,7 +37,7 @@ const DisplayPicModal : React.FC<DisplayPicModalProps> = ({isVisible, picUri, cl
             </View>
 
             <View className="flex-1 justify-center items-center">
-                <Image source={picUri === "Failed to load" ? require("../../../assets/images/image-error-icon.png") 
+                <Image source={picUri === "Failed to load" ? require("../assets/images/image-error-icon.png") 
                 : picUri ? ({uri: picUri}) : require("../assets/images/default-user-profile-pic.png")} 
                 style={{width: screenWidth, height: screenWidth}} />
             </View>

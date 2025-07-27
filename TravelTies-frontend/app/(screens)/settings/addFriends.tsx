@@ -9,6 +9,7 @@ import { FontAwesome } from '@expo/vector-icons';
 import Loading from '@/components/Loading';
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
 import { Divider } from 'react-native-paper';
+import { isAxiosError } from 'axios';
 
 const AddFriends = () => {
     const insets = useSafeAreaInsets();
@@ -34,6 +35,12 @@ const AddFriends = () => {
                 setHasError(false);
             } catch (e) {
                 console.log(e);
+                if (isAxiosError(e)) {
+                    console.log("Message:", e.message);
+                    console.log("Status:", e.response?.status);
+                    console.log("Data:", e.response?.data);
+                    console.log("Headers:", e.response?.headers);
+                }
                 setHasError(true);
             } finally {
                 setLoading(false);
@@ -61,10 +68,9 @@ const AddFriends = () => {
             backgroundColor="transparent"
             style="light"
         />
-        <View className="flex-1 flex-col gap-4 items-start justify-start px-5 pt-3 bg-white" 
-        style={{paddingBottom: insets.bottom}}>
+        <View className="flex-1 flex-col gap-4 bg-white" style={{paddingBottom: insets.bottom}}>
             {/* search bar */}
-            <View className="px-5 py-5 items-center justify-center bg-white">
+            <View className="py-5 items-center justify-start px-5 pt-6 bg-white">
                 <View className="flex flex-row items-center justify-start px-4 bg-gray-200 h-11
                 rounded-5 gap-4">
                     <FontAwesome name="search" size={15} color="#9CA3AF"/>
@@ -92,7 +98,7 @@ const AddFriends = () => {
                     </Text>
                 </View>
             ) : (
-                <View className="flex-1 bg-white">
+                <View className="flex-1 bg-white items-center justify-center">
                     <FlatList
                     data={otherUsers}
                     renderItem={({item}) => {

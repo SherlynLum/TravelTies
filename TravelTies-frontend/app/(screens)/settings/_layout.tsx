@@ -35,7 +35,7 @@ export default function Layout() {
                         fontWeight: "bold"
                     },
                     headerLeft: () => (
-                        <Pressable onPress={() => router.back()} hitSlop={14} className="pr-5">
+                        <Pressable onPress={() =>  router.push("/profile")} hitSlop={14} className="pr-5">
                             <Ionicons name="chevron-back" size={24} color="white" />
                         </Pressable>
                     )
@@ -56,7 +56,7 @@ export default function Layout() {
                         </Pressable>
                     ),
                     headerRight: () => (
-                        <Pressable onPress={() => router.push("/settings/addFriends")} hitSlop={14} className="pr-5">
+                        <Pressable onPress={() => router.push("/settings/addFriends")} hitSlop={14} className="pl-5 pr-2">
                             <MaterialIcons name="person-add-alt-1" size={24} color="white" />
                         </Pressable>
                     )
@@ -72,7 +72,7 @@ export default function Layout() {
                         fontWeight: "bold"
                     },
                     headerLeft: () => (
-                        <Pressable onPress={() => router.back()} hitSlop={14} className="pr-5">
+                        <Pressable onPress={() => router.push("/profile")} hitSlop={14} className="pr-5">
                             <Ionicons name="chevron-back" size={24} color="white" />
                         </Pressable>
                     )

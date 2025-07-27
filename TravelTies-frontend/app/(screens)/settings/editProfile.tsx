@@ -350,10 +350,11 @@ const EditProfile = () => {
         />
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
         <KeyboardAvoidingView behavior={ios? 'padding': 'height'} style={{flex: 1}}>
-        <ScrollView className="flex-1 flex-col gap-10 items-center justify-start px-5 pt-4 bg-white" 
-        contentContainerStyle={{paddingBottom: insets.bottom}} 
+        <ScrollView className="flex-1 flex-col px-5 pt-6 bg-white" 
+        contentContainerStyle={{paddingBottom: insets.bottom, alignItems: "center", 
+            justifyContent:"center", rowGap: 60}} 
         keyboardShouldPersistTaps="handled">
-            <View className="flex flex-col gap-4">
+            <View className="flex flex-col gap-4 justify-center items-center">
                 {/* display profile pic */}
                 <Pressable onPress={() => setDisplayModalOpen(true)}>
                     <Image source={croppedPicUri ? ({uri: croppedPicUri}) : 
@@ -393,7 +394,7 @@ const EditProfile = () => {
                     </View>
                     <View className="gap-3 justify-center items-center">
                         {/* username input */}
-                        <View className={`flex flex-row items-center justify-start bg-white border 
+                        <View className={`flex items-start justify-center bg-white border 
                         px-4 rounded-[5px] h-[50px] w-full ${usernameErr ? "border-red-500" : "border-black"}`}>
                             <TextInput
                                 autoCapitalize="none"
@@ -447,10 +448,12 @@ const EditProfile = () => {
             </View>
 
             {/* link Stripe */}
-            <View className="flex flex-col gap-4">
+            <View className="flex flex-col gap-7 w-full">
+                <View className="flex items-start">
                 <Text className="font-semibold text-black text-left text-lg">
                     Payout account to receive payments
                 </Text>
+                </View>
                 {stripeHasOnboard ? (          
                     <View className="flex flex-row gap-2 items-center">
                         <Text className="text-neutral-500 italic font-medium text-xs">
@@ -472,13 +475,15 @@ const EditProfile = () => {
                         </TouchableOpacity>
                     </View>
                 ) : (
-                    <TouchableOpacity onPress={handleConnectWithStripe} 
-                    className='justify-center items-center border shadow-sm h-[44px] px-6 rounded-[30px]'
-                    style={{backgroundColor: "#635BFF", borderColor: "#4F4ACC"}}>
-                        <Text className='text-white font-semibold tracking-wider text-sm'>
-                            Connect with Stripe
-                        </Text>
-                    </TouchableOpacity>
+                    <View className="flex items-center justify-center">
+                        <TouchableOpacity onPress={handleConnectWithStripe} 
+                        className='justify-center items-center border shadow-sm h-[44px] px-6 rounded-[30px]'
+                        style={{backgroundColor: "#635BFF", borderColor: "#4F4ACC"}}>
+                            <Text className='text-white font-semibold tracking-wider text-sm'>
+                                Connect with Stripe
+                            </Text>
+                        </TouchableOpacity>
+                    </View>
                 )}
             </View>
             <DisplayPicModal isVisible={displayModalOpen} picUri={croppedPicUri || profilePicUrl} 

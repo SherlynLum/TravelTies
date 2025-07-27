@@ -7,7 +7,7 @@ import Loading from '../components/Loading.js'
 import CustomKeyboardView from '../components/CustomKeyboardView.js'
 import { pickOnePic } from '@/utils/imagePicker'
 import AdjustPicModal from '@/components/AdjustPicModal';
-import DisplayPicModal from '@/components/DisplayProfilePicModal.js';
+import DisplayPicModal from '../components/DisplayProfilePicModal';
 import axios, { isAxiosError } from "axios";
 import { useAuth } from '@/context/authContext.js';
 import { Divider, Menu } from 'react-native-paper';

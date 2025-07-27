@@ -111,7 +111,7 @@ const TripsDashboard = () => {
           </Text>
         </View>
       ) : (
-        <View className="flex-1 flex-col py-4 w-full">
+        <View className="flex-1 flex-col px-5 py-4 w-full">
           <View className="flex flex-row justify-between items-center">
             {["Planning", "Ongoing", "Completed"].map(tabName => (
               <TouchableOpacity

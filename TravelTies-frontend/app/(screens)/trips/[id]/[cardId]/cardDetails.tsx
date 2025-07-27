@@ -301,7 +301,7 @@ const CardDetails = () => {
                             <TouchableOpacity className="relative" onPress={() => openDisplayModal(item)}>
                                 <Image
                                 source={item === "Failed to load" 
-                                ? require("../../../assets/images/error-icon.png")
+                                ? require("../../../../../assets/images/error-icon.png")
                                 : {uri: item}}
                                 className="w-[100px] h-[100px] border-neutral-400 border-2"
                                 resizeMode="cover"/>
