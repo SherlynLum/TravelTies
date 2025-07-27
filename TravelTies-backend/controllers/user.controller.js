@@ -323,7 +323,7 @@ const rateUs = async (req, res) => {
         return res.status(400).json({message: "Invalid rating"});
     }
     try {
-        const res = await rate({uid, rating});
+        await rate({uid, rating});
         return res.sendStatus(201);
     } catch (e) {
         return res.status(500).json({message: e.message});
