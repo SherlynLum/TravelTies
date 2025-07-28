@@ -431,10 +431,11 @@ const getCards = async ({tripId, tab}) => {
     if (!trip) {
         throw new Error("No trip is found");
     }
-    const cardIds = trip.orderInTab[tab];
-    if (!Array.isArray(cardIds)){
-        throw new Error(`Tab ${tab} is not foun. Trip: ${trip}`)
+    const tabsMap = trip.orderInTab;
+    if (!tabsMap.has(tab)){
+        throw new Error(`Tab ${tab} is not found`)
     }
+    const cardIds = tabsMap.get(tab);
     const cards = await Promise.all(
         cardIds.map(async (cardId) => {
             const card = await getCardPreview(cardId);
