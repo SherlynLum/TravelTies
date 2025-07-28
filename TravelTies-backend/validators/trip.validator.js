@@ -5,8 +5,8 @@ const validateTripDates = ({startDate, endDate, noOfDays, noOfNights}) => {
 
     if (noOfDays && noOfNights) {
         if (typeof noOfDays !== "number" || !Number.isInteger(noOfDays) || noOfDays <= 0 ||
-            typeof noOfNights !== "number" || !Number.isInteger(noOfNights) || noOfNights <= 0) {
-                return "Number of days and number of nights must be positive integers"
+            typeof noOfNights !== "number" || !Number.isInteger(noOfNights) || noOfNights < 0) {
+                return "Number of days must be positive integer and number of days must be positive integer or zero"
             }
     }
 

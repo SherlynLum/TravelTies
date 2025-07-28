@@ -11,6 +11,9 @@ export default function _layout() {
             <Stack.Screen 
                 name="trips"
                 options={{headerShown: false}} />
+            <Stack.Screen 
+                name="settings"
+                options={{headerShown: false}} />
         </Stack>
     )
 }

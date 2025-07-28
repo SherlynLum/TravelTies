@@ -1,4 +1,4 @@
-import { Alert, ScrollView, Text, View, Image, Dimensions, ImageBackground, TouchableOpacity} from 'react-native'
+import { Alert, ScrollView, Text, View, Dimensions, ImageBackground, TouchableOpacity} from 'react-native'
 import React, { useEffect, useState } from 'react'
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Link, useLocalSearchParams, useRouter } from 'expo-router';
@@ -8,7 +8,7 @@ import { getTripOverview } from '@/apis/tripApi';
 import { getDisplayUrl } from '@/apis/awsApi';
 import Loading from '@/components/Loading';
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
-import { toDisplayDate, toDisplayDay } from '@/utils/dateConverter';
+import { toDisplayDate, toDisplayDay } from '@/utils/dateTimeConverter';
 import Octicons from '@expo/vector-icons/Octicons';
 
 const Overview = () => {

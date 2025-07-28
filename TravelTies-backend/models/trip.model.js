@@ -68,7 +68,7 @@ const tripSchema = new mongoose.Schema({
     
     noOfDays: {
         type: Number,
-        min: 0,
+        min: 1,
         validate: {
             validator: Number.isInteger,
             message: "Number of days must be an integer"

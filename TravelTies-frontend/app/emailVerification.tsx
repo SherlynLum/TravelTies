@@ -127,14 +127,14 @@ const EmailVerification = () => {
                   </View>
                   ) : (
                     <View style={{paddingVertical: hp(1)}}>
-                    <TouchableOpacity onPress={handleEmailVerification}
-                    style={{height: hp(6.46), width: wp(60), borderRadius: 30}} 
-                    className='bg-blue-500 justify-center items-center border border-blue-600'>
-                      <Text style={{fontSize: hp(2.7)}} className='text-white font-semibold
-                      tracking-wider text-center'>
-                        Resend email
-                      </Text>
-                    </TouchableOpacity>
+                      <TouchableOpacity onPress={handleEmailVerification}
+                      style={{height: hp(6.46), width: wp(60), borderRadius: 30}} 
+                      className='bg-blue-500 justify-center items-center border border-blue-600'>
+                        <Text style={{fontSize: hp(2.7)}} className='text-white font-semibold
+                        tracking-wider text-center'>
+                          Resend email
+                        </Text>
+                      </TouchableOpacity>
                     </View>
                   )
                 }
@@ -146,7 +146,7 @@ const EmailVerification = () => {
                   <View className="items-center justify-center">
                     <Pressable onPress={checkVerification} hitSlop={14}>
                       <Text style={{fontSize: hp(1.8)}} className="font-bold text-blue-500">
-                        I've already verified
+                        {"I've already verified"}
                       </Text>
                     </Pressable>
                   </View>

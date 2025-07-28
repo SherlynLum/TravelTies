@@ -1,6 +1,7 @@
-const {generateJoinCode, createTrip, getTripsByUid, getTripsInBin, getOverview, getParticipants,
-    getJoinRequests, updateOverview, updateParticipants, addParticipantsAndRemoveFromRequests,
-    deleteTrip, cancelTrip, restoreTrip, searchActiveTrips, searchBinTrips, addJoinRequest
+const {generateJoinCode, createTrip, getTripsByUid, getTripsInBin, getOverviewById, getParticipants,
+    getJoinRequests, updateTrip, addParticipantsAndRemoveFromRequests,
+    deleteTrip, cancelTrip, restoreTrip, searchActiveTrips, searchBinTrips, addJoinRequest,
+    getJoinCode, removeBuddy, getCards, getOrderInTab, getOverviewByJoinCode,
 } = require("../services/trip.service.js");
 const {generateUploadUrl} = require("../services/awss3.service.js");
 const {validateTripDates} = require("../validators/trip.validator.js");
@@ -80,14 +81,40 @@ const getCurrentUserBinTrips = async (req, res) => {
     }
 }
 
-const getTripOverview = async (req, res) => {
+const getTripOverviewById = async (req, res) => {
     const {id} = req.params; 
     try {
-        const tripOverview = await getOverview(id);
+        const tripOverview = await getOverviewById(id);
         if (!tripOverview) {
             return res.status(404).json({message: "No trip is found"})
         }
         return res.status(200).json({trip: tripOverview});
+    } catch (e) {
+        return res.status(500).json({message: e.message})
+    }
+}
+
+const getTripOverviewByJoinCode = async (req, res) => {
+    const {code} = req.params; 
+    try {
+        const tripOverview = await getOverviewByJoinCode(code);
+        if (!tripOverview) {
+            return res.status(404).json({message: "No trip is found"})
+        }
+        return res.status(200).json({trip: tripOverview});
+    } catch (e) {
+        return res.status(500).json({message: e.message})
+    }
+}
+
+const getTripJoinCode= async (req, res) => {
+    const {id} = req.params; 
+    try {
+        const trip = await getJoinCode(id);
+        if (!trip) {
+            return res.status(404).json({message: "No trip is found"})
+        }
+        return res.status(200).json({trip});
     } catch (e) {
         return res.status(500).json({message: e.message})
     }
@@ -123,33 +150,19 @@ const getTripJoinRequests = async (req, res) => {
     }
 }
 
-const updateTripOverview = async (req, res) => {
+const updateTripController = async (req, res) => {
     const {id} = req.params;
-    const {name, profilePicKey, startDate, endDate, noOfDays, noOfNights} = req.body;
+    const {name, profilePicKey, startDate, endDate, noOfDays, noOfNights, tripParticipants} = req.body;
 
     // validation
     const datesErr = validateTripDates({startDate, endDate, noOfDays, noOfNights});
     if (datesErr) {
-        return res.status(400).json({message: datesErr});
+        return res.status(400).json({message: datesErr, datesErr: true});
     }
 
     try {
-        const updatedTrip = await updateOverview({id, name, profilePicKey, startDate, endDate, 
-            noOfDays, noOfNights});
-        if (!updatedTrip) {
-            return res.status(404).json({message: "No trip is found"})
-        }
-        return res.status(200).json({trip: updatedTrip});
-    } catch (e) {
-        return res.status(500).json({message: e.message});
-    }
-}
-
-const updateTripParticipants = async (req, res) => {
-    const {id} = req.params;
-    const {tripParticipants} = req.body;
-    try {
-        const updatedTrip = await updateParticipants({id, tripParticipants});
+        const updatedTrip = await updateTrip({id, name, profilePicKey, startDate, endDate, 
+            noOfDays, noOfNights, tripParticipants});
         if (!updatedTrip) {
             return res.status(404).json({message: "No trip is found"})
         }
@@ -161,13 +174,13 @@ const updateTripParticipants = async (req, res) => {
 
 const updateTripJoinRequests = async (req, res) => {
     const {id} = req.params;
-    const {acceptedRequests} = req.body;
-    if (!acceptedRequests || acceptedRequests.length === 0) {
-        return res.status(200).json({message: "No accepted requests so no need to updated"})
+    const {acceptedRequests, declinedUids} = req.body;
+    if (acceptedRequests.length === 0 && declinedUids.length === 0) {
+        return res.status(200).json({message: "No accepted and declined requests so no need to updated"})
     }
 
     try {
-        const updatedTrip = await addParticipantsAndRemoveFromRequests({id, acceptedRequests});
+        const updatedTrip = await addParticipantsAndRemoveFromRequests({id, acceptedRequests, declinedUids});
         if (!updatedTrip) {
             return res.status(404).json({message: "No trip is found"});
         }
@@ -267,10 +280,10 @@ const addJoinRequestController = async (req, res) => {
     if (!uid) {
         return res.status(400).json({message: "Missing uid"});
     }
-    const {code: joinCode} = req.params;
+    const {id} = req.params;
 
     try {
-        const updatedTrip = await addJoinRequest({uid, joinCode});
+        const updatedTrip = await addJoinRequest({uid, id});
         return res.status(200).json({trip: updatedTrip});
     } catch (e) {
         let message = e.message;
@@ -284,21 +297,78 @@ const addJoinRequestController = async (req, res) => {
     }
 }
 
+const removeBuddyController = async (req, res) => {
+    const uid = req.user.uid;
+    // testing without middleware: const uid = req.body.uid;
+    if (!uid) {
+        return res.status(400).json({message: "Missing uid"});
+    }
+    const {id: tripId} = req.params;
+
+    try {
+        const updatedTrip = await removeBuddy({uid, tripId});
+        if (!updatedTrip) {
+            return res.status(404).json({message: "No trip is found"})
+        }
+        return res.status(200).json({trip: updatedTrip});
+    } catch (e) {
+        return res.status(500).json({message: e.message});
+    }
+}
+
+const getCardsController = async (req, res) => {
+    const {id: tripId} = req.params;
+    if (!tripId) {
+        return res.status(400).json({message: "Missing tripId"});
+    }
+    const {tab} = req.query;
+    if (!tab) {
+        return res.status(400).json({message: "Missing tab name"});
+    }
+
+    try {
+        const cards = await getCards({tripId, tab});
+        return res.status(200).json({cards});
+    } catch (e) {
+        return res.status(500).json({message: e.message});
+    }
+}
+
+const getOrderInTabController = async (req, res) => {
+    const {id: tripId} = req.params;
+    if (!tripId) {
+        return res.status(400).json({message: "Missing tripId"});
+    }
+    try {
+        const trip = await getOrderInTab(tripId);
+        if (!trip) {
+            return res.status(500).json({message: "No trip is found"});
+        }
+        return res.status(200).json({trip});
+    } catch (e) {
+        return res.status(500).json({message: e.message});
+    }
+}
+
 module.exports = {
     getTripProfilePicUrl,
     createTripController,
     getCurrentUserActiveTrips,
     getCurrentUserBinTrips,
-    getTripOverview,
+    getTripOverviewById,
+    getTripOverviewByJoinCode,
+    getTripJoinCode,
     getTripParticipants,
     getTripJoinRequests, 
-    updateTripOverview,
-    updateTripParticipants,
+    updateTripController,
     updateTripJoinRequests,
     cancelTripController,
     restoreTripController,
     deleteTripPermanently, 
     searchActiveTripsController,
     searchBinTripsController,
-    addJoinRequestController
+    addJoinRequestController,
+    removeBuddyController,
+    getCardsController,
+    getOrderInTabController
 };

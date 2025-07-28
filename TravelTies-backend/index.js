@@ -9,6 +9,8 @@ const awsRoute = require("./routes/awss3.route.js");
 const tripRoute = require("./routes/trip.route.js");
 const expenseTrackerRoute = require("./routes/expenseTracker.route");
 const expenseRoute = require("./routes/expense.route");
+const photoRoute = require("./routes/photo.route.js");
+const itineraryRoute = require("./routes/itinerary.route.js");
 const admin = require("firebase-admin");
 const serviceAccount = require("/etc/secrets/serviceAccountKey.json");
 
@@ -42,3 +44,6 @@ app.use("/api/trip", tripRoute);
 app.use("/api/expense-tracker", expenseTrackerRoute);
 app.use("/api/expenses", expenseRoute);
 app.use('/api/expenses', require('./routes/expense.route')); 
+app.use("/api/photo", photoRoute); // for photos uploaded from Itinerary screens
+app.use("/api/card", itineraryRoute);
+

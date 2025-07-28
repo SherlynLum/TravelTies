@@ -1,4 +1,5 @@
 const User = require("../models/user.model.js");
+const Rating = require("../models/rating.model.js");
 const SEARCH_RES_LIMIT = 10;
 
 const signUpOrSignIn = async (uid) => {
@@ -139,6 +140,115 @@ const searchUsers = async ({uid, searchTerm}) => {
     return searchResults;
 }
 
+const getUiPreference = async (uid) => {
+    const preference = await User.findOne({uid}, {_id: 0, notificationEnabled: 1, theme: 1});
+    return preference;
+}
+
+const updateUiPreference = async ({uid, notificationEnabled, theme}) => {
+    const updatedPreference = await User.findOneAndUpdate(
+        {uid}, //key and variable names are the same 
+        {$set: {notificationEnabled, theme}}, //key and variable names are the same 
+        {new: true, runValidators: true}
+    )
+    return updatedPreference;
+} 
+
+const getFriendRequests = async (uid) => {
+    const requests = await User.aggregate([
+        {$match: {uid}},
+        {$unwind: "$friends"},
+        {$match: {"friends.status": "request_received"}},
+        {$lookup: {
+            from: "users",
+            localField: "friends.friendUid",
+            foreignField: "uid",
+            as: "friendsProfiles"
+        }},
+        {$unwind: "$friendsProfiles"},
+        {$project: {
+            _id: 0,
+            uid: "$friendsProfiles.uid",
+            username: "$friendsProfiles.username",
+            profilePicKey: "$friendsProfiles.profilePicKey",
+            requestTime: "$friends.requestTime"
+        }},
+        {$sort: {requestTime: 1}}
+    ]);
+    return requests;
+}
+
+const removeFriend = async ({uid, uidToBeRemoved, session}) => {
+    const updatedUser = await User.findOneAndUpdate({uid}, 
+        {$pull: {friends: {friendUid: uidToBeRemoved}}}, 
+        {session, new: true, runValidators: true});
+    return updatedUser;
+}
+
+const acceptRequest = async ({uid, acceptUid, session}) => {
+    const updatedUser = await User.findOneAndUpdate({uid}, 
+        {$set: {"friends.$[friend].status": "friends"}}, 
+        {arrayFilters: [{"friend.friendUid": acceptUid}], session, new: true, 
+            runValidators: true});
+    return updatedUser;
+}
+
+const sendRequest = async ({uid, sendRequestToUid, session}) => {
+    const updatedUser = await User.findOneAndUpdate({uid},
+        {$addToSet: {friends: {
+            friendUid: sendRequestToUid,
+            status: "request_sent",
+            requestTime: new Date
+        }}},
+        {session, new: true, runValidators: true});
+    return updatedUser;
+}
+
+const receiveRequest = async ({uid, receiveRequestFromUid, session}) => {
+    const updatedUser = await User.findOneAndUpdate({uid},
+        {$addToSet: {friends: {
+            friendUid: receiveRequestFromUid,
+            status: "request_received",
+            requestTime: new Date
+        }}},
+        {session, new: true, runValidators: true});
+    return updatedUser;
+}
+
+const rate = async ({uid, rating}) => {
+    const res = await Rating.create({uid, rating});
+    return res;
+}
+
+const getStripeAccount = async (uid) => {
+    const user = await User.findOne({uid}, {"stripeAccount": 1});
+    if (!user) {
+        throw new Error("No user is found");
+    }
+    return user.stripeAccount;
+}
+
+const updateStripeAccount = async ({uid, account}) => {
+    const updatedUser = await User.findOneAndUpdate({uid},
+        {$set:{stripeAccount: {
+            stripeAccountId: account.id,
+            detailsSubmitted: account.details_submitted,
+            chargesEnabled: account.charges_enabled,
+            payoutsEnabled: account.payouts_enabled
+        }}},
+        {new: true, runValidators: true}
+    );
+    return updatedUser;
+} 
+
+const removeStripeAccount = async (uid) => {
+    const updatedUser = await User.findOneAndUpdate({uid},
+        {$unset: {stripeAccount: ""}},
+        {new: true, runValidators: true}
+    );
+    return updatedUser;
+} 
+
 module.exports = {
     signUpOrSignIn,
     checkUsernameUniqueness, 
@@ -147,5 +257,16 @@ module.exports = {
     getUsernamePic,
     getFriends, 
     searchFriends, 
-    searchUsers
+    searchUsers,
+    getUiPreference,
+    updateUiPreference,
+    getFriendRequests,
+    removeFriend,
+    acceptRequest,
+    sendRequest,
+    receiveRequest,
+    rate,
+    getStripeAccount,
+    updateStripeAccount,
+    removeStripeAccount
 };

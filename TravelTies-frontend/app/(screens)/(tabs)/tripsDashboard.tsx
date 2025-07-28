@@ -1,36 +1,30 @@
-import { View, Text, TouchableOpacity } from 'react-native'
-import React, { useEffect, useState } from 'react'
+import { View, Text, TouchableOpacity, FlatList } from 'react-native'
+import React, { useCallback, useState } from 'react'
 import { useAuth } from '@/context/authContext';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import Feather from '@expo/vector-icons/Feather';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
-import { FlatList} from 'react-native-gesture-handler';
 import { getActiveTrips } from '@/apis/tripApi';
-import { getDisplayUrl } from '@/apis/awsApi';
 import { Trip } from '@/types/trips';
 import ActiveTripCard from '@/components/activeTripCard';
 import Loading from '@/components/Loading';
-import { useRouter } from 'expo-router';
+import { useFocusEffect, useRouter } from 'expo-router';
+import SearchActiveTripModal from '@/components/SearchActiveTripModal';
 
 const TripsDashboard = () => {
   const {user, getUserIdToken} = useAuth();
   const [loading, setLoading] = useState(false);
-  const [trips, setTrips] = useState<Trip[]>([]);
+  const [planningTrips, setPlanningTrips] = useState<Trip[]>([]);
+  const [ongoingTrips, setOngoingTrips] = useState<Trip[]>([]);
+  const [completedTrips, setCompletedTrips] = useState<Trip[]>([]);
+  const [tab, setTab] = useState("Planning"); // default to planning when first render
   const [hasError, setHasError] = useState(false);
   const router = useRouter();
-
-  const getProfilePicUrl = async (token: string, key: string) => {
-    try {
-      const url = await getDisplayUrl(token, key);
-        return url;
-      } catch (e) {
-        console.log(e);
-        return "Failed to load";
-    }
-  }
-/* for testing purpose: 
+  const [searchModalOpen, setSearchModalOpen] = useState(false);
+  
+  /* for testing:
   useEffect(() => {
     const activeTrips = [{_id: "abc", name: "Japan trip", noOfParticipants: 1}, 
     {_id: "efg", name: "Korea trip", startDate: "2025-09-18", endDate: "2025-09-23", 
@@ -39,39 +33,38 @@ const TripsDashboard = () => {
     
     setTrips(activeTrips)
   }, []);
-*/
-  useEffect(() => {
-    const getTrips = async () => {
-      try {
-        setLoading(true);
-        const token = await getUserIdToken(user);
-        const activeTrips = await getActiveTrips(token);
-        if (activeTrips.length !== 0) { // if there is/are trip(s)
-          const activeTripsWithPicUrl = await Promise.all(
-            activeTrips.map(async (trip: Trip) => {
-              if (trip.profilePicKey) { // if the trip has user set profile picture
-                const res = await getProfilePicUrl(token, trip.profilePicKey);
-                return {...trip, profilePicUrl: res}
-              } else {
-                return trip;
-              }
-            })
-          )
-          setTrips(activeTripsWithPicUrl)
-        } else {
-          setTrips([]);
+  */
+
+/**/ 
+  useFocusEffect(
+    useCallback(() => {
+      const getTrips = async () => {
+        try {
+          setLoading(true);
+          const token = await getUserIdToken(user);
+          const activeTrips = await getActiveTrips(token);
+          setPlanningTrips(activeTrips.planning);
+          setOngoingTrips(activeTrips.ongoing);
+          setCompletedTrips(activeTrips.completed);
+          setHasError(false);
+        } catch (e) {
+          console.log(e);
+          setPlanningTrips([]);
+          setOngoingTrips([]);
+          setCompletedTrips([]);
+          setHasError(true);
+        } finally {
+          setLoading(false)
         }
-        setHasError(false);
-      } catch (e) {
-        console.log(e);
-        setHasError(true);
-      } finally {
-        setLoading(false)
       }
-    }
-    getTrips();
-  }, [])
-  
+      getTrips();
+    }, []));
+/**/
+
+  const closeSearchModal = () => {
+    setSearchModalOpen(false);
+  }
+
   return (
     <SafeAreaView className="flex-1 bg-white">
       <View className="flex flex-col px-5 pt-1 pb-2 gap-5">
@@ -95,7 +88,7 @@ const TripsDashboard = () => {
         </View>
 
         {/* search bar */}
-        <TouchableOpacity>
+        <TouchableOpacity onPress={() => setSearchModalOpen(true)}>
           <View className="flex flex-row items-center justify-start px-4 bg-gray-200 h-11
           rounded-5 gap-4">
             <FontAwesome name="search" size={15} color="#9CA3AF"/>
@@ -117,9 +110,23 @@ const TripsDashboard = () => {
             {"An error occurred when loading your trips.\nPlease try again later."}
           </Text>
         </View>
-      ) :
-        (<FlatList 
-          data={trips} 
+      ) : (
+        <View className="flex-1 flex-col px-5 py-4 w-full">
+          <View className="flex flex-row justify-between items-center">
+            {["Planning", "Ongoing", "Completed"].map(tabName => (
+              <TouchableOpacity
+              key={tabName} onPress={() => setTab(tabName)} hitSlop={5}
+              className={`bg-white justify-center items-center shadow-sm h-[35px] px-8 rounded-[30px] 
+              ${tab === tabName ? "border-blue-500 border-2": "border-gray-500 border"}`}>
+                <Text className={`font-semibold ${tab === tabName ? "text-blue-500" : "text-gray-500"}
+                text-sm`}>
+                  {tabName}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+        <FlatList 
+          data={tab === "Planning" ? planningTrips : tab === "Ongoing" ? ongoingTrips : completedTrips} 
           renderItem={({item}) => (
             <ActiveTripCard {...item} />
           )}
@@ -127,16 +134,16 @@ const TripsDashboard = () => {
           ListEmptyComponent={
             <View className="flex-1 justify-center items-center"> 
               <Text className="text-center text-base font-medium italic text-gray-500">
-                {"You have no active trips.\nTap the \"+\" on the top right to add a trip."}
+                {`You have no active trips under ${tab} category.\nTap the \"+\" on the top right to add a trip.`}
               </Text>
             </View>
           }
-          contentContainerStyle={
-            trips.length === 0 ? {flexGrow: 1, justifyContent: "center", alignItems: "center"} 
-            : {flexGrow: 1, paddingVertical: 15}
-          }
-        />) 
+          contentContainerStyle={{flexGrow: 1, paddingVertical: 15}}
+        />
+        </View>
+        ) 
       }
+      <SearchActiveTripModal isVisible={searchModalOpen} closeModal={closeSearchModal} />
     </SafeAreaView>
   )
 }

@@ -15,8 +15,27 @@ const toDisplayDay = (date: Date) => {
     return date.toLocaleDateString(undefined, {weekday: "short"})
 }
 
+const toLocalDateObj= (date: string) => {
+    const [year, month, day] = date.split("-");
+    return new Date(Number(year), Number(month) - 1, Number(day));
+}
+
+const toTimeStr = (time: Date) => {
+    return time.toLocaleTimeString("en-GB", {hour: "2-digit", minute: "2-digit"});
+}
+
+const timeStrToDate = (time: string) => {
+    const [hours, mins] = time.split(":").map(Number);
+    const now = new Date();
+    now.setHours(hours, mins, 0, 0);
+    return now;
+}
+
 export {
     toFloatingDate,
     toDisplayDate,
-    toDisplayDay
+    toDisplayDay,
+    toLocalDateObj,
+    toTimeStr,
+    timeStrToDate
 }

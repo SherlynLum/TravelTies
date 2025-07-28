@@ -9,6 +9,7 @@
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
+      "usesIcloudStorage": true,
       "supportsTablet": true,
       "bundleIdentifier": "com.travelties.travelties",
       "googleServicesFile": "./GoogleService-Info.plist",
@@ -42,7 +43,16 @@
           "backgroundColor": "#ffffff"
         }
       ],
-      "expo-web-browser"
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Allow $(PRODUCT_NAME) to access your camera",
+          "microphonePermission": "Allow $(PRODUCT_NAME) to access your microphone",
+          "recordAudioAndroid": true
+        }
+      ],
+      "expo-web-browser",
+      "expo-document-picker"
     ],
     "experiments": {
       "typedRoutes": true

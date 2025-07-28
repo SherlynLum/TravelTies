@@ -1,5 +1,22 @@
 const mongoose = require('mongoose');
 
+const docSchema = new mongoose.Schema(
+    {
+        name: {
+            type: String,
+            required: true
+        },
+
+        key: {
+            type: String,
+            required: true
+        }
+    }, 
+    {
+        _id: false
+    }
+);
+
 const cardSchema = new mongoose.Schema({
     tripId: {
         type: mongoose.Schema.Types.ObjectId,
@@ -22,16 +39,26 @@ const cardSchema = new mongoose.Schema({
         type: String
     },
 
-    startDate: {
-        type: String
+    startDate: { // store startDate as day number 
+        type: Number,
+        min: 1,
+        validate: {
+            validator: Number.isInteger,
+            message: "startDate must be an integer"
+        }
     },
 
     startTime: {
         type: String
     },
 
-    endDate: {
-        type: String
+    endDate: { // store endDate as day number 
+        type: String,
+        min: 1,
+        validate: {
+            validator: Number.isInteger,
+            message: "endDate must be an integer"
+        }
     },
 
     endTime: {
@@ -58,7 +85,7 @@ const cardSchema = new mongoose.Schema({
         type: String
     },
 
-    picIDs: { 
+    picIds: { 
         type: [{
             type: mongoose.Schema.Types.ObjectId,
             ref: "Photo"
@@ -66,8 +93,8 @@ const cardSchema = new mongoose.Schema({
         default: []
     },
 
-    docKeys: { // array of AWS S3 keys to access uploaded documents
-        type: [String],
+    docs: { 
+        type: [docSchema],
         default: []
     },
 

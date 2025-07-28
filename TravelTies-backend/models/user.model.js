@@ -25,7 +25,7 @@ const friendSchema = new mongoose.Schema(
 
 const stripeAccountSchema = new mongoose.Schema(
     {
-        stripeAccountID: {
+        stripeAccountId: {
             type: String, 
             required: true
         },
