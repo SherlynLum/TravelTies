@@ -223,8 +223,21 @@ const createGeneralCardController = async (req, res) => {
         return res.status(201).json({card})
     } catch (e) {
         await session.abortTransaction();
-        return res.status(500).json({message: `data received: ${tripId, cardType, title, description, startDate, 
-            startTime, endDate, endTime, generalAddress, picIds, docs, webUrls, session}; e.message`});
+        return res.status(500).json({message: `data received: ${JSON.stringify({
+    tripId,
+    cardType,
+    title,
+    description,
+    startDate,
+    startTime,
+    endDate,
+    endTime,
+    generalAddress,
+    picIds,
+    docs,
+    webUrls,
+    session,
+  })}; e.message`});
     } finally {
         session.endSession();
     }
