@@ -2,8 +2,8 @@ const Card = require("../models/card.model.js");
 
 const createNoteCard = async ({tripId, title, description, startDate, startTime, endDate, 
     endTime, session}) => {
-        const newCard = await Card.create({tripId, cardType: "note", title, description, startDate, 
-            startTime, endDate, endTime}, {session});
+        const [newCard] = await Card.create([{tripId, cardType: "note", title, description, startDate, 
+            startTime, endDate, endTime}], {session});
         return newCard;
 }
 

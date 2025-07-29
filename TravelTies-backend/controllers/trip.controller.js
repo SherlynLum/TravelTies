@@ -350,6 +350,28 @@ const getOrderInTabController = async (req, res) => {
     }
 }
 
+const addCardTester = async (req, res) => {
+    const {tripId, cardId, startDate, endDate} = req.body;
+
+    const session = await mongoose.startSession();
+    session.startTransaction();
+
+    try {
+        const updatedTrip = await addCard({tripId, cardId, startDate, endDate, session});
+        if (!updatedTrip) {
+            throw new Error("No trip is found");
+        }
+
+        await session.commitTransaction();
+        return res.status(201).json({updateTrip})
+    } catch (e) {
+        await session.abortTransaction();
+        return res.status(500).json({message: e.message, error: e.errors});
+    } finally {
+        session.endSession();
+    }
+}
+
 module.exports = {
     getTripProfilePicUrl,
     createTripController,
@@ -370,5 +392,6 @@ module.exports = {
     addJoinRequestController,
     removeBuddyController,
     getCardsController,
-    getOrderInTabController
+    getOrderInTabController,
+    addCardTester
 };
