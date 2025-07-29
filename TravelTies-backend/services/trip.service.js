@@ -378,7 +378,7 @@ const addJoinRequest = async ({uid, id}) => {
  
 const removeBuddy = async ({uid, tripId}) => {
     const updatedTrip = await Trip.findByIdAndUpdate(tripId, {
-        $pull: {tripParticipants: {uid}}
+        $pull: {tripParticipants: {participantUid: uid}}
     }, {new: true, runValidators: true});
     return updatedTrip;
 }
