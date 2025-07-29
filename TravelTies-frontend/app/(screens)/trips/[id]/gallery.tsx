@@ -19,20 +19,24 @@ export default function GalleryScreen() {
   const [modalVisible, setModalVisible] = useState(false);
 
   useEffect(() => {
-    console.log('Trip ID:', tripId);
+  if (tripId) {
     fetchGalleryData();
-  }, [tripId]);
+  } else {
+    console.warn("No tripId found in route.");
+  }
+}, [tripId]);
 
   const fetchGalleryData = async () => {
-    try {
-      const photoData = await getPhotos(tripId);
-      const albumData = await getAlbums(tripId);
-      setPhotos(photoData || []);
-      setAlbums(albumData || []);
-    } catch (err) {
-      console.error("Failed to fetch gallery data:", err);
-    }
-  };
+  try {
+    console.log("Fetching data for tripId:", tripId);
+    const photoData = await getPhotos(tripId);
+    const albumData = await getAlbums(tripId);
+    setPhotos(photoData || []);
+    setAlbums(albumData || []);
+  } catch (error) {
+    console.error("Failed to fetch gallery data:", error);
+  }
+};
 
   const handleAddPhoto = async () => {
     const result = await ImagePicker.launchImageLibraryAsync({
