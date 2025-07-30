@@ -464,9 +464,11 @@ const removeCard = async ({tripId, cardId, session}) => {
         throw new Error("No trip is found");
     }
 
-    for (const tab in trip.orderInTab) {
-        if (Array.isArray(trip.orderInTab[tab])) {
-            trip.orderInTab[tab] = trip.orderInTab[tab].filter(id => !id.equals(cardId));
+    const orderInTab = trip.orderInTab;
+    for (const [tab, cards] of orderInTab.entries()) {
+        if (Array.isArray(cards)) {
+            const updatedCards = cards.filter(id => !id.equals(cardId));
+            orderInTab.set(tab, updatedCards);
         }
     }
 

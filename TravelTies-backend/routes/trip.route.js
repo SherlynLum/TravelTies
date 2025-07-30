@@ -5,8 +5,7 @@ const {getTripProfilePicUrl, createTripController, getCurrentUserActiveTrips,
     updateTripController, updateTripJoinRequests, cancelTripController, restoreTripController, 
     deleteTripPermanently, searchActiveTripsController, searchBinTripsController, 
     addJoinRequestController, getTripJoinCode, removeBuddyController, getCardsController,
-    getOrderInTabController, getTripOverviewById, getTripOverviewByJoinCode,
-    addCardTester,
+    getOrderInTabController, getTripOverviewById, getTripOverviewByJoinCode
 } = require("../controllers/trip.controller.js");
 const router = express.Router();
 
@@ -70,7 +69,5 @@ router.patch("/leave/:id", firebaseAuthMiddleware, requireParticipants, removeBu
 
 router.delete("/:id", firebaseAuthMiddleware, requireCreator, deleteTripPermanently);
 // for testing without middleware: router.delete("/test/:id", requireCreator, deleteTripPermanently);
-
-router.patch("/card/add", addCardTester)
 
 module.exports = router;
