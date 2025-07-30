@@ -28,8 +28,8 @@ router.get("/doc-url", firebaseAuthMiddleware, getDocUrl);
 router.get("/:id", firebaseAuthMiddleware, getCardController);
 // for testing without middleware: router.get("/test/:id", getCardController);
 
-router.delete("/:id", firebaseAuthMiddleware, deleteCardController);
-// for testing without middleware: router.delete("/test/:id", requireCreator, deleteCardController);
+// router.delete("/:id", firebaseAuthMiddleware, deleteCardController);
+router.delete("/test/:id", deleteCardController);
 
 router.patch("/:id", firebaseAuthMiddleware, updateCardController);
 // for testing without middleware: router.post("/test/:id", updateCardController);
