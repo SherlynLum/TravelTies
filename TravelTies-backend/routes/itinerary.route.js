@@ -7,8 +7,8 @@ const { createNoteCardController, getPicUrl, getDocUrl, createDestinationCardCon
     updateCardController} = require("../controllers/itinerary.controller.js");
 const router = express.Router();
 
-// router.post("/note", firebaseAuthMiddleware, createNoteCardController);
-router.post("/test/note", createNoteCardController);
+router.post("/note", firebaseAuthMiddleware, createNoteCardController);
+// for testing without middleware: router.post("/test/note", createNoteCardController);
 
 router.post("/destination", firebaseAuthMiddleware, createDestinationCardController);
 // for testing without middleware: router.post("/test/destination", createDestinationCardController);
@@ -28,8 +28,8 @@ router.get("/doc-url", firebaseAuthMiddleware, getDocUrl);
 router.get("/:id", firebaseAuthMiddleware, getCardController);
 // for testing without middleware: router.get("/test/:id", getCardController);
 
-// router.delete("/:id", firebaseAuthMiddleware, deleteCardController);
-router.delete("/test/:id", deleteCardController);
+router.delete("/:id", firebaseAuthMiddleware, deleteCardController);
+// for testing without middleware: router.delete("/test/:id", deleteCardController);
 
 router.patch("/:id", firebaseAuthMiddleware, updateCardController);
 // for testing without middleware: router.post("/test/:id", updateCardController);
