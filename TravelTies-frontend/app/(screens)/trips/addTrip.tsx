@@ -176,7 +176,7 @@ const AddTrip = () => {
                 setOldPicKey(picKey);
             }
             setPicKey(key);
-            return true; // for checking this time upload success or not 
+            return {key}; // for checking this time upload success or not 
         } catch (e) {
             if (isAxiosError(e)) { // deal with axios request errors 
                 // if error comes from get presigned url, there will be a message field in res
@@ -185,7 +185,7 @@ const AddTrip = () => {
                 console.log(e);
             }
             Alert.alert("Add trip", "Failed to upload trip profile picture");
-            return false; // for checking this time upload success or not 
+            return; // for checking this time upload success or not 
         }
     }
 
@@ -305,10 +305,13 @@ const AddTrip = () => {
         try {
             const token = await getUserIdToken(user);
 
-            if (picKey) {
+            let key;
+
+            if (croppedPicUri) {
                 if (!uploadSuccess) {
                     const uploadRes = await uploadCroppedPic(token);
-                    if (!uploadRes) {
+                    key = uploadRes?.key;
+                    if (!key) {
                         throw new Error("Failed to upload trip profile picture");
                     }
                 }
@@ -319,7 +322,7 @@ const AddTrip = () => {
             } 
 
             const trip = await createTrip({token, name: nameRef.current, 
-                profilePicKey: picKey || undefined, 
+                profilePicKey: key || undefined, 
                 startDate: startDate ? toFloatingDate(startDate) : undefined,
                 endDate: endDate ? toFloatingDate(endDate) : undefined,
                 noOfDays: noOfDays ? Number(noOfDays) : undefined,
@@ -367,7 +370,7 @@ const AddTrip = () => {
             }
         }
 
-        if (Number(noOfDays) <= 0) {
+        if (noOfDays && Number(noOfDays) <= 0) {
             Alert.alert("Failed to create trip", "The number of days must be at least 1");
             return;
         }

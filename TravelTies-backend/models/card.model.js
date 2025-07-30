@@ -53,7 +53,7 @@ const cardSchema = new mongoose.Schema({
     },
 
     endDate: { // store endDate as day number 
-        type: String,
+        type: Number,
         min: 1,
         validate: {
             validator: Number.isInteger,

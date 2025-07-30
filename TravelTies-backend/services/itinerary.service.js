@@ -2,31 +2,31 @@ const Card = require("../models/card.model.js");
 
 const createNoteCard = async ({tripId, title, description, startDate, startTime, endDate, 
     endTime, session}) => {
-        const newCard = await Card.create({tripId, cardType: "note", title, description, startDate, 
-            startTime, endDate, endTime}, {session});
+        const [newCard] = await Card.create([{tripId, cardType: "note", title, description, startDate, 
+            startTime, endDate, endTime}], {session});
         return newCard;
 }
 
 const createDestinationCard = async ({tripId, title, country, city, description, startDate, startTime, 
     endDate, endTime, picIds, docs, webUrls, session}) => {
-        const newCard = await Card.create({tripId, cardType: "destination", 
+        const [newCard] = await Card.create([{tripId, cardType: "destination", 
             title, description, startDate, startTime, endDate, endTime, country, city, picIds, docs, 
-            webUrls}, {session});
+            webUrls}], {session});
         return newCard;
 }
 
 const createTransportationCard = async ({tripId, title, description, startDate, startTime, 
     endDate, endTime, departureAddress, arrivalAddress, picIds, docs, webUrls, session}) => {
-        const newCard = await Card.create({tripId, cardType: "transportation", title, description, 
+        const [newCard] = await Card.create([{tripId, cardType: "transportation", title, description, 
             startDate, startTime, endDate, endTime, departureAddress, arrivalAddress, picIds, docs, 
-            webUrls}, {session});
+            webUrls}], {session});
         return newCard;
 }
 
 const createGeneralCard = async ({tripId, cardType, title, description, startDate, startTime, 
     endDate, endTime, generalAddress, picIds, docs, webUrls, session}) => {
-        const newCard = await Card.create({tripId, cardType, title, description, startDate, startTime, 
-            endDate, endTime, generalAddress, picIds, docs, webUrls}, {session});
+        const [newCard] = await Card.create([{tripId, cardType, title, description, startDate, startTime, 
+            endDate, endTime, generalAddress, picIds, docs, webUrls}], {session});
         return newCard;
 }
 

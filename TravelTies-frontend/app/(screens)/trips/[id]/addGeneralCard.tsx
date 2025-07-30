@@ -491,6 +491,14 @@ const AddGeneralCard = () => {
                 Alert.alert("Failed to create destination card", e.response.data.message);
                 return;
             }
+            if (isAxiosError(e)) {
+                console.log('[AXIOS ERROR]');
+                console.log('→ Message:', e.message);
+                console.log('→ URL:', e.config?.url);
+                console.log('→ Method:', e.config?.method);
+                console.log('→ Status:', e.response?.status);
+                console.log('→ Response Data:', e.response?.data);
+            }
             Alert.alert("Failed to create destination card", "Please try again later");
         } finally {
             setCreateLoading(false);
@@ -541,8 +549,8 @@ const AddGeneralCard = () => {
         </View>
     ) : (
     <KeyboardAvoidingView behavior={ios? 'padding': 'height'} style={{flex: 1}}>
-        <ScrollView className="flex-1 px-5 pt-3 bg-white" 
-        contentContainerStyle={{paddingBottom: insets.bottom}}
+        <ScrollView className="px-5 pt-3 bg-white" 
+        contentContainerStyle={{paddingBottom: insets.bottom, flexGrow: 1}}
         keyboardShouldPersistTaps="handled">
             <View className="flex flex-col gap-5">
                 {/* card title input */}
@@ -794,7 +802,8 @@ const AddGeneralCard = () => {
                     <Text className="font-semibold text-lg text-left">
                         Description
                     </Text>
-                    <View className="bg-white border border-black px-4 py-3 rounded-[5px]">
+                    <View className="bg-white border border-black px-4 py-3 rounded-[5px]"
+                    style={{minHeight: 200}}>
                         <TextInput
                             multiline
                             numberOfLines={8}
@@ -829,9 +838,9 @@ const AddGeneralCard = () => {
                     data={images}
                     numColumns={3}
                     keyExtractor={(item) => item.uri}
-                    columnWrapperClassName="items-center justify-center mb-3"
+                    columnWrapperClassName="items-center justify-start mb-3"
                     renderItem={({item}) => (
-                        <TouchableOpacity className="relative" onPress={() => openDisplayModal(item.uri)}>
+                        <TouchableOpacity className="relative mr-3" onPress={() => openDisplayModal(item.uri)}>
                             <Image
                             source={{uri: item.uri}}
                             className="w-[100px] h-[100px] border-neutral-400 border-2"

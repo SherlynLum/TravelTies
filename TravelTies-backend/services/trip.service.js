@@ -378,7 +378,7 @@ const addJoinRequest = async ({uid, id}) => {
  
 const removeBuddy = async ({uid, tripId}) => {
     const updatedTrip = await Trip.findByIdAndUpdate(tripId, {
-        $pull: {tripParticipants: {uid}}
+        $pull: {tripParticipants: {participantUid: uid}}
     }, {new: true, runValidators: true});
     return updatedTrip;
 }
@@ -389,31 +389,41 @@ const addCard = async ({tripId, cardId, startDate, endDate, session}) => {
         throw new Error("No trip is found");
     }
 
+    const orderInTab = trip.orderInTab;
+
     // all the inner if should not happen based on my implementation, here is just for safety
     if (startDate && !endDate) {
-        if (!trip.orderInTab[`day ${startDate}`]) {
+        const cards = orderInTab.get(`day ${startDate}`);
+        if (!cards) {
             // later might need to revisit when allows collaboration 
             // this is because trip startDate and endDate might be changed by other members 
             // might consider moving this card to unscheduled in this case
             throw new Error(`Day ${startDate} tab does not exist`); 
         }
-        trip.orderInTab[`day ${startDate}`].push(cardId);
+        cards.push(cardId);
+        orderInTab.set(`day ${startDate}`, cards);
     } else if (endDate && !startDate) {
-        if (!trip.orderInTab[`day ${endDate}`]) {
+        const cards = orderInTab.get(`day ${endDate}`);
+        if (!cards) {
             throw new Error(`Day ${endDate} tab does not exist`);
         }
-        trip.orderInTab[`day ${endDate}`].push(cardId);
+        cards.push(cardId);
+        orderInTab.set(`day ${endDate}`, cards);
     } else if (!startDate && !endDate) {
-        if (!trip.orderInTab["unscheduled"]) { 
-            trip.orderInTab["unscheduled"] = []; 
+        if (!orderInTab.get("unscheduled")) { 
+            orderInTab.set("unscheduled", []);
         }
-        trip.orderInTab["unscheduled"].push(cardId);
+        const cards = orderInTab.get("unscheduled");
+        cards.push(cardId);
+        orderInTab.set("unscheduled", cards);
     } else if (startDate && endDate) {
         for (let i = startDate; i <= endDate; i++) {
-            if (!trip.orderInTab[`day ${i}`]) {
+            const cards = orderInTab.get(`day ${i}`);
+            if (!cards) {
                 throw new Error(`Day ${i} tab does not exist`);
             }
-            trip.orderInTab[`day ${i}`].push(cardId);
+            cards.push(cardId);
+            orderInTab.set(`day ${i}`, cards)
         }
     }
 
@@ -431,10 +441,11 @@ const getCards = async ({tripId, tab}) => {
     if (!trip) {
         throw new Error("No trip is found");
     }
-    const cardIds = trip.orderInTab[tab];
-    if (!Array.isArray(cardIds)){
+    const tabsMap = trip.orderInTab;
+    if (!tabsMap.has(tab)){
         throw new Error(`Tab ${tab} is not found`)
     }
+    const cardIds = tabsMap.get(tab);
     const cards = await Promise.all(
         cardIds.map(async (cardId) => {
             const card = await getCardPreview(cardId);
@@ -453,9 +464,11 @@ const removeCard = async ({tripId, cardId, session}) => {
         throw new Error("No trip is found");
     }
 
-    for (const tab in trip.orderInTab) {
-        if (Array.isArray(trip.orderInTab[tab])) {
-            trip.orderInTab[tab] = trip.orderInTab[tab].filter(id => !id.equals(cardId));
+    const orderInTab = trip.orderInTab;
+    for (const [tab, cards] of orderInTab.entries()) {
+        if (Array.isArray(cards)) {
+            const updatedCards = cards.filter(id => !id.equals(cardId));
+            orderInTab.set(tab, updatedCards);
         }
     }
 
