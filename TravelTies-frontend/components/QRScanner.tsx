@@ -95,12 +95,12 @@ const QRScanner = ({isVisible, passTrip, closeModal}: QRScannerProps) => {
 
     return (
         <Modal visible={isVisible} animationType="slide">
-            <SafeAreaView className="flex-1 bg-black">
-                <StatusBar 
-                    translucent
-                    backgroundColor="transparent"
-                    style="light"
+            <StatusBar 
+                translucent
+                backgroundColor="transparent"
+                style="light"
                 />
+            <SafeAreaView className="flex-1 bg-black">
                 {/* header */}
                 <View style={{paddingHorizontal: wp(3), height: 56, width: "100%"}}
                 className="flex-row items-center justify-center">

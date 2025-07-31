@@ -62,8 +62,6 @@ const EditTripDetails = () => {
 
     const [userProfilePicUrl, setUserProfilePicUrl] = useState("");
     const [buddies, setBuddies] = useState<TripParticipantWithProfile[]>([]);
-    const [participantLoading, setParticipantLoading] = useState(false);
-    const [participantError, setParticipantError] = useState(false);
     const [currentUid, setCurrentUid] = useState("");
     const [currentRole, setCurrentRole] = useState("");
     const [tripParticipants, setTripParticipants] = useState<TripParticipant[]>([]);
@@ -77,85 +75,66 @@ const EditTripDetails = () => {
     const imageHeight = imageWidth / 3;
 
     // get trip's info when first render this page
-    useEffect(() => {
-        setLoading(true);
-
-        const getTripDetails = async () => {
-          try {
-              const token = await getUserIdToken(user);
-              const profile = await getProfileWithUrl(token);
-              if (!profile) {
-                  throw new Error("Failed to load profile of current user")
-              }
-              setCurrentUid(profile.uid);
-              if (profile.profilePicUrl) {
-                setUserProfilePicUrl(profile.profilePicUrl);
-              };
-
-              const overview = await getTripOverviewWithUrl({token, id});
-              setName(overview.name);
-              setPicKey(overview.profilePicKey || "");
-              setTripProfilePicUrl(overview.profilePicUrl || "");
-              if (overview.startDate) {
-                const start = toLocalDateObj(overview.startDate);
-                setStartDate(start);
-                setStartDateStr({date: toDisplayDate(start), day: toDisplayDay(start)});
-              } else if (!overview.startDate) {
-                setStartDate(null);
-                setStartDateStr({date: "", day: ""});
-              }
-              if (overview.endDate) {
-                const end = toLocalDateObj(overview.endDate);
-                setEndDate(end);
-                setEndDateStr({date: toDisplayDate(end), day: toDisplayDay(end)});
-              } else if (!overview.endDate) {
-                setEndDate(null);
-                setEndDateStr({date: "", day: ""});
-              }
-              setNoOfDays(overview.noOfDays ? overview.noOfDays.toString() : "");
-              setDayStr(overview.noOfDays <= 1 ? "Day" : "Days");
-              setNoOfNights(overview.noOfNights ?? null);
-              setNightStr(overview.noOfNights <= 1 ? "Night" : "Nights");
-          } catch (e) {
-              console.log(e);
-              Alert.alert("Edit trip details", 
-              "Unable to load trip details",
-              [{
-                  text: "Back to trip overview",
-                  onPress: () => router.replace(`/trips/${id}/overview`)
-              }])
-          } finally {
-              setLoading(false);
-          }
-        };
-
-        getTripDetails();
-    }, [])
-
     useFocusEffect(
-      useCallback(() => {
-        setParticipantLoading(true);
+        useCallback(() => {
+            setLoading(true);
 
-        const getTripParticipants = async () => {
-          try {
-            const token = await getUserIdToken(user);
-            const participants = await getParticipants({token, id});
-            setBuddies(participants);
-            setParticipantError(false);
-            const role = participants.find(participant => participant.uid === currentUid)?.role;
-            setCurrentRole(role || "");
-          } catch (e) {
-            console.log(e); 
-            setBuddies([]);
-            setParticipantError(true);
-            setCurrentRole("");
-          } finally {
-            setParticipantLoading(false);
-          }
-        }
-        getTripParticipants();
-      }, [])
-    )
+            const getTripDetails = async () => {
+                try {
+                    const token = await getUserIdToken(user);
+                    const profile = await getProfileWithUrl(token);
+                    if (!profile) {
+                        throw new Error("Failed to load profile of current user")
+                    }
+                    setCurrentUid(profile.uid);
+                    if (profile.profilePicUrl) {
+                        setUserProfilePicUrl(profile.profilePicUrl);
+                    };
+
+                    const participants = await getParticipants({token, id});
+                    setBuddies(participants);
+                    const role = participants.find(participant => participant.participantUid === profile.uid)?.role;
+                    setCurrentRole(role || "");
+
+                    const overview = await getTripOverviewWithUrl({token, id});
+                    setName(overview.name);
+                    setPicKey(overview.profilePicKey || "");
+                    setTripProfilePicUrl(overview.profilePicUrl || "");
+                    if (overview.startDate) {
+                        const start = toLocalDateObj(overview.startDate);
+                        setStartDate(start);
+                        setStartDateStr({date: toDisplayDate(start), day: toDisplayDay(start)});
+                    } else if (!overview.startDate) {
+                        setStartDate(null);
+                        setStartDateStr({date: "", day: ""});
+                    }
+                    if (overview.endDate) {
+                        const end = toLocalDateObj(overview.endDate);
+                        setEndDate(end);
+                        setEndDateStr({date: toDisplayDate(end), day: toDisplayDay(end)});
+                    } else if (!overview.endDate) {
+                        setEndDate(null);
+                        setEndDateStr({date: "", day: ""});
+                    }
+                    setNoOfDays(overview.noOfDays ? overview.noOfDays.toString() : "");
+                    setDayStr(overview.noOfDays <= 1 ? "Day" : "Days");
+                    setNoOfNights(overview.noOfNights ?? null);
+                    setNightStr(overview.noOfNights <= 1 ? "Night" : "Nights");
+                } catch (e) {
+                    console.log(e);
+                    Alert.alert("Edit trip details", 
+                    "Unable to load trip details",
+                    [{
+                        text: "Back to trip overview",
+                        onPress: () => router.replace(`/trips/${id}/overview`)
+                    }])
+                } finally {
+                    setLoading(false);
+                }
+            };
+
+            getTripDetails();
+        }, []))
 
     // pick profile pic
     const pickProfilePic = async (source: "camera" | "gallery") => {
@@ -213,7 +192,7 @@ const EditTripDetails = () => {
                 setOldPicKey(picKey);
             }
             setPicKey(key);
-            return true; // for checking this time upload success or not 
+            return {key}; // for checking this time upload success or not  
         } catch (e) {
             if (isAxiosError(e)) { // deal with axios request errors 
                 // if error comes from get presigned url, there will be a message field in res
@@ -222,7 +201,7 @@ const EditTripDetails = () => {
                 console.log(e);
             }
             Alert.alert("Add trip", "Failed to upload trip profile picture");
-            return false; // for checking this time upload success or not 
+            return; // for checking this time upload success or not 
         }
     }
 
@@ -346,10 +325,13 @@ const EditTripDetails = () => {
       try {
           const token = await getUserIdToken(user);
 
-          if (picKey) {
+          let key = picKey;
+
+          if (croppedPicUri) {
               if (!uploadSuccess) {
                   const uploadRes = await uploadCroppedPic(token);
-                  if (!uploadRes) {
+                  key = uploadRes?.key;
+                  if (!key) {
                     throw new Error("Failed to upload trip profile picture");
                   }
               }
@@ -360,7 +342,7 @@ const EditTripDetails = () => {
           } 
 
           const trip = await updateTrip({token, id, name, 
-              profilePicKey: picKey || undefined, 
+              profilePicKey: key || undefined, 
               startDate: startDate ? toFloatingDate(startDate) : undefined,
               endDate: endDate ? toFloatingDate(endDate) : undefined,
               noOfDays: noOfDays ? Number(noOfDays) : undefined,
@@ -429,6 +411,14 @@ const EditTripDetails = () => {
         router.replace("/tripsDashboard")
       } catch (e) {
         console.log(e);
+        if (isAxiosError(e)) {
+            console.log('[AXIOS ERROR]');
+            console.log('→ Message:', e.message);
+            console.log('→ URL:', e.config?.url);
+            console.log('→ Method:', e.config?.method);
+            console.log('→ Status:', e.response?.status);
+            console.log('→ Response Data:', e.response?.data);
+        }
         Alert.alert("Cancel trip", `Failed to cancel ${name}`)
       } finally {
         setExitLoading(false);
@@ -733,47 +723,36 @@ const EditTripDetails = () => {
                 <View className="flex flex-row gap-4 items-center">
                     {/* current user */}
                     <View className="flex flex-col gap-2 justify-center items-start">
-                        <View className="flex flex-row gap-3 justify-start items-center w-full">
+                        <View className="flex flex-row gap-4 justify-start items-center w-full">
                             <Image source={!userProfilePicUrl 
                             ? require("../../../../assets/images/default-user-profile-pic.png")
                             : userProfilePicUrl === "Failed to load" 
                             ? require("../../../../assets/images/error-icon.png")
                             : {uri: userProfilePicUrl}}
                             className="border-neutral-400 border-2 w-[40px] h-[40px] rounded-[20px]" />
-
-                            {participantLoading ? (
-                              <Loading size={hp(6)} />
-                            ) : participantError ? (
-                              <Text className="font-medium text-xs italic text-red-600">
-                                Failed to load your trip buddies
-                              </Text>
-                            ) : (
-                              <View className="flex-1 flex-row gap-4 items-center">
-                                {/* buddies */}
-                                <FlatList
-                                data={buddies.filter(buddy => buddy.participantUid !== currentUid)}
-                                renderItem={({item}) => (
-                                    <Image source={!item.profilePicUrl 
-                                    ? require("../../../../assets/images/default-user-profile-pic.png")
-                                    : item.profilePicUrl === "Failed to load" 
-                                    ? require("../../../../assets/images/error-icon.png")
-                                    : {uri: item.profilePicUrl}}
-                                    className="border-neutral-400 border-2 w-[40px] h-[40px] rounded-[20px]" />
-                                )}
-                                horizontal={true}
-                                showsHorizontalScrollIndicator={false}
-                                keyExtractor={(item) => item.participantUid}
-                                style={{flexGrow: 0, flexShrink: 1}}
-                                ItemSeparatorComponent={() => <View className="w-[12px]"/>}
-                                />
-                                {(currentRole === "admin" || currentRole === "creator") &&
-                                  // edit button 
-                                  (<Pressable onPress={() => setBuddiesModalOpen(true)} hitSlop={14}>
-                                      <FontAwesome6 name="edit" size={24} color="#60A5FA" />
-                                  </Pressable>)
-                                }
-                              </View>
+                            {/* buddies */}
+                            <FlatList
+                            data={buddies.filter(buddy => buddy.participantUid !== currentUid)}
+                            renderItem={({item}) => (
+                                <Image source={!item.profilePicUrl 
+                                ? require("../../../../assets/images/default-user-profile-pic.png")
+                                : item.profilePicUrl === "Failed to load" 
+                                ? require("../../../../assets/images/error-icon.png")
+                                : {uri: item.profilePicUrl}}
+                                className="border-neutral-400 border-2 w-[40px] h-[40px] rounded-[20px]" />
                             )}
+                            horizontal={true}
+                            showsHorizontalScrollIndicator={false}
+                            keyExtractor={(item) => item.participantUid}
+                            style={{flexGrow: 0, flexShrink: 1}}
+                            ItemSeparatorComponent={() => <View className="w-[16px]"/>}
+                            />
+                            {(currentRole === "admin" || currentRole === "creator") &&
+                                // edit button 
+                                (<Pressable onPress={() => setBuddiesModalOpen(true)} hitSlop={14}>
+                                    <FontAwesome6 name="edit" size={20} color="#60A5FA" />
+                                </Pressable>)
+                            }
                         </View>
                         <View className="px-3">
                             <Text className="text-xs text-gray-500 font-semibold">

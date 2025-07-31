@@ -141,12 +141,12 @@ const AdjustPicModal : React.FC<AdjustPicModalProps> = ({isVisible, picUri, widt
 
   return (
     <Modal visible={isVisible} animationType="slide">
+        <StatusBar 
+            translucent
+            backgroundColor="transparent"
+            style="light"
+        />
         <SafeAreaView className="flex-1 bg-black">
-            <StatusBar 
-                    translucent
-                    backgroundColor="transparent"
-                    style="light"
-            />
             {/* header */}
             <View style={{paddingHorizontal: wp(3), height: 56, width: "100%"}}
             className="flex-row items-center justify-between">

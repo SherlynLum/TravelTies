@@ -488,7 +488,8 @@ const EditNoteCard = () => {
                         <Text className="font-semibold text-lg text-left">
                             Description
                         </Text>
-                        <View className="bg-white border border-black px-4 py-3 rounded-[5px]">
+                        <View className="bg-white border border-black px-4 py-3 rounded-[5px]"
+                        style={{minHeight: 200}}>
                             <TextInput
                                 multiline
                                 numberOfLines={8}

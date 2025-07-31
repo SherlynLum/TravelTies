@@ -112,10 +112,10 @@ const AddBuddiesModal = ({isVisible, buddies, closeModal, complete} : AddBuddies
   return (
     <Modal visible={isVisible} animationType="slide">
         <StatusBar 
-                translucent
-                backgroundColor="transparent"
-                style="light"
-            />
+            translucent
+            backgroundColor="transparent"
+            style="light"
+        />
         <View className="flex-1 bg-header" style={{paddingTop: insets.top}}>
             {/* header */}
             <View style={{paddingHorizontal: 16, height: HEADER_HEIGHT, width: "100%"}}

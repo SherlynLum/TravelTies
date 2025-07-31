@@ -193,16 +193,16 @@ const Overview = () => {
                                 </Text>
                             </TouchableOpacity>
                         </Link>
-                        <Link href={`./polls`} asChild>
+                        <Link href={`./expenseTracker`} asChild>
                             <TouchableOpacity className="rounded-[10px] h-[100px] items-center justify-center" 
-                            style={{backgroundColor: "#CDE5DC", width: wp(37)}}>
+                            style={{backgroundColor: "#FFE6B3", width: wp(37)}}>
                                 <Text className="text-lg font-semibold">
-                                    Polls
+                                    Expense tracker
                                 </Text>
                             </TouchableOpacity>
                         </Link>
                     </View>
-
+                    {/*
                     <View className="flex-1 flex-row justify-between items-center shadow-sm px-5">
                         <Link href={`./checklists`} asChild>
                             <TouchableOpacity className="rounded-[10px] h-[100px] items-center justify-center" 
@@ -212,11 +212,11 @@ const Overview = () => {
                                 </Text>
                             </TouchableOpacity>
                         </Link>
-                        <Link href={`./expenseTracker`} asChild>
+                        <Link href={`./polls`} asChild>
                             <TouchableOpacity className="rounded-[10px] h-[100px] items-center justify-center" 
-                            style={{backgroundColor: "#FFE6B3", width: wp(37)}}>
+                            style={{backgroundColor: "#CDE5DC", width: wp(37)}}>
                                 <Text className="text-lg font-semibold">
-                                    Expense tracker
+                                    Polls
                                 </Text>
                             </TouchableOpacity>
                         </Link>
@@ -239,7 +239,8 @@ const Overview = () => {
                                 </Text>
                             </TouchableOpacity>
                         </Link>
-                </View>
+                        
+                </View> */}
                 </View>
             </ScrollView>
 

@@ -177,6 +177,14 @@ const AddNoteCard = () => {
         Alert.alert("Failed to create Note card", e.response.data.message);
         return;
       }
+      if (isAxiosError(e)) {
+          console.log('[AXIOS ERROR]');
+          console.log('→ Message:', e.message);
+          console.log('→ URL:', e.config?.url);
+          console.log('→ Method:', e.config?.method);
+          console.log('→ Status:', e.response?.status);
+          console.log('→ Response Data:', e.response?.data);
+      }
       Alert.alert("Failed to create Note card", "Please try again later");
     } finally {
       setCreateLoading(false);
@@ -432,7 +440,8 @@ const AddNoteCard = () => {
             <Text className="font-semibold text-lg text-left">
               Description
             </Text>
-            <View className="bg-white border border-black px-4 py-3 rounded-[5px]">
+            <View className="bg-white border border-black px-4 py-3 rounded-[5px]"
+            style={{minHeight: 200}}>
               <TextInput
                 multiline
                 numberOfLines={8}
