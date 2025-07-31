@@ -1,5 +1,5 @@
 import { View, Text, ScrollView, Pressable, Image, TouchableWithoutFeedback, TextInput, TouchableOpacity, Alert, Keyboard, Platform, KeyboardAvoidingView, Linking } from 'react-native'
-import { useSafeAreaInsets } from 'react-native-safe-area-context'
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
 import { StatusBar } from 'expo-status-bar';
 import Loading from '@/components/Loading';
 import { useEffect, useState } from 'react';
@@ -38,6 +38,7 @@ const EditProfile = () => {
     const [needCreateAccount, setNeedCreateAccount] = useState<boolean | null>(null);
     const [stripeHasOnboard, setStripeHasOnboard] = useState<boolean | null>(null);
     const [accountId, setAccountId] = useState("");
+    const [stripeLoading, setStripeLoading] = useState(false);
     const router = useRouter();
 
     // get current user's profile 
@@ -302,6 +303,13 @@ const EditProfile = () => {
             }
         } catch (e) {
             console.log(e);
+            if (isAxiosError(e)) {
+                console.error('Axios error:', {
+                    message: e.message,
+                    status: e.response?.status,
+                    data: e.response?.data,
+                });
+            }
             Alert.alert("Connect with Stripe", "Unable to connect with Stripe - please try again later");
         }
     }
@@ -341,6 +349,32 @@ const EditProfile = () => {
         }
     }
 
+    const checkUpdatedStripe = async () => {
+        setStripeLoading(true);
+        try {
+            const token = await getUserIdToken(user);
+            const account = await getStripeAccount(token);
+            if (account?.hasStripeAccount === false) {
+                setNeedCreateAccount(true);
+                setStripeHasOnboard(false);
+            } else if (account?.hasStripeAccount === true) {
+                setNeedCreateAccount(false);
+                if (account?.hasOnboard === false) {
+                    setStripeHasOnboard(false);
+                    setAccountId(account?.accountId || "");
+                } else if (account?.hasOnboard === true) {
+                    setStripeHasOnboard(true);
+                    setAccountId(account?.accountId || "")
+                }
+            } 
+        } catch (e) {
+            console.log(e);
+            Alert.alert("Profile", "Unable to load Stripe account status - please try again later")
+        } finally {
+            setStripeLoading(false);
+        }
+    }
+
     return (
         <>
         <StatusBar 
@@ -348,7 +382,12 @@ const EditProfile = () => {
             backgroundColor="transparent"
             style="light"
         />
-    <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+        {loading ? (
+            <View className="flex-1 justify-center items-center px-5 bg-white">
+                <Loading size={hp(12)} />
+            </View>
+        ) : (
+        <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
         <KeyboardAvoidingView behavior={ios? 'padding': 'height'} style={{flex: 1}}>
         <ScrollView className="flex-1 flex-col px-5 pt-6 bg-white" 
         contentContainerStyle={{paddingBottom: insets.bottom, alignItems: "center", 
@@ -450,11 +489,16 @@ const EditProfile = () => {
             {/* link Stripe */}
             <View className="flex flex-col gap-7 w-full">
                 <View className="flex items-start">
-                <Text className="font-semibold text-black text-left text-lg">
-                    Payout account to receive payments
-                </Text>
+                    <Text className="font-semibold text-black text-left text-lg">
+                        Payout account to receive payments
+                    </Text>
                 </View>
-                {stripeHasOnboard ? (          
+                {stripeLoading ? (
+                    <View className="flex-row justify-center">
+                        <Loading size={hp(8)} />
+                    </View>
+                ) : stripeHasOnboard ?
+                (          
                     <View className="flex flex-row gap-2 items-center">
                         <Text className="text-neutral-500 italic font-medium text-xs">
                             Connected to Stripe
@@ -475,7 +519,7 @@ const EditProfile = () => {
                         </TouchableOpacity>
                     </View>
                 ) : (
-                    <View className="flex items-center justify-center">
+                    <View className="flex flex-col gap-5 items-center justify-center">
                         <TouchableOpacity onPress={handleConnectWithStripe} 
                         className='justify-center items-center border shadow-sm h-[44px] px-6 rounded-[30px]'
                         style={{backgroundColor: "#635BFF", borderColor: "#4F4ACC"}}>
@@ -483,6 +527,11 @@ const EditProfile = () => {
                                 Connect with Stripe
                             </Text>
                         </TouchableOpacity>
+                        <Pressable onPress={checkUpdatedStripe} hitSlop={14}>
+                            <Text className="font-bold text-blue-500 text-sm">
+                                {"I've completed onboarding in Stripe"}
+                            </Text>
+                        </Pressable>
                     </View>
                 )}
             </View>
@@ -496,6 +545,7 @@ const EditProfile = () => {
         </ScrollView>
         </KeyboardAvoidingView>
         </TouchableWithoutFeedback>
+        )}
         </>
     )
 }

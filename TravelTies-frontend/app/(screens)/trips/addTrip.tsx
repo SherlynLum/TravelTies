@@ -305,7 +305,7 @@ const AddTrip = () => {
         try {
             const token = await getUserIdToken(user);
 
-            let key;
+            let key = picKey;
 
             if (croppedPicUri) {
                 if (!uploadSuccess) {
@@ -614,7 +614,7 @@ const AddTrip = () => {
                 <View className="flex flex-row gap-4 items-center">
                     {/* current user i.e. the creator */}
                     <View className="flex flex-col gap-2 justify-center items-start">
-                        <View className="flex flex-row gap-5 justify-start items-center w-full">
+                        <View className="flex flex-row gap-4 justify-start items-center w-full">
                             <Image source={!userProfilePicUrl 
                             ? require("../../../assets/images/default-user-profile-pic.png")
                             : userProfilePicUrl === "Failed to load" 
@@ -637,12 +637,12 @@ const AddTrip = () => {
                             keyExtractor={(item) => item.participantUid}
                             contentContainerStyle={{justifyContent: "center", alignItems: "center"}}
                             style={{flexGrow: 0, flexShrink: 1}}
-                            ItemSeparatorComponent={() => <View className="w-[20px]"/>}
+                            ItemSeparatorComponent={() => <View className="w-[16px]"/>}
                             />
 
                             {/* edit button */}
                             <Pressable onPress={() => setManageModalOpen(true)} hitSlop={14}>
-                                <FontAwesome6 name="edit" size={24} color="#60A5FA" />
+                                <FontAwesome6 name="edit" size={20} color="#60A5FA" />
                             </Pressable>
                         </View>
                         <View className="px-3">

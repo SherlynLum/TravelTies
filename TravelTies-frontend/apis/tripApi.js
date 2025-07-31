@@ -142,7 +142,7 @@ const getBinTrips = async (token) => {
 const restoreTrip = async (token, id) => {
     const backendRes = await axios.patch(
         `${baseUrl}/api/trip/restore/${encodeURIComponent(id)}`,
-        null,
+        {},
         {headers: getHeaders(token)}
     );
     return backendRes.data.trip;
@@ -261,7 +261,7 @@ const updateTrip = async ({token, id, name, profilePicKey, startDate, endDate, n
 const cancelTrip = async ({token, id}) => {
     const backendRes = await axios.patch(
         `${baseUrl}/api/trip/cancel/${encodeURIComponent(id)}`,
-        null,
+        {},
         {headers: getHeaders(token)}
     );
     return backendRes.data.trip;
@@ -270,7 +270,7 @@ const cancelTrip = async ({token, id}) => {
 const leaveTrip = async ({token, id}) => {
     const backendRes = await axios.patch(
         `${baseUrl}/api/trip/leave/${encodeURIComponent(id)}`,
-        null,
+        {},
         {headers: getHeaders(token)}
     );
     return backendRes.data.trip;

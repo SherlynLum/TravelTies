@@ -14,13 +14,12 @@ type DisplayPicModalProps = {
 const DisplayPhotoModal : React.FC<DisplayPicModalProps> = ({isVisible, picUri, closeModal}) => {
   return (
     <Modal visible={isVisible} animationType="slide">
+        <StatusBar 
+            translucent
+            backgroundColor="transparent"
+            style="light"
+        />
         <SafeAreaView className="flex-1 bg-black">
-            <StatusBar 
-                translucent
-                backgroundColor="transparent"
-                style="light"
-            />
-
             {/* header */}
             <View style={{paddingHorizontal: wp(3), height: 56, width: "100%"}}
             className="flex-row items-center justify-center">

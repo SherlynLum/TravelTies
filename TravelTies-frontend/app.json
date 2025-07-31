@@ -14,7 +14,7 @@
       "bundleIdentifier": "com.travelties.travelties",
       "googleServicesFile": "./GoogleService-Info.plist",
       "infoPlist": {
-        "NSCameraUsageDescription": "TravelTies need access to your camera to take profile pictures",
+        "NSCameraUsageDescription": "TravelTies need access to your camera to take photos and scan trip QR code",
         "NSPhotoLibraryUsageDescription": "TravelTies need access to your photo library to select photos"
       }
     },

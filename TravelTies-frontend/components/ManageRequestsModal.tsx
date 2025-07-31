@@ -1,6 +1,6 @@
 import { View, Text, Modal, Pressable, Image, Platform, TouchableOpacity, Switch, Alert, FlatList } from 'react-native';
 import React, { useEffect, useMemo, useState } from 'react';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { JoinRequestsWithProfile, TripParticipant, TripParticipantWithProfile } from '@/types/trips';
 import { Divider } from 'react-native-paper';
@@ -16,6 +16,7 @@ type ManageRequestsProps = {
 }
 
 const ManageRequestsModal = ({isVisible, id, closeModal} : ManageRequestsProps) => {
+    const insets = useSafeAreaInsets();
     const {user, getUserIdToken} = useAuth();
     const HEADER_HEIGHT = Platform.OS === "ios" ? 44 : 56;
     const [requests, setRequests] = useState<JoinRequestsWithProfile[]>([]);
@@ -25,10 +26,11 @@ const ManageRequestsModal = ({isVisible, id, closeModal} : ManageRequestsProps) 
             [acceptedBuddies]);
     const [declinedUids, setDeclinedUids] = useState<string[]>([]);
     const [loading, setLoading] = useState(false);
+    const [refreshing, setRefreshing] = useState(false);
     const [hasError, setHasError] = useState(false);
 
     const loadJoinRequests = async () => {
-        setLoading(true);
+        setRefreshing(true);
         try {
             const token = await getUserIdToken(user);
             const joinRequests = await getRequests({token, id});
@@ -38,11 +40,13 @@ const ManageRequestsModal = ({isVisible, id, closeModal} : ManageRequestsProps) 
             console.log(e);
             setHasError(true);
         } finally {
+            setRefreshing(false);
             setLoading(false);
         }
     }
 
     useEffect(() => {
+        setLoading(true);
         loadJoinRequests();
     }, [])
 
@@ -124,13 +128,12 @@ const ManageRequestsModal = ({isVisible, id, closeModal} : ManageRequestsProps) 
 
   return (
     <Modal visible={isVisible} animationType="slide">
-        <SafeAreaView className="flex-1 bg-header">
-            <StatusBar 
-                translucent
-                backgroundColor="transparent"
-                style="light"
-            />
-
+        <StatusBar 
+            translucent
+            backgroundColor="transparent"
+            style="light"
+        />
+        <View className="flex-1 bg-header" style={{paddingTop: insets.top}}>
             {/* header */}
             <View style={{paddingHorizontal: 16, height: HEADER_HEIGHT, width: "100%"}}
             className="flex-row items-center justify-between">
@@ -239,10 +242,11 @@ const ManageRequestsModal = ({isVisible, id, closeModal} : ManageRequestsProps) 
                     contentContainerStyle={{flexGrow: 1, paddingHorizontal: 20, paddingVertical: 20}}
                     ItemSeparatorComponent={() => <Divider />}
                     onRefresh={loadJoinRequests}
+                    refreshing={refreshing}
                     />
                 </View>
             )}
-        </SafeAreaView>
+        </View>
     </Modal>
   )
 }

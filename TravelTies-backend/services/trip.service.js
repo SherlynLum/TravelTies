@@ -207,17 +207,19 @@ const updateOrderInTab = ({oldOrderInTab, oldNoOfDays, newNoOfDays}) => {
     const updatedNoOfDays = newNoOfDays || 0;
     if (prevNoOfDays < updatedNoOfDays) {
         for (let i = prevNoOfDays + 1; i <= updatedNoOfDays; i++) {
-            oldOrderInTab[`day ${i}`] = [];
+            oldOrderInTab.set(`day ${i}`, []);
         }
     } else if (prevNoOfDays > updatedNoOfDays) {
         for (let i = updatedNoOfDays + 1; i <= prevNoOfDays; i++) {
-            const toBeMoved = oldOrderInTab[`day ${i}`];
-            for (const card of toBeMoved) {
-                if (!oldOrderInTab["unscheduled"].includes(card)) { // check for repeats as some cards span for a few days
-                    oldOrderInTab["unscheduled"].push(card); 
+            const toBeMoved = oldOrderInTab.get(`day ${i}`);
+            const unscheduledCards = oldOrderInTab.get("unscheduled");
+            for (const cardId of toBeMoved) {
+                if (!unscheduledCards.some(id => id.equals(cardId))) { // check for repeats as some cards span for a few days
+                    unscheduledCards.push(cardId);
                 }
             }
-            delete oldOrderInTab[`day ${i}`];
+            oldOrderInTab.set("unscheduled", unscheduledCards);
+            oldOrderInTab.delete(`day ${i}`);
         }
     }
     return oldOrderInTab;

@@ -51,12 +51,12 @@ const SearchBinTripModal = ({isVisible, closeModal, removeFromBin} : SearchBinTr
 
   return (
     <Modal visible={isVisible} animationType="slide">
+        <StatusBar 
+            translucent
+            backgroundColor="transparent"
+            style="light"
+        />
         <SafeAreaView className="flex-1 bg-white">
-            <StatusBar 
-                translucent
-                backgroundColor="transparent"
-                style="light"
-            />
             <CustomKeyboardView>
                 {/* search bar */}
                 <View className="px-5 py-5 items-center justify-center">
