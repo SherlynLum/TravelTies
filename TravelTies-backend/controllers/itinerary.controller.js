@@ -92,7 +92,7 @@ const createNoteCardController = async (req, res) => {
         return res.status(201).json({card})
     } catch (e) {
         await session.abortTransaction();
-        return res.status(500).json({message: e.message, error: e.errors});
+        return res.status(500).json({message: e.message});
     } finally {
         session.endSession();
     }
