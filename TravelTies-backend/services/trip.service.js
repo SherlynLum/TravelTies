@@ -117,7 +117,6 @@ const getJoinCode = async (tripId) => {
 
 const getParticipants = async (tripId) => {
     const tripExists = await Trip.exists({_id: tripId});
-    console.log(tripExists);
     if (!tripExists) {
         throw new Error("No trip is found");
     }
