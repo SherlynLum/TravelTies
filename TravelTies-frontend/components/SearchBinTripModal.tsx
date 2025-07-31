@@ -1,6 +1,6 @@
 import { View, Text, Modal, Pressable, TextInput, FlatList } from 'react-native';
 import React, { useEffect, useState } from 'react';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { Trip } from '@/types/trips';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
@@ -18,6 +18,7 @@ type SearchBinTripProps = {
 }
 
 const SearchBinTripModal = ({isVisible, closeModal, removeFromBin} : SearchBinTripProps) => {
+    const insets = useSafeAreaInsets();
     const [searchTerm, setSearchTerm] = useState("");
     const [trips, setTrips] = useState<Trip[]>([]);
     const [loading, setLoading] = useState(false);
@@ -56,7 +57,9 @@ const SearchBinTripModal = ({isVisible, closeModal, removeFromBin} : SearchBinTr
             backgroundColor="transparent"
             style="light"
         />
-        <SafeAreaView className="flex-1 bg-white">
+        <View className="flex-1 bg-white" style={{paddingTop: insets.top, 
+            paddingBottom: insets.bottom, paddingLeft: insets.left, 
+            paddingRight: insets.right}}>
             <CustomKeyboardView>
                 {/* search bar */}
                 <View className="px-5 py-5 items-center justify-center">
@@ -120,7 +123,7 @@ const SearchBinTripModal = ({isVisible, closeModal, removeFromBin} : SearchBinTr
                     }/>
                 )}
             </CustomKeyboardView>
-        </SafeAreaView>
+        </View>
     </Modal>
   )
 }

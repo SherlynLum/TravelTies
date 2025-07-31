@@ -1,6 +1,6 @@
 import { View, Modal, Pressable, Image } from 'react-native';
 import React from 'react';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
 import Ionicons from '@expo/vector-icons/Ionicons';
@@ -12,6 +12,7 @@ type DisplayPicModalProps = {
 }
 
 const DisplayPhotoModal : React.FC<DisplayPicModalProps> = ({isVisible, picUri, closeModal}) => {
+    const insets = useSafeAreaInsets();
   return (
     <Modal visible={isVisible} animationType="slide">
         <StatusBar 
@@ -19,7 +20,9 @@ const DisplayPhotoModal : React.FC<DisplayPicModalProps> = ({isVisible, picUri, 
             backgroundColor="transparent"
             style="light"
         />
-        <SafeAreaView className="flex-1 bg-black">
+        <View className="flex-1 bg-black" style={{paddingTop: insets.top, 
+            paddingBottom: insets.bottom, paddingLeft: insets.left, 
+            paddingRight: insets.right}}>
             {/* header */}
             <View style={{paddingHorizontal: wp(3), height: 56, width: "100%"}}
             className="flex-row items-center justify-center">
@@ -34,7 +37,7 @@ const DisplayPhotoModal : React.FC<DisplayPicModalProps> = ({isVisible, picUri, 
                 style={{flex: 1}}
                 resizeMode="contain" />
             </View>
-        </SafeAreaView>
+        </View>
     </Modal>
   )
 }

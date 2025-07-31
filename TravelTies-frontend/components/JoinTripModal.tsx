@@ -9,6 +9,7 @@ import { StatusBar } from 'expo-status-bar';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '@/context/authContext';
 import { joinTrip } from '@/apis/tripApi';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 type JoinTripModalProps = {
     trip: Trip,
@@ -16,6 +17,7 @@ type JoinTripModalProps = {
     closeModal: () => void
 }
 const JoinTripModal = ({trip, isVisible, closeModal} : JoinTripModalProps) => {
+    const insets = useSafeAreaInsets();
     const {user, getUserIdToken} = useAuth();
     const {_id, name, startDate, endDate, noOfDays, noOfNights, noOfParticipants, profilePicUrl} = trip
     const screenWidth = Dimensions.get("window").width;
@@ -62,7 +64,9 @@ const JoinTripModal = ({trip, isVisible, closeModal} : JoinTripModalProps) => {
             backgroundColor="transparent"
             style="light"
         />
-        <SafeAreaView className="flex-1 bg-white">
+        <View className="flex-1 bg-white" style={{paddingTop: insets.top, 
+            paddingBottom: insets.bottom, paddingLeft: insets.left, 
+            paddingRight: insets.right}}>
             {/* header */}
             <View style={{paddingHorizontal: wp(3), height: 56, width: "100%"}}
             className="flex-row items-center justify-center">
@@ -147,7 +151,7 @@ const JoinTripModal = ({trip, isVisible, closeModal} : JoinTripModalProps) => {
                     </View>
                 </Card>
             </View>
-        </SafeAreaView>
+        </View>
     </Modal>
   )
 }

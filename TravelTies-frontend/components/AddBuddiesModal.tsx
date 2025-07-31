@@ -137,7 +137,7 @@ const AddBuddiesModal = ({isVisible, buddies, closeModal, complete} : AddBuddies
                 </Pressable>
             </View>
 
-            <View className="bg-white flex-1">
+            <View className="bg-white flex-1" style={{paddingBottom: insets.bottom}}>
                 {/* search bar */}
                 <View className="px-5 py-5 items-center justify-center bg-white">
                     <View className="flex flex-row items-center justify-start px-4 bg-gray-200 h-11
@@ -167,7 +167,7 @@ const AddBuddiesModal = ({isVisible, buddies, closeModal, complete} : AddBuddies
                         </Text>
                     </View>
                 ) : (
-                    <View className="flex-1 bg-white" style={{paddingBottom: insets.bottom}}>
+                    <View className="flex-1 bg-white">
                         <FlatList
                         data={friends}
                         renderItem={({item}) => {

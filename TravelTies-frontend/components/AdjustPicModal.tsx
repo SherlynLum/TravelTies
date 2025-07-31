@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import Animated, { useAnimatedStyle, useSharedValue } from 'react-native-reanimated';
 import { Gesture, GestureDetector } from "react-native-gesture-handler";
 import { ImageManipulator, SaveFormat } from "expo-image-manipulator"
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
 import Svg, { Circle, Defs, Mask, Rect } from "react-native-svg";
@@ -21,6 +21,7 @@ type AdjustPicModalProps = {
 
 const AdjustPicModal : React.FC<AdjustPicModalProps> = ({isVisible, picUri, width, height, closeModal, completeCrop}) => {
     const [loading, setLoading] = useState(false);
+    const insets = useSafeAreaInsets();
 
     const screenWidth = Dimensions.get("window").width;
 
@@ -146,7 +147,9 @@ const AdjustPicModal : React.FC<AdjustPicModalProps> = ({isVisible, picUri, widt
             backgroundColor="transparent"
             style="light"
         />
-        <SafeAreaView className="flex-1 bg-black">
+        <View className="flex-1 bg-black" style={{paddingTop: insets.top, 
+            paddingBottom: insets.bottom, paddingLeft: insets.left, 
+            paddingRight: insets.right}}>
             {/* header */}
             <View style={{paddingHorizontal: wp(3), height: 56, width: "100%"}}
             className="flex-row items-center justify-between">
@@ -203,7 +206,7 @@ const AdjustPicModal : React.FC<AdjustPicModalProps> = ({isVisible, picUri, widt
                     )
                 }
             </View>
-        </SafeAreaView>
+        </View>
     </Modal>
   )
 }

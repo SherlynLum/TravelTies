@@ -3,11 +3,11 @@ import React, { useCallback, useState } from 'react'
 import { useCameraPermissions, CameraView } from 'expo-camera';
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
 import Loading from './Loading';
-import { useFocusEffect, useRouter } from 'expo-router';
+import { useFocusEffect } from 'expo-router';
 import { Trip } from '@/types/trips';
 import { getTripOverviewByJoinCode } from '@/apis/tripApi';
 import { useAuth } from '@/context/authContext';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import Ionicons from '@expo/vector-icons/Ionicons';
 
@@ -18,11 +18,11 @@ type QRScannerProps = {
 }
 
 const QRScanner = ({isVisible, passTrip, closeModal}: QRScannerProps) => {
+    const insets = useSafeAreaInsets();
     const {user, getUserIdToken} = useAuth();
     const [permission, requestPermission] = useCameraPermissions();
     const [requested, setRequested] = useState(false);
     const [scanned, setScanned] = useState(false);
-    const router = useRouter();
 
     useFocusEffect(
         useCallback(() => {
@@ -100,7 +100,9 @@ const QRScanner = ({isVisible, passTrip, closeModal}: QRScannerProps) => {
                 backgroundColor="transparent"
                 style="light"
                 />
-            <SafeAreaView className="flex-1 bg-black">
+            <View className="flex-1 bg-black" style={{paddingTop: insets.top, 
+            paddingBottom: insets.bottom, paddingLeft: insets.left, 
+            paddingRight: insets.right}}>
                 {/* header */}
                 <View style={{paddingHorizontal: wp(3), height: 56, width: "100%"}}
                 className="flex-row items-center justify-center">
@@ -117,7 +119,7 @@ const QRScanner = ({isVisible, passTrip, closeModal}: QRScannerProps) => {
                     onBarcodeScanned={handleQRCodeScanned}
                     barcodeScannerSettings={{barcodeTypes: ["qr"]}}/>
                 </View>
-            </SafeAreaView>
+            </View>
         </Modal>
 )
 }

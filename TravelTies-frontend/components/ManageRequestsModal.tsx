@@ -166,7 +166,7 @@ const ManageRequestsModal = ({isVisible, id, closeModal} : ManageRequestsProps) 
                     </Text>
                 </View>
             ) : (
-                <View className="flex-1 bg-white">
+                <View className="flex-1 bg-white" style={{paddingBottom: insets.bottom}}>
                     {/* requests list */}
                     <FlatList
                     data={requests}
