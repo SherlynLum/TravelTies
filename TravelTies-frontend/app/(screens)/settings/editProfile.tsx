@@ -286,6 +286,7 @@ const EditProfile = () => {
         }
 
         setUpdateLoading(false);
+        Alert.alert("Your profile is successfully updated!")
     }
 
     const handleConnectWithStripe = async () => {
