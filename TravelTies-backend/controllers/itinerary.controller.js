@@ -123,8 +123,8 @@ const createDestinationCardController = async (req, res) => {
     session.startTransaction();
 
     try {
-        const card = await createDestinationCard({tripId, country, city, description, startDate, startTime, 
-    endDate, endTime, picIds, docs, webUrls, session});
+        const card = await createDestinationCard({tripId, title, country, city, description, startDate, 
+            startTime, endDate, endTime, picIds, docs, webUrls, session});
         if (!card) {
             throw new Error("No destination card is created");
         }
