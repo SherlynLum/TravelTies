@@ -108,9 +108,13 @@ const Overview = () => {
                     setHasDuration(true);
                     if (currentTrip.noOfDays <= 1) {
                         setDayStr("Day");
+                    } else {
+                        setDayStr("Days")
                     }
                     if (currentTrip.noOfNights <= 1) {
                         setNightStr("Night");
+                    } else {
+                        setNightStr("Nights");
                     }
                 }
 

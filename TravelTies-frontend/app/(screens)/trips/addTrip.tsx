@@ -278,9 +278,13 @@ const AddTrip = () => {
             setNoOfNights(nights)
             if (days <= 1) {
                 setDayStr("Day");
+            } else {
+                setDayStr("Days");
             }
             if (nights <= 1) {
                 setNightStr("Night");
+            } else {
+                setNightStr("Nights");
             }
         } else {
             setNoOfNights(null);

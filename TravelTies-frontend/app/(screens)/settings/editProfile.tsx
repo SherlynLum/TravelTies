@@ -1,5 +1,5 @@
 import { View, Text, ScrollView, Pressable, Image, TouchableWithoutFeedback, TextInput, TouchableOpacity, Alert, Keyboard, Platform, KeyboardAvoidingView, Linking } from 'react-native'
-import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { StatusBar } from 'expo-status-bar';
 import Loading from '@/components/Loading';
 import { useEffect, useState } from 'react';
@@ -72,6 +72,14 @@ const EditProfile = () => {
             } 
         } catch (e) {
             console.log(e);
+            if (isAxiosError(e)) {
+                console.error('Axios error:', {
+                    message: e.message,
+                    status: e.response?.status,
+                    data: e.response?.data,
+                    config: e.config,
+                })
+            }
             Alert.alert("Profile", 
             "Unable to load profile details",
             [{

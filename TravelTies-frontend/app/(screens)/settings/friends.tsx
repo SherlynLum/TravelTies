@@ -253,7 +253,7 @@ const Friends = () => {
                             )
                         }
                     }}
-                    contentContainerStyle={{flexGrow: 1, paddingHorizontal: 20, paddingVertical: 20}}
+                    contentContainerStyle={{flexGrow: 1, paddingHorizontal: 20, paddingTop: 0, paddingBottom: 15}}
                     ItemSeparatorComponent={() => <Divider />}
                     />
                 </View>

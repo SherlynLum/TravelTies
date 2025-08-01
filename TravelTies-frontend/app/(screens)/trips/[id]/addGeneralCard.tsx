@@ -355,6 +355,7 @@ const AddGeneralCard = () => {
             multiple: true
         });
         if (res.canceled) {
+            setDocLoading(false);
             return;
         }
         const newDocs = res.assets.map(doc => ({uri: doc.uri, name: doc.name, mimeType: doc.mimeType}));
@@ -367,6 +368,7 @@ const AddGeneralCard = () => {
                 const nonRepeatDocs = docsWithType.filter(doc => !existingUris.has(doc.uri));
                 return [...prev, ...nonRepeatDocs];
             });
+            setDocLoading(false);
             return;
         }
         const docsWithTypeGuard = newDocs.map(doc => ({...doc, mimeType: doc.mimeType!}));
