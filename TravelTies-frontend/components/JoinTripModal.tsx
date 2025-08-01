@@ -51,6 +51,7 @@ const JoinTripModal = ({trip, isVisible, closeModal} : JoinTripModalProps) => {
             const token = await getUserIdToken(user);
             await joinTrip({token, id: _id});
             closeModal();
+            Alert.alert("You have successfully sent a join request to this trip!")
         } catch (e) {
             console.log(e);
             Alert.alert("Join a trip", "Unable to join this trip - please try again later");

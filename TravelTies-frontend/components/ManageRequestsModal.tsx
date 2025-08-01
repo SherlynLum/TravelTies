@@ -13,9 +13,10 @@ type ManageRequestsProps = {
     isVisible: boolean,
     id: string, 
     closeModal: () => void,
+    addBuddies: (participants: TripParticipantWithProfile[]) => void;
 }
 
-const ManageRequestsModal = ({isVisible, id, closeModal} : ManageRequestsProps) => {
+const ManageRequestsModal = ({isVisible, id, closeModal, addBuddies} : ManageRequestsProps) => {
     const insets = useSafeAreaInsets();
     const {user, getUserIdToken} = useAuth();
     const HEADER_HEIGHT = Platform.OS === "ios" ? 44 : 56;
@@ -117,6 +118,7 @@ const ManageRequestsModal = ({isVisible, id, closeModal} : ManageRequestsProps) 
             if (!res) {
                 throw new Error("No trip is found");
             }
+            addBuddies(acceptedBuddies);
             closeModal();
         } catch (e) {
             console.log(e);
@@ -208,7 +210,7 @@ const ManageRequestsModal = ({isVisible, id, closeModal} : ManageRequestsProps) 
                                 ) : (
                                     <View className="flex flex-row gap-2">
                                         {/* admin toggle */}
-                                        <View className="flex flex-row gap-1">
+                                        <View className="flex flex-row gap-1 items-center">
                                             <Text className="font-medium text-base text-gray-500">
                                                 {"Admin: "}
                                             </Text>

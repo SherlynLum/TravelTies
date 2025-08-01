@@ -21,6 +21,7 @@ const EditProfile = () => {
     const [loading, setLoading] = useState(false);
     const [updateLoading, setUpdateLoading] = useState(false);
     const {user, getUserIdToken} = useAuth();
+    const [currentUsername, setCurrentUsername] = useState("");
     const [username, setUsername] = useState("");
     const [profilePicUrl, setProfilePicUrl] = useState("");
     const [menuOpen, setMenuOpen] = useState(false);
@@ -49,6 +50,7 @@ const EditProfile = () => {
         try {
             const token = await getUserIdToken(user);
             const profile = await getProfileWithUrl(token);
+            setCurrentUsername(profile.username);
             setUsername(profile.username);
             if (profile.profilePicUrl) {
                 setProfilePicUrl(profile.profilePicUrl);
@@ -287,12 +289,14 @@ const EditProfile = () => {
             }
         }
 
-        const updateUsernameRes = await updateUsernameToDb(token);
-        if (!updateUsernameRes) {
-            setUpdateLoading(false);
-            return; // exit if fail to update username to database
+        if (username !== currentUsername) {
+            const updateUsernameRes = await updateUsernameToDb(token);
+            if (!updateUsernameRes) {
+                setUpdateLoading(false);
+                return; // exit if fail to update username to database
+            }
+            setCurrentUsername(username);
         }
-
         setUpdateLoading(false);
         Alert.alert("Your profile is successfully updated!")
     }

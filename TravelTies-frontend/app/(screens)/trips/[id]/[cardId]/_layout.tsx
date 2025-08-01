@@ -1,6 +1,6 @@
 import { Text, Pressable } from 'react-native'
 import React from 'react'
-import { Stack, useLocalSearchParams, useRouter } from 'expo-router'
+import { Stack, useRouter } from 'expo-router'
 import Ionicons from '@expo/vector-icons/Ionicons';
 
 export default function Layout() {

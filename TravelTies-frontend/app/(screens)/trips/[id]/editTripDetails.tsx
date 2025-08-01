@@ -307,6 +307,10 @@ const EditTripDetails = () => {
         }
     }, [startDate, endDate, noOfDays]);
 
+    const addBuddies = (participants: TripParticipantWithProfile[]) => {
+        setBuddies(prev => [...buddies, ...participants]);
+    }
+
     const closeRequestModal = () => {
       setRequestsModalOpen(false);
     }
@@ -817,7 +821,7 @@ const EditTripDetails = () => {
             height={picHeight} closeModal={closeAdjustModal} completeCrop={completeAdjustPic} />
         )}
 
-        <ManageRequestsModal isVisible={requestsModalOpen} id={id} closeModal={closeRequestModal} />
+        <ManageRequestsModal isVisible={requestsModalOpen} id={id} closeModal={closeRequestModal} addBuddies={addBuddies}/>
 
         <ManageBuddiesModal isVisible={buddiesModalOpen} buddies={buddies} currentUid={currentUid}
             closeModal={closeManageModal} complete={completeManageModal}/>
