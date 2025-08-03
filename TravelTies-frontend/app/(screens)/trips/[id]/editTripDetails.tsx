@@ -372,7 +372,7 @@ const EditTripDetails = () => {
           setUpdateLoading(false);
       }
     }
-
+    
     const handleUpdate = async () => {
         if (!name) {
             Alert.alert("Failed to update trip details", "Please give your trip a name");
