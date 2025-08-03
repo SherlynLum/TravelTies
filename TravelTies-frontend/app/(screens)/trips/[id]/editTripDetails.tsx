@@ -372,7 +372,7 @@ const EditTripDetails = () => {
           setUpdateLoading(false);
       }
     }
-    
+
     const handleUpdate = async () => {
         if (!name) {
             Alert.alert("Failed to update trip details", "Please give your trip a name");
@@ -582,6 +582,7 @@ const EditTripDetails = () => {
                             minimumDate={new Date()}
                             onChange={(event, date) => {
                                 if (date) {
+                                    date.setHours(0, 0, 0, 0);
                                     setTempStartDate(date);
                                 }
                             }}
@@ -596,7 +597,9 @@ const EditTripDetails = () => {
                                 </Text>
                             </Pressable>
                             <Pressable hitSlop={14} onPress={() => {
-                                setStartDate(tempStartDate || new Date()); // if onChange is not fired then the date picker actually shows the default date which is today, so fallback to today's date
+                                const today = new Date();
+                                today.setHours(0, 0, 0, 0);
+                                setStartDate(tempStartDate || today); // if onChange is not fired then the date picker actually shows the default date which is today, so fallback to today's date
                                 setStartPickerOpen(false)
                             }}>
                                 <Text className="text-green-700 font-medium text-base">
@@ -645,6 +648,7 @@ const EditTripDetails = () => {
                             minimumDate={new Date()}
                             onChange={(event, date) => {
                                 if (date) {
+                                    date.setHours(0, 0, 0, 0);
                                     setTempEndDate(date);
                                 }
                             }}
@@ -659,7 +663,9 @@ const EditTripDetails = () => {
                                 </Text>
                             </Pressable>
                             <Pressable hitSlop={14} onPress={() => {
-                                setEndDate(tempEndDate || new Date());
+                                const today = new Date();
+                                today.setHours(0, 0, 0, 0)
+                                setEndDate(tempEndDate || today);
                                 setEndPickerOpen(false);
                             }}>
                                 <Text className="text-green-700 font-medium text-base">
