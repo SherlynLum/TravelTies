@@ -23,13 +23,13 @@ export default function Layout() {
             },
             (selectedIndex) => {
                 if (selectedIndex === 0) {
-                    router.push(`/(screens)/trips/${id}/addNoteCard`);
+                    router.replace(`/(screens)/trips/${id}/addNoteCard`);
                 } else if (selectedIndex === 1) {
-                    router.push(`/(screens)/trips/${id}/addDestinationCard`);
+                    router.replace(`/(screens)/trips/${id}/addDestinationCard`);
                 } else if (selectedIndex === 2) {
-                    router.push(`/(screens)/trips/${id}/addTransportationCard`);
+                    router.replace(`/(screens)/trips/${id}/addTransportationCard`);
                 } else if (selectedIndex === 3) {
-                    router.push(`/(screens)/trips/${id}/addGeneralCard`);
+                    router.replace(`/(screens)/trips/${id}/addGeneralCard`);
                 }
             }
         )
@@ -54,7 +54,7 @@ export default function Layout() {
                     ),
                     headerRight: () => (
                         <View className="flex flex-row gap-7 justify-center items-center pl-4">
-                            <Pressable onPress={() => router.push(`/trips/${id}/editTripDetails`)} hitSlop={14}>
+                            <Pressable onPress={() => router.replace(`/trips/${id}/editTripDetails`)} hitSlop={14}>
                                 <FontAwesome6 name="edit" size={20} color="white" />
                             </Pressable>
                             <Pressable onPress={() => router.push(`/trips/${id}/displayTripInfo`)} hitSlop={14}>
@@ -74,7 +74,7 @@ export default function Layout() {
                         fontWeight: "semibold"
                     },
                     headerLeft: () => (
-                        <Pressable onPress={() => router.back()} hitSlop={14}>
+                        <Pressable onPress={() => router.replace(`/trips/${id}/overview`)} hitSlop={14}>
                             <Ionicons name="chevron-back" size={24} color="white" />
                         </Pressable>
                     )
@@ -207,7 +207,7 @@ export default function Layout() {
                         fontWeight: "semibold"
                     },
                     headerLeft: () => (
-                        <Pressable onPress={() => router.back()} hitSlop={14}>
+                        <Pressable onPress={() => router.replace(`/trips/${id}/itinerary`)} hitSlop={14}>
                             <Text className="font-semibold text-white text-base">
                                 Cancel
                             </Text>
@@ -225,7 +225,7 @@ export default function Layout() {
                         fontWeight: "semibold"
                     },
                     headerLeft: () => (
-                        <Pressable onPress={() => router.back()} hitSlop={14}>
+                        <Pressable onPress={() => router.replace(`/trips/${id}/itinerary`)} hitSlop={14}>
                             <Text className="font-semibold text-white text-base">
                                 Cancel
                             </Text>
@@ -243,7 +243,7 @@ export default function Layout() {
                         fontWeight: "semibold"
                     },
                     headerLeft: () => (
-                        <Pressable onPress={() => router.back()} hitSlop={14}>
+                        <Pressable onPress={() => router.replace(`/trips/${id}/itinerary`)} hitSlop={14}>
                             <Text className="font-semibold text-white text-base">
                                 Cancel
                             </Text>
@@ -261,7 +261,7 @@ export default function Layout() {
                         fontWeight: "semibold"
                     },
                     headerLeft: () => (
-                        <Pressable onPress={() => router.back()} hitSlop={14}>
+                        <Pressable onPress={() => router.replace(`/trips/${id}/itinerary`)} hitSlop={14}>
                             <Text className="font-semibold text-white text-base">
                                 Cancel
                             </Text>

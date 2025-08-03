@@ -76,7 +76,7 @@ const TripsDashboard = () => {
 
           <View className="flex flex-row gap-7 justify-center items-center">
             {/* add trip button */}
-            <TouchableOpacity onPress={() => router.push("/trips/addTrip")} hitSlop={10}>
+            <TouchableOpacity onPress={() => router.replace("/trips/addTrip")} hitSlop={10}>
               <Ionicons name="add-circle" size={30} color="#3B82F6" />
             </TouchableOpacity>
 

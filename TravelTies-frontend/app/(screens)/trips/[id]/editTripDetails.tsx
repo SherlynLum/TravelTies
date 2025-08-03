@@ -419,14 +419,6 @@ const EditTripDetails = () => {
         router.replace("/tripsDashboard")
       } catch (e) {
         console.log(e);
-        if (isAxiosError(e)) {
-            console.log('[AXIOS ERROR]');
-            console.log('→ Message:', e.message);
-            console.log('→ URL:', e.config?.url);
-            console.log('→ Method:', e.config?.method);
-            console.log('→ Status:', e.response?.status);
-            console.log('→ Response Data:', e.response?.data);
-        }
         Alert.alert("Cancel trip", `Failed to cancel ${name}`)
       } finally {
         setExitLoading(false);

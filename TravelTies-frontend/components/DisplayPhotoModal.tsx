@@ -13,7 +13,6 @@ type DisplayPicModalProps = {
 
 const DisplayPhotoModal : React.FC<DisplayPicModalProps> = ({isVisible, picUri, closeModal}) => {
     const insets = useSafeAreaInsets();
-    console.log(picUri);
   return (
     <Modal visible={isVisible} animationType="slide">
         <StatusBar 

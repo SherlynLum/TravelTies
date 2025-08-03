@@ -63,13 +63,13 @@ const CardDetails = () => {
                 headerRight: () => (
                     <Pressable onPress={() => {
                             if (card.cardType === "note") {
-                                router.push(`/trips/${id}/${cardId}/editNoteCard`);
+                                router.replace(`/trips/${id}/${cardId}/editNoteCard`);
                             } else if (card.cardType === "destination") {
-                                router.push(`/trips/${id}/${cardId}/editDestinationCard`);
+                                router.replace(`/trips/${id}/${cardId}/editDestinationCard`);
                             } else if (card.cardType === "transportation") {
-                                router.push(`/trips/${id}/${cardId}/editTransportationCard`);
+                                router.replace(`/trips/${id}/${cardId}/editTransportationCard`);
                             } else {
-                                router.push(`/trips/${id}/${cardId}/editGeneralCard`);
+                                router.replace(`/trips/${id}/${cardId}/editGeneralCard`);
                             }
                         }} hitSlop={14}>
                         <FontAwesome6 name="edit" size={20} color="white" />
@@ -149,8 +149,6 @@ const CardDetails = () => {
             Alert.alert("Open file", `Failed to open ${name}`);
         }
     }
-
-    console.log(card?.webUrls);
 
   return (
     loading ? (
