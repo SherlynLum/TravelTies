@@ -5,7 +5,7 @@ import { Octicons } from '@expo/vector-icons';
 
 const Support = () => {
     const insets = useSafeAreaInsets();
-    const tutorialUrl = "";
+    const tutorialUrl = "https://drive.google.com/file/d/1hzjQZ4SH_ThgnfVUdhQDw261xmtQULNf/view?usp=drive_link";
 
     const openTutorial = async () => {
         try {
