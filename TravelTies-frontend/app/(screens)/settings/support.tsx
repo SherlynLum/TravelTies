@@ -58,7 +58,7 @@ const Support = () => {
                 <View className="flex flex-row gap-3 w-full items-center justify-start">
                     <Octicons name='mail' size={24} color='black'/>
                     <Text className="text-xl text-black font-medium text-start">
-                        travelties@gmail.com
+                        travelties.contact@gmail.com
                     </Text>
                 </View>
             </View>
