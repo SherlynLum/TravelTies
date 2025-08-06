@@ -23,13 +23,21 @@ export default function Layout() {
             },
             (selectedIndex) => {
                 if (selectedIndex === 0) {
-                    router.replace(`/(screens)/trips/${id}/addNoteCard`);
+                    setTimeout(() => {
+                        router.replace(`/trips/${id}/addNoteCard`);
+                    }, 0);
                 } else if (selectedIndex === 1) {
-                    router.replace(`/(screens)/trips/${id}/addDestinationCard`);
+                    setTimeout(() => {
+                        router.replace(`/trips/${id}/addDestinationCard`);
+                    }, 0);
                 } else if (selectedIndex === 2) {
-                    router.replace(`/(screens)/trips/${id}/addTransportationCard`);
+                    setTimeout(() => {
+                        router.replace(`/trips/${id}/addTransportationCard`);
+                    }, 0);
                 } else if (selectedIndex === 3) {
-                    router.replace(`/(screens)/trips/${id}/addGeneralCard`);
+                    setTimeout(() => {
+                        router.replace(`/trips/${id}/addGeneralCard`);
+                    }, 0);
                 }
             }
         )
@@ -74,7 +82,7 @@ export default function Layout() {
                         fontWeight: "semibold"
                     },
                     headerLeft: () => (
-                        <Pressable onPress={() => router.replace(`/trips/${id}/overview`)} hitSlop={14}>
+                        <Pressable onPress={() => router.replace(`/trips/${id}/overview`)} hitSlop={14} className="pr-5">
                             <Ionicons name="chevron-back" size={24} color="white" />
                         </Pressable>
                     )
@@ -90,7 +98,7 @@ export default function Layout() {
                         fontWeight: "semibold"
                     },
                     headerLeft: () => (
-                        <Pressable onPress={() => router.back()} hitSlop={14}>
+                        <Pressable onPress={() => router.back()} hitSlop={14} className="pr-5">
                             <Ionicons name="chevron-back" size={24} color="white" />
                         </Pressable>
                     )
@@ -106,7 +114,7 @@ export default function Layout() {
                         fontWeight: "semibold"
                     },
                     headerLeft: () => (
-                        <Pressable onPress={() => router.back()} hitSlop={14}>
+                        <Pressable onPress={() => router.back()} hitSlop={14} className="pr-5">
                             <Ionicons name="chevron-back" size={24} color="white" />
                         </Pressable>
                     ),
@@ -127,7 +135,7 @@ export default function Layout() {
                         fontWeight: "semibold"
                     },
                     headerLeft: () => (
-                        <Pressable onPress={() => router.back()} hitSlop={14}>
+                        <Pressable onPress={() => router.back()} hitSlop={14} className="pr-5">
                             <Ionicons name="chevron-back" size={24} color="white" />
                         </Pressable>
                     )
@@ -143,7 +151,7 @@ export default function Layout() {
                         fontWeight: "semibold"
                     },
                     headerLeft: () => (
-                        <Pressable onPress={() => router.back()} hitSlop={14}>
+                        <Pressable onPress={() => router.back()} hitSlop={14} className="pr-5">
                             <Ionicons name="chevron-back" size={24} color="white" />
                         </Pressable>
                     )
@@ -159,7 +167,7 @@ export default function Layout() {
                         fontWeight: "semibold"
                     },
                     headerLeft: () => (
-                        <Pressable onPress={() => router.back()} hitSlop={14}>
+                        <Pressable onPress={() => router.back()} hitSlop={14} className="pr-5">
                             <Ionicons name="chevron-back" size={24} color="white" />
                         </Pressable>
                     )
@@ -175,7 +183,7 @@ export default function Layout() {
                         fontWeight: "semibold"
                     },
                     headerLeft: () => (
-                        <Pressable onPress={() => router.back()} hitSlop={14}>
+                        <Pressable onPress={() => router.back()} hitSlop={14} className="pr-5">
                             <Ionicons name="chevron-back" size={24} color="white" />
                         </Pressable>
                     )
@@ -191,7 +199,7 @@ export default function Layout() {
                         fontWeight: "semibold"
                     },
                     headerLeft: () => (
-                        <Pressable onPress={() => router.back()} hitSlop={14}>
+                        <Pressable onPress={() => router.back()} hitSlop={14} className="pr-5">
                             <Ionicons name="chevron-back" size={24} color="white" />
                         </Pressable>
                     )
@@ -207,7 +215,7 @@ export default function Layout() {
                         fontWeight: "semibold"
                     },
                     headerLeft: () => (
-                        <Pressable onPress={() => router.replace(`/trips/${id}/itinerary`)} hitSlop={14}>
+                        <Pressable onPress={() => router.replace(`/trips/${id}/itinerary`)} hitSlop={14} className="pr-5">
                             <Text className="font-semibold text-white text-base">
                                 Cancel
                             </Text>
@@ -225,7 +233,7 @@ export default function Layout() {
                         fontWeight: "semibold"
                     },
                     headerLeft: () => (
-                        <Pressable onPress={() => router.replace(`/trips/${id}/itinerary`)} hitSlop={14}>
+                        <Pressable onPress={() => router.replace(`/trips/${id}/itinerary`)} hitSlop={14} className="pr-5">
                             <Text className="font-semibold text-white text-base">
                                 Cancel
                             </Text>
@@ -243,7 +251,7 @@ export default function Layout() {
                         fontWeight: "semibold"
                     },
                     headerLeft: () => (
-                        <Pressable onPress={() => router.replace(`/trips/${id}/itinerary`)} hitSlop={14}>
+                        <Pressable onPress={() => router.replace(`/trips/${id}/itinerary`)} hitSlop={14} className="pr-5">
                             <Text className="font-semibold text-white text-base">
                                 Cancel
                             </Text>
@@ -261,7 +269,7 @@ export default function Layout() {
                         fontWeight: "semibold"
                     },
                     headerLeft: () => (
-                        <Pressable onPress={() => router.replace(`/trips/${id}/itinerary`)} hitSlop={14}>
+                        <Pressable onPress={() => router.replace(`/trips/${id}/itinerary`)} hitSlop={14} className="pr-5">
                             <Text className="font-semibold text-white text-base">
                                 Cancel
                             </Text>

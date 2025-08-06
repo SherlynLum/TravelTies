@@ -183,7 +183,7 @@ const Profile = () => {
         rounded-tr-xl">
           <View className="flex flex-row gap-4 items-center justify-center">
             <FontAwesome5 name="user-friends" size={18} color="black" />
-            <Text className="font-semibold text-black text-base text-center">
+            <Text className="font-semibold text-black text-base">
               Friends
             </Text>
           </View>
@@ -195,7 +195,7 @@ const Profile = () => {
         className="bg-white px-5 py-4 flex flex-row justify-between items-center w-full">
           <View className="flex flex-row gap-4 items-center justify-center">
             <Ionicons name="add-circle-outline" size={22} color="black" />
-            <Text className="font-semibold text-black text-base text-center">
+            <Text className="font-semibold text-black text-base">
               Join a trip
             </Text>
           </View>
@@ -207,7 +207,7 @@ const Profile = () => {
         className="bg-white px-5 py-4 flex flex-row justify-between items-center w-full">
           <View className="flex flex-row gap-4 items-center justify-center">
             <MaterialCommunityIcons name="lock-reset" size={22} color="black" />
-            <Text className="font-semibold text-black text-base text-center">
+            <Text className="font-semibold text-black text-base">
               Reset password
             </Text>
           </View>
@@ -219,7 +219,7 @@ const Profile = () => {
         className="bg-white px-5 py-4 flex flex-row justify-between items-center w-full">
           <View className="flex flex-row gap-4 items-center justify-center">
             <MaterialCommunityIcons name="bell" size={22} color="black" />
-            <Text className="font-semibold text-black text-base text-center">
+            <Text className="font-semibold text-black text-base">
               Notifications
             </Text>
           </View>
@@ -255,7 +255,7 @@ const Profile = () => {
         className="bg-white px-5 py-4 flex flex-row justify-between items-center w-full">
           <View className="flex flex-row gap-4 items-center justify-center">
             <MaterialCommunityIcons name="help-rhombus-outline" size={22} color="black" />
-            <Text className="font-semibold text-black text-base text-center">
+            <Text className="font-semibold text-black text-base">
               Tutorial & Support
             </Text>
           </View>
@@ -267,8 +267,8 @@ const Profile = () => {
         className="bg-white px-5 py-4 flex flex-row justify-between items-center w-full">
           <View className="flex flex-row gap-4 items-center justify-center">
             <MaterialCommunityIcons name="file-document-outline" size={22} color="black" />
-            <Text className="font-semibold text-black text-base text-center">
-              View privacy policy
+            <Text className="font-semibold text-black text-base">
+              {"Privacy policy"}
             </Text>
           </View>
           <Ionicons name="chevron-forward" size={22} color="gray" />
@@ -279,7 +279,7 @@ const Profile = () => {
         className="bg-white px-5 py-4 flex flex-row justify-between items-center w-full">
           <View className="flex flex-row gap-4 items-center justify-center">
             <Ionicons name="star" size={22} color="black" />
-            <Text className="font-semibold text-black text-base text-center">
+            <Text className="font-semibold text-black text-base">
               Rate us
             </Text>
           </View>

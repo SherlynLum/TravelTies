@@ -80,7 +80,7 @@ export default function Layout() {
             <Stack.Screen 
                 name="privacyPolicy"
                 options={{
-                    title: "View privacy policy",
+                    title: "Privacy policy",
                     headerStyle: {backgroundColor: "#6495ED"},
                     headerTintColor: "white",
                     headerTitleStyle: {
