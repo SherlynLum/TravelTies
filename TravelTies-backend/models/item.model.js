@@ -38,6 +38,9 @@ const itemSchema = new mongoose.Schema({
         type: String
     },
 
+    notificationId: { // only for type="task"
+        type: String
+    },
 
     earlyReminderDate: { // only for type="task"
         type: String
