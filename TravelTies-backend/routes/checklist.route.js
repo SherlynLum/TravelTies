@@ -1,6 +1,6 @@
 const express = require("express");
 const {firebaseAuthMiddleware} = require("../middlewares/auth.middleware.js");
-const {createTaskController, createItemController, getUncheckedTasks, getUncheckedItems, getCheckedTasks, getCheckedItems, getItemById, editTaskController, editItemController} = require("../controllers/checklist.controller.js");
+const {createTaskController, createItemController, getUncheckedTasks, getUncheckedItems, getCheckedTasks, getCheckedItems, getItemById, editTaskController, editItemController, checkItemController, uncheckItemController, deleteItemController} = require("../controllers/checklist.controller.js");
 const router = express.Router();
 
 router.post("/task", firebaseAuthMiddleware, createTaskController);
@@ -29,5 +29,14 @@ router.patch("/task", firebaseAuthMiddleware, editTaskController);
 
 router.patch("/item", firebaseAuthMiddleware, editItemController);
 // for testing without middleware: router.patch("/test/item", firebaseAuthMiddleware, editItemController);
+
+router.patch("/check/:id", firebaseAuthMiddleware, checkItemController);
+// for testing without middleware: router.patch("/test/check/:id", checkItemController);
+
+router.patch("/uncheck/:id", firebaseAuthMiddleware, uncheckItemController);
+// for testing without middleware: router.patch("/test/uncheck/:id", uncheckItemController);
+
+router.delete("/:id", firebaseAuthMiddleware, deleteItemController);
+// for testing without middeleware: router.delete("/test/:id", deleteItemController);
 
 module.exports = router;

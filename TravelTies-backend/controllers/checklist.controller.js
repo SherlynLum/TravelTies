@@ -1,4 +1,4 @@
-const {createTask, createItem, getItems, getItem, editItem, editTask} = require("../services/checklist.service.js");
+const {createTask, createItem, getItems, getItem, editItem, editTask, checkItem, uncheckItem, deleteItem, getTasks} = require("../services/checklist.service.js");
 
 const createTaskController = async (req, res) => {
     const uid = req.user.uid;
@@ -47,7 +47,7 @@ const getUncheckedTasks = async (req, res) => {
     }
 
     try {
-        const tasks = await getItems({uid, tripId, type: "task", isCompleted: false});
+        const tasks = await getTasks({uid, tripId, isCompleted: false});
         return res.status(200).json({tasks});
     } catch (e) {
         return res.status(500).json({message: e.message});
@@ -63,7 +63,7 @@ const getUncheckedItems= async (req, res) => {
     }
 
     try {
-        const items = await getItems({uid, tripId, type: "packing", isCompleted: false});
+        const items = await getItems({uid, tripId, isCompleted: false});
         return res.status(200).json({items});
     } catch (e) {
         return res.status(500).json({message: e.message});
@@ -79,7 +79,7 @@ const getCheckedTasks = async (req, res) => {
     }
 
     try {
-        const tasks = await getItems({uid, tripId, type: "task", isCompleted: true});
+        const tasks = await getTasks({uid, tripId, isCompleted: true});
         return res.status(200).json({tasks});
     } catch (e) {
         return res.status(500).json({message: e.message});
@@ -95,7 +95,7 @@ const getCheckedItems= async (req, res) => {
     }
 
     try {
-        const items = await getItems({uid, tripId, type: "packing", isCompleted: true});
+        const items = await getItems({uid, tripId, isCompleted: true});
         return res.status(200).json({items});
     } catch (e) {
         return res.status(500).json({message: e.message});
@@ -136,9 +136,6 @@ const editTaskController = async (req, res) => {
     try {
         const updatedTask = await editTask({uid, itemId, isGroupItem, task, note, date, time, 
             notificationId}); 
-        if (!updatedTask) {
-            return res.status(404).json({message: "No item is found"});
-        }
         return res.status(200).json({task: updatedTask});
     } catch (e) {
         return res.status(500).json({message: e.message});
@@ -155,10 +152,60 @@ const editItemController = async (req, res) => {
 
     try {
         const updatedItem = await editItem({uid, itemId, isGroupItem, item, note});
-        if (!updatedItem) {
+        return res.status(200).json({item: updatedItem});
+    } catch (e) {
+        return res.status(500).json({message: e.message});
+    }
+}
+
+const checkItemController = async (req, res) => {
+    const {id} = req.params;
+    if (!id) {
+        return res.status(400).json({message: "No item id is provided"});
+    }
+
+    try {
+        const checkedItem = await checkItem(id);
+        if (!checkedItem) {
             return res.status(404).json({message: "No item is found"});
         }
-        return res.status(200).json({item: updatedItem});
+        return res.status(200).json({item: checkedItem});
+    } catch (e) {
+        return res.status(500).json({message: e.message});
+    }
+}
+
+const uncheckItemController = async (req, res) => {
+    const {id} = req.params;
+    if (!id) {
+        return res.status(400).json({message: "No item id is provided"});
+    }
+
+    try {
+        const uncheckedItem = await uncheckItem(id);
+        if (!uncheckedItem) {
+            return res.status(404).json({message: "No item is found"});
+        }
+        return res.status(200).json({item: uncheckedItem});
+    } catch (e) {
+        return res.status(500).json({message: e.message});
+    }
+}
+
+const deleteItemController = async (req, res) => {
+    const uid = req.user.uid;
+    // for testing without middleware: const uid = req.body.uid;
+    if (!uid) {
+        return res.status(400).json({message: "Missing uid"});
+    }
+    const {id} = req.params;
+    if (!id) {
+        return res.status(400).json({message: "No item id is provided"});
+    }
+
+    try {
+        await deleteItem({uid, id});
+        return res.sendStatus(204);
     } catch (e) {
         return res.status(500).json({message: e.message});
     }
@@ -173,5 +220,8 @@ module.exports = {
     getCheckedItems,
     getItemById,
     editTaskController,
-    editItemController
+    editItemController,
+    checkItemController,
+    uncheckItemController,
+    deleteItemController
 }

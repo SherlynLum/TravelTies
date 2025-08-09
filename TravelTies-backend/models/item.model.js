@@ -17,7 +17,7 @@ const itemSchema = new mongoose.Schema({
         required: true
     },
 
-    creatorUid: { // meaningless to track creator if item is a group item, so left empty in that case
+    creatorUid: { 
         type: String
     },
 
