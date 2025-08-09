@@ -20,7 +20,7 @@ export default function Layout() {
                         fontWeight: "semibold"
                     },
                     headerLeft: () => (
-                        <Pressable onPress={() => router.back()} hitSlop={14}>
+                        <Pressable onPress={() => router.back()} hitSlop={14} className="pr-5">
                             <Ionicons name="chevron-back" size={24} color="white" />
                         </Pressable>
                     )
@@ -36,7 +36,7 @@ export default function Layout() {
                         fontWeight: "semibold"
                     },
                     headerLeft: () => (
-                        <Pressable onPress={() => router.replace(`/trips/${id}/${cardId}/cardDetails`)} hitSlop={14}>
+                        <Pressable onPress={() => router.replace(`/trips/${id}/${cardId}/cardDetails`)} hitSlop={14} className="pr-5">
                             <Text className="font-semibold text-white text-base">
                                 Cancel
                             </Text>
@@ -54,7 +54,7 @@ export default function Layout() {
                         fontWeight: "semibold"
                     },
                     headerLeft: () => (
-                        <Pressable onPress={() => router.replace(`/trips/${id}/${cardId}/cardDetails`)} hitSlop={14}>
+                        <Pressable onPress={() => router.replace(`/trips/${id}/${cardId}/cardDetails`)} hitSlop={14} className="pr-5">
                             <Text className="font-semibold text-white text-base">
                                 Cancel
                             </Text>
@@ -72,7 +72,7 @@ export default function Layout() {
                         fontWeight: "semibold"
                     },
                     headerLeft: () => (
-                        <Pressable onPress={() => router.replace(`/trips/${id}/${cardId}/cardDetails`)} hitSlop={14}>
+                        <Pressable onPress={() => router.replace(`/trips/${id}/${cardId}/cardDetails`)} hitSlop={14} className="pr-5">
                             <Text className="font-semibold text-white text-base">
                                 Cancel
                             </Text>
@@ -90,7 +90,7 @@ export default function Layout() {
                         fontWeight: "semibold"
                     },
                     headerLeft: () => (
-                        <Pressable onPress={() => router.replace(`/trips/${id}/${cardId}/cardDetails`)} hitSlop={14}>
+                        <Pressable onPress={() => router.replace(`/trips/${id}/${cardId}/cardDetails`)} hitSlop={14} className="pr-5">
                             <Text className="font-semibold text-white text-base">
                                 Cancel
                             </Text>
