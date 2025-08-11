@@ -13,7 +13,7 @@ const getHeaders = (token) => {
 
 const getUncheckedTasks = async ({token, tripId}) => {
     const backendRes = await axios.get(
-        `${baseUrl}/api/checklist/${tripId}/tasks/unchecked`,
+        `${baseUrl}/api/checklist/${encodeURIComponent(tripId)}/tasks/unchecked`,
         {headers: getHeaders(token)}
     );
     const tasks = backendRes.data.tasks;
@@ -37,7 +37,7 @@ const getUncheckedTasks = async ({token, tripId}) => {
 
 const getUncheckedItems = async ({token, tripId}) => {
     const backendRes = await axios.get(
-        `${baseUrl}/api/checklist/${tripId}/items/unchecked`,
+        `${baseUrl}/api/checklist/${encodeURIComponent(tripId)}/items/unchecked`,
         {headers: getHeaders(token)}
     );
     return backendRes.data.items;
@@ -45,7 +45,7 @@ const getUncheckedItems = async ({token, tripId}) => {
 
 const getCheckedTasks = async ({token, tripId}) => {
     const backendRes = await axios.get(
-        `${baseUrl}/api/checklist/${tripId}/tasks/checked`,
+        `${baseUrl}/api/checklist/${encodeURIComponent(tripId)}/tasks/checked`,
         {headers: getHeaders(token)}
     );
     const tasks = backendRes.data.tasks;
@@ -69,7 +69,7 @@ const getCheckedTasks = async ({token, tripId}) => {
 
 const getCheckedItems = async ({token, tripId}) => {
     const backendRes = await axios.get(
-        `${baseUrl}/api/checklist/${tripId}/items/checked`,
+        `${baseUrl}/api/checklist/${encodeURIComponent(tripId)}/items/checked`,
         {headers: getHeaders(token)}
     );
     return backendRes.data.items;
@@ -77,7 +77,7 @@ const getCheckedItems = async ({token, tripId}) => {
 
 const checkItem = async ({token, id}) => {
     const backendRes = await axios.patch(
-        `${baseUrl}/api/checklist/check/${id}`,
+        `${baseUrl}/api/checklist/check/${encodeURIComponent(id)}`,
         {},
         {headers: getHeaders(token)}
     );
@@ -86,11 +86,18 @@ const checkItem = async ({token, id}) => {
 
 const uncheckItem = async ({token, id}) => {
     const backendRes = await axios.patch(
-        `${baseUrl}/api/checklist/uncheck/${id}`,
+        `${baseUrl}/api/checklist/uncheck/${encodeURIComponent(id)}`,
         {},
         {headers: getHeaders(token)}
     );
     return backendRes.data.item;
+}
+
+const deleteItem = async ({token, id}) => {
+    await axios.delete(
+        `${baseUrl}/api/checklist/${encodeURIComponent(id)}`,
+        {headers: getHeaders(token)}
+    );
 }
 
 export {
@@ -99,5 +106,6 @@ export {
     getCheckedTasks,
     getCheckedItems,
     checkItem,
-    uncheckItem
+    uncheckItem,
+    deleteItem
 }

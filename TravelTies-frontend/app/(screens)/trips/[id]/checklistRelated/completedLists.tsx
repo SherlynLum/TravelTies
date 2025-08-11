@@ -4,14 +4,14 @@ import { StatusBar } from 'expo-status-bar';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Item } from '@/types/item';
 import { useAuth } from '@/context/authContext';
-import { getUncheckedItems, getUncheckedTasks, uncheckItem } from '@/apis/checklistApi';
+import { deleteItem, getUncheckedItems, getUncheckedTasks, uncheckItem } from '@/apis/checklistApi';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import Loading from '@/components/Loading';
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
 import CheckBox from '@react-native-community/checkbox';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { Divider } from 'react-native-paper';
-import { FontAwesome6 } from '@expo/vector-icons';
+import { Entypo } from '@expo/vector-icons';
 
 const Completed = () => {
   const insets = useSafeAreaInsets();
@@ -99,6 +99,76 @@ const Completed = () => {
     isActive.current = true
     return () => {isActive.current = false};
   }, [])
+
+  const deleteOneItem = async (id: string, name: string) => {
+    try {
+      const token = await getUserIdToken(user);
+      await deleteItem({token, id});
+      setItems(prev => prev.filter(item => item._id !== id));
+    } catch (e) {
+      console.log(e);
+      Alert.alert("Delete item", `Failed to delete ${name}`);
+    }
+  } 
+
+  const handleDeleteOne = (id: string, name: string) => {
+    Alert.alert("Delete item", `Are you sure you want to delete ${name}?`,
+      [
+          {
+              text: "No",
+              style: "cancel"
+          }, 
+          {
+              text: "Yes",
+              style: "destructive",
+              onPress: () => deleteOneItem(id, name)
+          }
+      ]
+    )
+  }
+
+  const deleteAll = async () => {
+    try {
+      const token = await getUserIdToken(user);
+      let successfulIds : string[] = [], failureIds : string[] = [];
+      await Promise.all(items.map(async (item) => {
+        if (item.creatorUid !== currentUid) {
+          return;
+        } else {
+          try {
+            await deleteItem({token, id: item._id});
+            successfulIds.push(item._id)
+          } catch (e) {
+            console.log(e);
+            failureIds.push(item._id);
+          }
+        }
+      }));
+      if (failureIds.length > 0) {
+        Alert.alert("Clear items", "We were unable to delete some of the items created by you - please try again later");
+      }
+      setItems(prev => prev.filter(item => !successfulIds.includes(item._id)));
+    } catch (e) {
+      console.log(e);
+      Alert.alert("Clear items", "Failed to delete all items created by you - please try again later");
+    }
+  }
+
+  const handleDeleteAll = () => {
+    Alert.alert("Delete item", `Are you sure you want to delete ${name}?`,
+      [
+          {
+              text: "No",
+              style: "cancel"
+          }, 
+          {
+              text: "Yes",
+              style: "destructive",
+              onPress: () => deleteAll()
+          }
+      ]
+    )
+  }
   
   return (
     <>
@@ -126,18 +196,12 @@ const Completed = () => {
       </View>
 
       <View className="flex w-full items-center px-5">
-        {/* add button */}
-        <TouchableOpacity onPress={() => {
-          if (tab === "Tasks") {
-            router.replace(`/trips/${id}/checklistRelated/tasks/addTask`);
-          } else {
-            router.replace(`/trips/${id}/checklistRelated/packing/addItem`);
-          }
-        }}
-        className='bg-blue-400 justify-center items-center border border-blue-700 shadow-sm h-[40px] 
-        px-10 rounded-[30px]'>
+        {/* delete all button */}
+        <TouchableOpacity onPress={handleDeleteAll}
+        className='justify-center items-center border border-red-500 shadow-sm h-[40px] 
+        w-full px-3 rounded-[10px]'>
             <Text className='text-white font-semibold tracking-wider text-sm'>
-                Add
+              {`Delete all ${tab === "Tasks" ? "completed tasks" : "packed items"} created by you`}
             </Text>
         </TouchableOpacity>
       </View>
@@ -150,7 +214,7 @@ const Completed = () => {
       ) : hasError ? (
         <View className="flex-1 justify-center items-center px-5"> 
           <Text className="text-center text-base font-medium italic text-gray-500">
-            {`An error occurred when loading ${tab === "Tasks" ? "tasks" : "items in packing list"}.\nPlease try again later.`}
+            {`An error occurred when loading ${tab === "Tasks" ? "completed tasks" : "completed items in packing list"}.\nPlease try again later.`}
           </Text>
         </View>
       ) : (
@@ -194,16 +258,12 @@ const Completed = () => {
               </View>
             </View>
 
-            {/* edit button */}
+            {/* delete button */}
             {(item.creatorUid === currentUid) && (
               <Pressable onPress={() => {
-                if (tab === "Tasks") {
-                  router.replace(`/trips/${id}/checklistRelated/tasks/${item._id}`);
-                } else {
-                  router.replace(`/trips/${id}/checklistRelated/packing/${item._id}`);
-                }
+                handleDeleteOne(item._id, item.name);
               }} className="pl-5" hitSlop={14}>
-                <FontAwesome6 name="edit" size={24} color="#3B82F6" />
+                <Entypo name="circle-with-cross" size={24} color="red"/>
               </Pressable>
             )}
           </View>
@@ -212,7 +272,7 @@ const Completed = () => {
         ListEmptyComponent={
           <View className="flex-1 justify-center items-center"> 
             <Text className="text-center text-base font-medium italic text-gray-500">
-              {`You have no ${tab === "Tasks" ? "task" : "item in packing list"}.\nTap the \"Add\" button to add one.`}
+              {`You have no ${tab === "Tasks" ? "completed task" : "completed item in packing list"}.`}
             </Text>
           </View>
         }
