@@ -52,7 +52,7 @@
       <true/>
     </dict>
     <key>NSCameraUsageDescription</key>
-    <string>TravelTies need access to your camera to take profile pictures</string>
+    <string>Allow $(PRODUCT_NAME) to access your camera</string>
     <key>NSMicrophoneUsageDescription</key>
     <string>Allow $(PRODUCT_NAME) to access your microphone</string>
     <key>NSPhotoLibraryUsageDescription</key>

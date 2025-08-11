@@ -141,22 +141,6 @@ export default function Layout() {
                     )
                 }} />
             <Stack.Screen 
-                name="checklists"
-                options={{
-                    title: "Checklists",
-                    headerStyle: {backgroundColor: "#6495ED"},
-                    headerTintColor: "white",
-                    headerTitleStyle: {
-                        fontSize: 16,
-                        fontWeight: "semibold"
-                    },
-                    headerLeft: () => (
-                        <Pressable onPress={() => router.back()} hitSlop={14} className="pr-5">
-                            <Ionicons name="chevron-back" size={24} color="white" />
-                        </Pressable>
-                    )
-                }} />
-            <Stack.Screen 
                 name="expenseTracker"
                 options={{
                     title: "Expense tracker",
@@ -278,6 +262,9 @@ export default function Layout() {
                 }} />
             <Stack.Screen 
                 name="[cardId]"
+                options={{headerShown: false}} />
+            <Stack.Screen 
+                name="checklistRelated"
                 options={{headerShown: false}} />
         </Stack>
     )

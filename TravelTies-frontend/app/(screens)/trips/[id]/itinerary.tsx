@@ -11,7 +11,6 @@ import NoteCard from '@/components/NoteCard';
 import DestinationCard from '@/components/DestinationCard';
 import TransportationCard from '@/components/TransportationCard';
 import GeneralCard from '@/components/GeneralCard';
-import { isAxiosError } from 'axios';
 
 const Itinerary = () => {
   const insets = useSafeAreaInsets();
