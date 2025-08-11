@@ -189,7 +189,7 @@ const Overview = () => {
                     </View>
 
                     <View className="flex-1 flex-row justify-between items-center px-5">
-                        <Link href={`./itinerary`} asChild>
+                        <Link href={`/trips/${id}/itinerary`} asChild>
                             <TouchableOpacity className="rounded-[10px] h-[100px] items-center justify-center" 
                             style={{backgroundColor: "#CCE4F6", width: wp(37)}}>
                                 <Text className="text-lg font-semibold">
@@ -197,7 +197,7 @@ const Overview = () => {
                                 </Text>
                             </TouchableOpacity>
                         </Link>
-                        <Link href={`./expenseTracker`} asChild>
+                        <Link href={`/trips/${id}/expenseTracker`} asChild>
                             <TouchableOpacity className="rounded-[10px] h-[100px] items-center justify-center" 
                             style={{backgroundColor: "#FFE6B3", width: wp(37)}}>
                                 <Text className="text-lg font-semibold">
@@ -208,7 +208,7 @@ const Overview = () => {
                     </View>
 
                     <View className="flex-1 flex-row justify-between items-center px-5">
-                        <Link href={`./checklists`} asChild>
+                        <Link href={`/trips/${id}/checklistRelated/checklists?tab=Tasks`} asChild>
                             <TouchableOpacity className="rounded-[10px] h-[100px] items-center justify-center" 
                             style={{backgroundColor: "#C9EBCB", width: wp(37)}}>
                                 <Text className="text-lg font-semibold">
