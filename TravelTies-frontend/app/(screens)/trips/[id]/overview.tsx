@@ -207,6 +207,7 @@ const Overview = () => {
                         </Link>
                     </View>
 
+                    {/*
                     <View className="flex-1 flex-row justify-between items-center px-5">
                         <Link href={`/trips/${id}/checklistRelated/checklists?tab=Tasks`} asChild>
                             <TouchableOpacity className="rounded-[10px] h-[100px] items-center justify-center" 
@@ -217,7 +218,6 @@ const Overview = () => {
                             </TouchableOpacity>
                         </Link>
                     </View>
-                    {/*
                         <Link href={`./polls`} asChild>
                             <TouchableOpacity className="rounded-[10px] h-[100px] items-center justify-center" 
                             style={{backgroundColor: "#CDE5DC", width: wp(37)}}>
