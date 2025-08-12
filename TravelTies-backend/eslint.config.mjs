@@ -3,6 +3,7 @@ import globals from "globals";
 import json from "@eslint/json";
 import css from "@eslint/css";
 import { defineConfig } from "eslint/config";
+import jest from 'eslint-plugin-jest';
 
 
 export default defineConfig([
@@ -13,4 +14,15 @@ export default defineConfig([
   { files: ["**/*.jsonc"], plugins: { json }, language: "json/jsonc", extends: ["json/recommended"] },
   { files: ["**/*.json5"], plugins: { json }, language: "json/json5", extends: ["json/recommended"] },
   { files: ["**/*.css"], plugins: { css }, language: "css/css", extends: ["css/recommended"] },
+  {
+    files: ['**/__mocks__/**/*.js', '**/__tests__/**/*.js', '**/*.test.js', '**/*.test.ts', 'jest.setup.js'],
+    plugins: {
+      jest,
+    },
+    languageOptions: {
+      env: {
+        jest: true
+      }
+    }
+  }
 ]);

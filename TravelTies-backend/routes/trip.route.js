@@ -5,7 +5,7 @@ const {getTripProfilePicUrl, createTripController, getCurrentUserActiveTrips,
     updateTripController, updateTripJoinRequests, cancelTripController, restoreTripController, 
     deleteTripPermanently, searchActiveTripsController, searchBinTripsController, 
     addJoinRequestController, getTripJoinCode, removeBuddyController, getCardsController,
-    getOrderInTabController, getTripOverviewById, getTripOverviewByJoinCode,
+    getOrderInTabController, getTripOverviewById, getTripOverviewByJoinCode
 } = require("../controllers/trip.controller.js");
 const router = express.Router();
 
