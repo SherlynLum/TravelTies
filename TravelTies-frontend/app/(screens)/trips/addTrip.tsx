@@ -176,7 +176,7 @@ const AddTrip = () => {
                 setOldPicKey(picKey);
             }
             setPicKey(key);
-            return true; // for checking this time upload success or not 
+            return {key}; // for checking this time upload success or not 
         } catch (e) {
             if (isAxiosError(e)) { // deal with axios request errors 
                 // if error comes from get presigned url, there will be a message field in res
@@ -185,7 +185,7 @@ const AddTrip = () => {
                 console.log(e);
             }
             Alert.alert("Add trip", "Failed to upload trip profile picture");
-            return false; // for checking this time upload success or not 
+            return; // for checking this time upload success or not 
         }
     }
 
@@ -278,9 +278,13 @@ const AddTrip = () => {
             setNoOfNights(nights)
             if (days <= 1) {
                 setDayStr("Day");
+            } else {
+                setDayStr("Days");
             }
             if (nights <= 1) {
                 setNightStr("Night");
+            } else {
+                setNightStr("Nights");
             }
         } else {
             setNoOfNights(null);
@@ -305,10 +309,13 @@ const AddTrip = () => {
         try {
             const token = await getUserIdToken(user);
 
-            if (picKey) {
+            let key = picKey;
+
+            if (croppedPicUri) {
                 if (!uploadSuccess) {
                     const uploadRes = await uploadCroppedPic(token);
-                    if (!uploadRes) {
+                    key = uploadRes?.key;
+                    if (!key) {
                         throw new Error("Failed to upload trip profile picture");
                     }
                 }
@@ -319,7 +326,7 @@ const AddTrip = () => {
             } 
 
             const trip = await createTrip({token, name: nameRef.current, 
-                profilePicKey: picKey || undefined, 
+                profilePicKey: key || undefined, 
                 startDate: startDate ? toFloatingDate(startDate) : undefined,
                 endDate: endDate ? toFloatingDate(endDate) : undefined,
                 noOfDays: noOfDays ? Number(noOfDays) : undefined,
@@ -367,7 +374,7 @@ const AddTrip = () => {
             }
         }
 
-        if (Number(noOfDays) <= 0) {
+        if (noOfDays && Number(noOfDays) <= 0) {
             Alert.alert("Failed to create trip", "The number of days must be at least 1");
             return;
         }
@@ -474,6 +481,7 @@ const AddTrip = () => {
                             minimumDate={new Date()}
                             onChange={(event, date) => {
                                 if (date) {
+                                    date.setHours(0, 0, 0, 0); 
                                     setTempStartDate(date);
                                 }
                             }}
@@ -488,7 +496,9 @@ const AddTrip = () => {
                                 </Text>
                             </Pressable>
                             <Pressable hitSlop={14} onPress={() => {
-                                setStartDate(tempStartDate || new Date()); // if onChange is not fired then the date picker actually shows the default date which is today, so fallback to today's date
+                                const today = new Date();
+                                today.setHours(0, 0, 0, 0);
+                                setStartDate(tempStartDate || today); // if onChange is not fired then the date picker actually shows the default date which is today, so fallback to today's date
                                 setStartPickerOpen(false)
                             }}>
                                 <Text className="text-green-700 font-medium text-base">
@@ -537,6 +547,7 @@ const AddTrip = () => {
                             minimumDate={new Date()}
                             onChange={(event, date) => {
                                 if (date) {
+                                    date.setHours(0, 0, 0, 0); 
                                     setTempEndDate(date);
                                 }
                             }}
@@ -551,7 +562,9 @@ const AddTrip = () => {
                                 </Text>
                             </Pressable>
                             <Pressable hitSlop={14} onPress={() => {
-                                setEndDate(tempEndDate || new Date());
+                                const today = new Date();
+                                today.setHours(0, 0, 0, 0);
+                                setEndDate(tempEndDate || today);
                                 setEndPickerOpen(false);
                             }}>
                                 <Text className="text-green-700 font-medium text-base">
@@ -611,7 +624,7 @@ const AddTrip = () => {
                 <View className="flex flex-row gap-4 items-center">
                     {/* current user i.e. the creator */}
                     <View className="flex flex-col gap-2 justify-center items-start">
-                        <View className="flex flex-row gap-5 justify-start items-center w-full">
+                        <View className="flex flex-row gap-4 justify-start items-center w-full">
                             <Image source={!userProfilePicUrl 
                             ? require("../../../assets/images/default-user-profile-pic.png")
                             : userProfilePicUrl === "Failed to load" 
@@ -634,12 +647,12 @@ const AddTrip = () => {
                             keyExtractor={(item) => item.participantUid}
                             contentContainerStyle={{justifyContent: "center", alignItems: "center"}}
                             style={{flexGrow: 0, flexShrink: 1}}
-                            ItemSeparatorComponent={() => <View className="w-[20px]"/>}
+                            ItemSeparatorComponent={() => <View className="w-[16px]"/>}
                             />
 
                             {/* edit button */}
                             <Pressable onPress={() => setManageModalOpen(true)} hitSlop={14}>
-                                <FontAwesome6 name="edit" size={24} color="#60A5FA" />
+                                <FontAwesome6 name="edit" size={20} color="#60A5FA" />
                             </Pressable>
                         </View>
                         <View className="px-3">

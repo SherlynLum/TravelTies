@@ -78,8 +78,8 @@ const JoinTrip = () => {
                         {/* open qr scanner button */}
                         <TouchableOpacity onPress={() => setScannerOpen(true)}
                         className='bg-blue-500 justify-center items-center border 
-                        border-blue-600 shadow-sm h-[60px] w-[60px] px-8 rounded-[7px]'>
-                            <MaterialCommunityIcons name="qrcode-scan" size={50} color="white" />
+                        border-blue-600 shadow-sm h-[60px] w-[60px] rounded-[7px]'>
+                            <MaterialCommunityIcons name="qrcode-scan" size={40} color="white" />
                         </TouchableOpacity>
                     </View>
                     <View className="flex flex-col gap-7 items-center justify-center">

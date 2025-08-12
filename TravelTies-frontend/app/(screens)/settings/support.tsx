@@ -5,7 +5,7 @@ import { Octicons } from '@expo/vector-icons';
 
 const Support = () => {
     const insets = useSafeAreaInsets();
-    const tutorialUrl = "";
+    const tutorialUrl = "https://drive.google.com/file/d/1hzjQZ4SH_ThgnfVUdhQDw261xmtQULNf/view?usp=drive_link";
 
     const openTutorial = async () => {
         try {
@@ -29,8 +29,9 @@ const Support = () => {
             backgroundColor="transparent"
             style="light"
         />
-        <ScrollView className="flex-1 flex-col gap-10 items-start justify-center px-5 pt-3 bg-white" 
-        contentContainerStyle={{paddingBottom: insets.bottom}}>
+        <ScrollView className="flex-1 flex-col px-5 pt-5 bg-white" 
+        contentContainerStyle={{paddingBottom: insets.bottom, alignItems: "flex-start", 
+            justifyContent:"center", rowGap: 60}}>
             <View className="flex flex-col gap-5 items-start justify-center w-full">
                 <Text className="text-2xl text-black font-semibold text-start tracking-wide">
                     Tutorial
@@ -57,7 +58,7 @@ const Support = () => {
                 <View className="flex flex-row gap-3 w-full items-center justify-start">
                     <Octicons name='mail' size={24} color='black'/>
                     <Text className="text-xl text-black font-medium text-start">
-                        travelties@gmail.com
+                        travelties.contact@gmail.com
                     </Text>
                 </View>
             </View>

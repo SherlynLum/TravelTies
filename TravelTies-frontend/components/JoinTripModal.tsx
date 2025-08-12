@@ -9,6 +9,7 @@ import { StatusBar } from 'expo-status-bar';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '@/context/authContext';
 import { joinTrip } from '@/apis/tripApi';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 type JoinTripModalProps = {
     trip: Trip,
@@ -16,6 +17,7 @@ type JoinTripModalProps = {
     closeModal: () => void
 }
 const JoinTripModal = ({trip, isVisible, closeModal} : JoinTripModalProps) => {
+    const insets = useSafeAreaInsets();
     const {user, getUserIdToken} = useAuth();
     const {_id, name, startDate, endDate, noOfDays, noOfNights, noOfParticipants, profilePicUrl} = trip
     const screenWidth = Dimensions.get("window").width;
@@ -49,6 +51,7 @@ const JoinTripModal = ({trip, isVisible, closeModal} : JoinTripModalProps) => {
             const token = await getUserIdToken(user);
             await joinTrip({token, id: _id});
             closeModal();
+            Alert.alert("You have successfully sent a join request to this trip!")
         } catch (e) {
             console.log(e);
             Alert.alert("Join a trip", "Unable to join this trip - please try again later");
@@ -57,12 +60,14 @@ const JoinTripModal = ({trip, isVisible, closeModal} : JoinTripModalProps) => {
 
   return (
     <Modal visible={isVisible} animationType="slide">
-        <SafeAreaView className="flex-1 bg-white">
-            <StatusBar 
-                translucent
-                backgroundColor="transparent"
-                style="light"
-            />
+        <StatusBar 
+            translucent
+            backgroundColor="transparent"
+            style="light"
+        />
+        <View className="flex-1 bg-white" style={{paddingTop: insets.top, 
+            paddingBottom: insets.bottom, paddingLeft: insets.left, 
+            paddingRight: insets.right}}>
             {/* header */}
             <View style={{paddingHorizontal: wp(3), height: 56, width: "100%"}}
             className="flex-row items-center justify-center">
@@ -147,7 +152,7 @@ const JoinTripModal = ({trip, isVisible, closeModal} : JoinTripModalProps) => {
                     </View>
                 </Card>
             </View>
-        </SafeAreaView>
+        </View>
     </Modal>
   )
 }

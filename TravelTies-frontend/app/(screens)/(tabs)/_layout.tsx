@@ -29,7 +29,8 @@ export default function _layout() {
                     tabBarIcon: ({focused}) => (
                        <FontAwesome5 name="compass" size={22} 
                        color={focused ? "#4B9EFF" : "#A0A0A0"}/>
-                    )
+                    ),
+                    href: null // hide discover tab since haven't implement yet
                 }}
             />
             <Tabs.Screen

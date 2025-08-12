@@ -14,13 +14,13 @@
       "bundleIdentifier": "com.travelties.travelties",
       "googleServicesFile": "./GoogleService-Info.plist",
       "infoPlist": {
-        "NSCameraUsageDescription": "TravelTies need access to your camera to take profile pictures",
+        "NSCameraUsageDescription": "TravelTies need access to your camera to take photos and scan trip QR code",
         "NSPhotoLibraryUsageDescription": "TravelTies need access to your photo library to select photos"
       }
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/images/adaptive-icon.png",
+        "foregroundImage": "./assets/images/logo-on-android.png",
         "backgroundColor": "#ffffff"
       },
       "edgeToEdgeEnabled": true,
@@ -37,7 +37,7 @@
       [
         "expo-splash-screen",
         {
-          "image": "./assets/images/splash-icon.png",
+          "image": "./assets/images/travelties-logo.png",
           "imageWidth": 200,
           "resizeMode": "contain",
           "backgroundColor": "#ffffff"

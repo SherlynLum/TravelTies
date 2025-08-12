@@ -63,13 +63,13 @@ const CardDetails = () => {
                 headerRight: () => (
                     <Pressable onPress={() => {
                             if (card.cardType === "note") {
-                                router.push(`/trips/${id}/${cardId}/editNoteCard`);
+                                router.replace(`/trips/${id}/${cardId}/editNoteCard`);
                             } else if (card.cardType === "destination") {
-                                router.push(`/trips/${id}/${cardId}/editDestinationCard`);
+                                router.replace(`/trips/${id}/${cardId}/editDestinationCard`);
                             } else if (card.cardType === "transportation") {
-                                router.push(`/trips/${id}/${cardId}/editTransportationCard`);
+                                router.replace(`/trips/${id}/${cardId}/editTransportationCard`);
                             } else {
-                                router.push(`/trips/${id}/${cardId}/editGeneralCard`);
+                                router.replace(`/trips/${id}/${cardId}/editGeneralCard`);
                             }
                         }} hitSlop={14}>
                         <FontAwesome6 name="edit" size={20} color="white" />
@@ -296,17 +296,18 @@ const CardDetails = () => {
                         data={card.picUrls}
                         numColumns={3}
                         keyExtractor={(item, index) => index.toString()}
-                        columnWrapperClassName="justify-between mb-3"
+                        columnWrapperClassName="justify-start items-center mb-3"
                         renderItem={({item}) => (
-                            <TouchableOpacity className="relative" onPress={() => openDisplayModal(item)}>
+                            <TouchableOpacity className="relative mr-3" onPress={() => openDisplayModal(item)}>
                                 <Image
                                 source={item === "Failed to load" 
-                                ? require("../../../assets/images/error-icon.png")
+                                ? require("../../../../../assets/images/error-icon.png")
                                 : {uri: item}}
                                 className="w-[100px] h-[100px] border-neutral-400 border-2"
                                 resizeMode="cover"/>
                             </TouchableOpacity>
-                        )}/> 
+                        )}
+                        scrollEnabled={false}/> 
                     </View>
                     )}
 
@@ -322,13 +323,14 @@ const CardDetails = () => {
                             <View
                             key={index}
                             className="flex flex-row justify-between items-center">
-                                <View className="w-full bg-white border border-black px-4 rounded-[5px] h-[50px]">
+                                <View className="w-full bg-white border border-black px-4 rounded-[5px] h-[50px]
+                                flex justify-center">
                                     <Pressable hitSlop={14} onPress={() => openUrl(url)}>
                                         {({pressed}) => (
                                             <Text 
                                             numberOfLines={1}
                                             ellipsizeMode="tail"
-                                            className={`flex-1 font-medium text-base  
+                                            className={`font-medium text-base  
                                                 ${pressed ? "text-gray-700" : "text-blue-600"}`}>
                                                 {url}
                                             </Text>
@@ -351,8 +353,9 @@ const CardDetails = () => {
                         {card.docs.map((doc, index) => (
                             <View
                             key={index}
-                            className="flex flex-row justify-between items-center">
-                                <View className="w-full bg-white border border-black px-4 rounded-[5px] h-[50px]">
+                            className="flex flex-row justify-start items-center">
+                                <View className="w-full bg-white border border-black px-4 rounded-[5px] h-[50px]
+                                flex justify-center">
                                     {doc.url === "Failed to load" ? (
                                         <Text
                                         className={"font-medium text-base text-left text-red-600"}>

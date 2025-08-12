@@ -1,4 +1,4 @@
-import { View, Text, TextInput, FlatList, Image, TouchableOpacity, Alert } from 'react-native'
+import { View, Text, TextInput, FlatList, Image, TouchableOpacity, Alert, Dimensions } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { StatusBar } from 'expo-status-bar';
 import { useEffect, useState } from 'react';
@@ -20,7 +20,9 @@ const Friends = () => {
     const {user, getUserIdToken} = useAuth();
     const [friendsHasErr, setFriendsHasErr] = useState(false);
     const [requestHasErr, setRequestsHasErr] = useState(false);
-    const [tab, setTab] = useState("My friends"); // default to planning when first render
+    const screenWidth = Dimensions.get("window").width;
+    const tabWidth = (screenWidth - 20 * 3) / 2 // padding 20 at each end and a gap of 20
+    const [tab, setTab] = useState("My friends"); // default to my friends when first render
     
     useEffect(() => {
         setLoading(true);
@@ -134,8 +136,24 @@ const Friends = () => {
             backgroundColor="transparent"
             style="light"
         />
-        <View className="flex-1 flex-col gap-4 items-center justify-center pt-3 bg-white" 
+        <View className="flex-1 flex-col gap-3 items-center justify-center pt-6 bg-white" 
         style={{paddingBottom: insets.bottom}}>
+            {/* tabs */}
+            <View className="flex flex-row gap-5 items-center justify-center px-5">
+            {["My friends", "Requests"].map(tabName => (
+                <TouchableOpacity
+                key={tabName} onPress={() => setTab(tabName)} hitSlop={5}
+                style={{width: tabWidth}}
+                className={`bg-white justify-center items-center shadow-sm h-[35px] px-8 rounded-[30px] 
+                ${tab === tabName ? "border-blue-500 border-2": "border-gray-500 border"}`}>
+                    <Text className={`font-semibold ${tab === tabName ? "text-blue-500" : "text-gray-500"}
+                    text-sm`}>
+                        {tabName}
+                    </Text>
+                </TouchableOpacity>
+            ))}
+            </View>
+
             {/* search bar */}
             {tab === "My friends" && (
                 <View className="px-5 py-5 items-center justify-center bg-white">
@@ -154,21 +172,6 @@ const Friends = () => {
                     </View>
                 </View>
             )}
-
-            {/* tabs */}
-            <View className="flex flex-row justify-between items-center">
-            {["My friends", "Requests"].map(tabName => (
-                <TouchableOpacity
-                key={tabName} onPress={() => setTab(tabName)} hitSlop={5}
-                className={`bg-white justify-center items-center shadow-sm h-[35px] px-8 rounded-[30px] 
-                ${tab === tabName ? "border-blue-500 border-2": "border-gray-500 border"}`}>
-                    <Text className={`font-semibold ${tab === tabName ? "text-blue-500" : "text-gray-500"}
-                    text-sm`}>
-                        {tabName}
-                    </Text>
-                </TouchableOpacity>
-            ))}
-            </View>
 
             {/* friends list or requests list */}
             {loading ? (
@@ -253,7 +256,7 @@ const Friends = () => {
                             )
                         }
                     }}
-                    contentContainerStyle={{flexGrow: 1, paddingHorizontal: 20, paddingVertical: 20}}
+                    contentContainerStyle={{flexGrow: 1, paddingHorizontal: 20, paddingTop: 0, paddingBottom: 15}}
                     ItemSeparatorComponent={() => <Divider />}
                     />
                 </View>

@@ -64,7 +64,7 @@ const createTransportationCard = async ({token, tripId, title, description, star
 const createGeneralCard = async ({token, tripId, cardType, title, description, startDate, startTime, 
     endDate, endTime, generalAddress, picIds, docs, webUrls}) => {
     const backendRes = await axios.post(
-        `${baseUrl}/api/card/transportation`,
+        `${baseUrl}/api/card`,
         {tripId, cardType, title, description, startDate, startTime, endDate, endTime, 
         generalAddress, picIds, docs, webUrls},
         {headers: getHeaders(token)}

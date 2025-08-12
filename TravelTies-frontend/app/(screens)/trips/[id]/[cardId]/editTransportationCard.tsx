@@ -23,6 +23,7 @@ import { Divider, Menu } from 'react-native-paper';
 import { Doc, DocWithType, DocWithUrl } from '@/types/cards';
 import { getDocumentAsync } from 'expo-document-picker';
 import { handleDelete } from '@/utils/handleDelete';
+import "react-native-get-random-values";
 import { v4 as uuidv4 } from "uuid";
 
 const EditTransportationCard = () => {
@@ -67,8 +68,7 @@ const EditTransportationCard = () => {
     const [imageLoading, setImageLoading] = useState(false);
     const [displayModalOpen, setDisplayModalOpen] = useState(false);
     const [displayUri, setDisplayUri] = useState("");
-    const [uploadSomePicErr, setUploadSomePicErr] = useState(false); // if certain images failed to upload, will allow user proceed to finish creating card
-    const [uploadAllPicErr, setUploadAllPicErr] = useState(false); // if the outer try block for uploadImages fail, not allow user proceed to create the card
+    const [uploadPicSuccess, setUploadPicSuccess] = useState(false);
     const [picIds, setPicIds] = useState<string[]>([]);
 
     const [urls, setUrls] = useState<{id: string, url: string}[]>([]);
@@ -76,8 +76,7 @@ const EditTransportationCard = () => {
     const [newDocs, setNewDocs] = useState<DocWithType[]>([]);
     const [docsToDisplay, setDocsToDisplay] = useState<(DocWithType | DocWithUrl)[]>([]);
     const [docLoading, setDocLoading] = useState(false);
-    const [uploadSomeDocErr, setUploadSomeDocErr] = useState(false); // if certain docs failed to upload, will allow user proceed to finish creating card
-    const [uploadAllDocErr, setUploadAllDocErr] = useState(false); // if the outer try block for uploadFiles fail, not allow user proceed to create the card
+    const [uploadDocSuccess, setUploadDocSuccess] = useState(false);
     const [docs, setDocs] = useState<Doc[]>([]);
 
     useEffect(() => {
@@ -123,7 +122,7 @@ const EditTransportationCard = () => {
                     setPicIds(currentCard.picIds.map((pic: {_id: string, key: string}) => pic._id));
                 } 
                 if (currentCard.webUrls.length > 0) {
-                    setUrls(currentCard.webUrls);
+                    setUrls(currentCard.webUrls.map((webUrl: string) => ({id: uuidv4(), url: webUrl})));
                 }
                 if (currentCard.docs.length > 0) {
                     setDocsToDisplay(currentCard.docs);
@@ -360,6 +359,7 @@ const EditTransportationCard = () => {
     const uploadImages = async () => {
         try{
             const token = await getUserIdToken(user);
+            let hasSomeErr = false;
             const keys = await Promise.all(newImages.map(async (image) => {
                 try {
                     const {key, url} = await getUploadPicUrl({token, mimeType: image.mimeType});
@@ -380,20 +380,21 @@ const EditTransportationCard = () => {
                     }
                     return key;
                 } catch {
-                    setUploadSomePicErr(true);
+                    hasSomeErr = true;
                     return null;
                 }
             }));
             const successfulKeys = keys.filter(key => key !== null);
             const picIdsRes = await uploadPhotos({token, tripId: id, keys: successfulKeys});
-            setPicIds(prev => [...prev, ...picIdsRes]);
-            setUploadAllPicErr(false);
-            return true;
+            const combinedPicIds = [...picIds, ...picIdsRes];
+            setPicIds(combinedPicIds);
+            setUploadPicSuccess(true);
+            return {combinedPicIds, hasSomeErr};
         } catch (e) {
             console.log(e);
-            setUploadAllPicErr(true);
+            setUploadPicSuccess(false);
             Alert.alert("Failed to upload all selected photos", "Please try again later");
-            return false;
+            return;
         }
     }
 
@@ -422,6 +423,7 @@ const EditTransportationCard = () => {
             multiple: true
         });
         if (res.canceled) {
+            setDocLoading(false);
             return;
         }
         const newDocs = res.assets.map(doc => ({uri: doc.uri, name: doc.name, mimeType: doc.mimeType}));
@@ -440,6 +442,7 @@ const EditTransportationCard = () => {
                 const nonRepeatDocs = docsWithType.filter(doc => !existingDocs.has(doc.uri));
                 return [...prev, ...nonRepeatDocs];
             });
+            setDocLoading(false);
             return;
         }
         const docsWithTypeGuard = newDocs.map(doc => ({...doc, mimeType: doc.mimeType!}));
@@ -473,6 +476,7 @@ const EditTransportationCard = () => {
 
     const deleteDoc = (uri: string) => {
         setNewDocs(prev => prev.filter(doc => doc.uri !== uri));
+        const key = docsToDisplay.find((doc): doc is DocWithUrl => "url" in doc && doc.url === uri)?.key;
         setDocsToDisplay(prev => prev.filter(doc => {
             if ("uri" in doc) {
                 return doc.uri !== uri;
@@ -481,7 +485,8 @@ const EditTransportationCard = () => {
             } else {
                 return true;
             }
-        }))
+        }));
+        setDocs(prev => prev.filter(doc => doc.key !== key));
     };
 
     const handleDeleteDoc = (uri: string, name: string) => {
@@ -491,6 +496,7 @@ const EditTransportationCard = () => {
     const uploadFiles = async () => {
         try{
             const token = await getUserIdToken(user);
+            let hasSomeErr = false;
             const documents = await Promise.all(newDocs.map(async (doc) => {
                 try {
                     const {key, url} = await getUploadDocUrl({token, mimeType: doc.mimeType});
@@ -511,19 +517,20 @@ const EditTransportationCard = () => {
                     }
                     return {name: doc.name, key};
                 } catch {
-                    setUploadSomeDocErr(true);
+                    hasSomeErr = true;
                     return null;
                 }
             }));
             const successfulDocs = documents.filter(doc => doc !== null);
-            setDocs([...docs, ...successfulDocs]);
-            setUploadAllDocErr(false);
-            return true;
+            const combinedDocs = [...docs, ...successfulDocs];
+            setDocs(combinedDocs);
+            setUploadDocSuccess(true);
+            return {combinedDocs, hasSomeErr};
         } catch (e) {
             console.log(e);
-            setUploadAllDocErr(true);
+            setUploadDocSuccess(false);
             Alert.alert("Failed to upload all documents", "Please try again later");
-            return false;
+            return;
         }
     }
 
@@ -531,21 +538,22 @@ const EditTransportationCard = () => {
         try {
             setLoading(true);
             const token = await getUserIdToken(user);
-            if (uploadAllPicErr) {
+            let imageIds = picIds, imageErr, files = docs, filesErr;
+            if (!uploadPicSuccess && newImages.length !== 0) {
                 const uploadPicRes = await uploadImages();
                 if (!uploadPicRes) {
                     throw new Error("Failed to update Transportation card due to failure in uploading photos");
                 }
+                imageIds = uploadPicRes.combinedPicIds;
+                imageErr = uploadPicRes.hasSomeErr;
             }
-            if (uploadAllDocErr) {
+            if (!uploadDocSuccess && newDocs.length !== 0) {
                 const uploadDocRes = await uploadFiles();
                 if (!uploadDocRes) {
                     throw new Error("Failed to update Transportation card due to failure in uploading documents");
                 }
-            }
-            if (uploadSomePicErr || uploadSomeDocErr) {
-                Alert.alert("Upload photos and documents", 
-                "Some photos and documents couldn't be uploaded and were skipped. You can try adding them again from the card detail page.")
+                files = uploadDocRes.combinedDocs;
+                filesErr = uploadDocRes.hasSomeErr;
             }
             const card = await updateCard({token, cardId, cardType: "transportation", title,
                 startDate: startDate || undefined,
@@ -558,12 +566,16 @@ const EditTransportationCard = () => {
                 arrivalAddress,
                 country: undefined,
                 city: undefined,
-                picIds,
-                docs,
-                webUrls: urls
+                picIds: imageIds,
+                docs: files,
+                webUrls: urls.map(obj => obj.url)
             });
             if (!card) {
                 throw new Error("No card is created");
+            }
+            if (imageErr || filesErr) {
+                Alert.alert("Upload photos and documents", 
+                "Some photos and documents couldn't be uploaded and were skipped. You can try adding them again from the card detail page.")
             }
             router.replace(`/trips/${id}/${cardId}/cardDetails`);
         } catch (e) {
@@ -576,7 +588,8 @@ const EditTransportationCard = () => {
         } finally {
             setLoading(false);
         }
-    }, [title, departureAddress, arrivalAddress, description, startDate, startTimeStr, endDate, endTimeStr, picIds, docs, urls])
+    }, [title, departureAddress, arrivalAddress, description, startDate, startTimeStr, endDate, 
+        endTimeStr, picIds, newImages, docs, newDocs, urls])
     
     const handleUpdate = useCallback(async () => {
         if (!title) {
@@ -862,7 +875,8 @@ const EditTransportationCard = () => {
                     <Text className="font-semibold text-lg text-left">
                         Description
                     </Text>
-                    <View className="bg-white border border-black px-4 py-4 rounded-[5px]">
+                    <View className="bg-white border border-black px-4 py-3 rounded-[5px]"
+                    style={{minHeight: 200}}>
                         <TextInput
                             multiline
                             numberOfLines={8}
@@ -870,7 +884,7 @@ const EditTransportationCard = () => {
                             autoCapitalize="none"
                             onChangeText={setDescription}
                             className="flex-1 font-medium text-black text-base"
-                            style={{textAlignVertical: "top"}}
+                            style={{textAlignVertical: "top", minHeight: 200}}
                         />
                     </View>
                 </View>
@@ -883,8 +897,9 @@ const EditTransportationCard = () => {
                         </Text>
                         <Menu visible={menuOpen} onDismiss={() => setMenuOpen(false)}
                         anchor={
-                            <Pressable onPress={() => setMenuOpen(true)} hitSlop={10}>
-                                <Ionicons name="add-circle" size={24} color="#3B82F6" />
+                            <Pressable onPress={() => setMenuOpen(true)} hitSlop={10}
+                            disabled={uploadPicSuccess}>
+                                <Ionicons name="add-circle" size={24} color={uploadPicSuccess ? "gray" : "#3B82F6"} />
                             </Pressable>
                         }
                         contentStyle={{borderRadius: 10, backgroundColor: "white", elevation: 3}}>
@@ -897,9 +912,9 @@ const EditTransportationCard = () => {
                     data={imagesToDisplay}
                     numColumns={3}
                     keyExtractor={(item) => item}
-                    columnWrapperClassName="justify-between mb-3"
+                    columnWrapperClassName="justify-start items-center mb-3"
                     renderItem={({item}) => (
-                        <TouchableOpacity className="relative" onPress={() => openDisplayModal(item)}>
+                        <TouchableOpacity className="relative mr-3" onPress={() => openDisplayModal(item)}>
                             <Image
                             source={{uri: item}}
                             className="w-[100px] h-[100px] border-neutral-400 border-2"
@@ -907,12 +922,14 @@ const EditTransportationCard = () => {
                             <Pressable
                             onPress={() => handleDeletePhoto(item)}
                             className="absolute top-0 right-0 w-6 h-6 bg-neutral-400 flex justify-center 
-                            items-center" hitSlop={10}>
+                            items-center" hitSlop={10}
+                            disabled={uploadPicSuccess}>
                                 <Entypo name="cross" size={20} color="white"/>
                             </Pressable>
                         </TouchableOpacity>
                     )}
-                    showsVerticalScrollIndicator={false}/> 
+                    showsVerticalScrollIndicator={false}
+                    scrollEnabled={false}/> 
                     { imageLoading &&
                         <Loading size={hp(8)} /> 
                     }   
@@ -932,13 +949,17 @@ const EditTransportationCard = () => {
                         <View
                         key={obj.id}
                         className="flex flex-row justify-between items-center">
-                            <View className="flex-1 bg-white border border-black px-4 rounded-[5px] h-[50px] mr-3">
+                            <View className="flex-1 bg-white border border-black px-4 rounded-[5px] h-[50px] mr-3"
+                            style={{overflow: "hidden"}}>
                                 <TextInput
                                     value={obj.url}
                                     autoCapitalize="none"
                                     onChangeText={(text) => updateUrl(text, obj.id)}
                                     className="flex-1 font-medium text-black text-base"
                                     style={{textAlignVertical: "center"}}
+                                    multiline={false}
+                                    numberOfLines={1}
+                                    scrollEnabled={true}
                                 />
                             </View>
                             <Pressable hitSlop={10} onPress={() => handleDeleteUrl(obj.id)}>
@@ -954,8 +975,8 @@ const EditTransportationCard = () => {
                         <Text className="font-semibold text-lg text-left">
                             Documents
                         </Text>
-                        <Pressable hitSlop={10} onPress={addDoc}>
-                            <Ionicons name="add-circle" size={24} color="#3B82F6" />
+                        <Pressable hitSlop={10} onPress={addDoc} disabled={uploadDocSuccess}>
+                            <Ionicons name="add-circle" size={24} color={uploadDocSuccess ? "gray" : "#3B82F6"} />
                         </Pressable>
                     </View>
                     {docsToDisplay.map((doc) => (
@@ -980,8 +1001,8 @@ const EditTransportationCard = () => {
                                     handleDeleteDoc(doc.uri, doc.name);
                                 } else {
                                     handleDeleteDoc(doc.url, doc.name);
-                            }}}>
-                                <Entypo name="circle-with-cross" size={24} color="red"/>
+                            }}} disabled={uploadDocSuccess}>
+                                <Entypo name="circle-with-cross" size={24} color={uploadDocSuccess ? "gray" : "red"}/>
                             </Pressable>
                         </View>
                     ))}    

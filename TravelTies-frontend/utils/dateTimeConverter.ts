@@ -20,6 +20,12 @@ const toLocalDateObj= (date: string) => {
     return new Date(Number(year), Number(month) - 1, Number(day));
 }
 
+const toLocalDateObjWithTime = (date: string, time: string) => {
+    const [year, month, day] = date.split("-");
+    const [hour, minute] = time.split(":");
+    return new Date(Number(year), Number(month) - 1, Number(day), Number(hour), Number(minute));
+}
+
 const toTimeStr = (time: Date) => {
     return time.toLocaleTimeString("en-GB", {hour: "2-digit", minute: "2-digit"});
 }
@@ -36,6 +42,7 @@ export {
     toDisplayDate,
     toDisplayDay,
     toLocalDateObj,
+    toLocalDateObjWithTime,
     toTimeStr,
     timeStrToDate
 }

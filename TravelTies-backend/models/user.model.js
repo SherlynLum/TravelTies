@@ -64,6 +64,7 @@ const userSchema = new mongoose.Schema(
         username: {
             type: String,
             unique: true,
+            sparse: true, // during initial sign in, username is not provided yet, there may be multiple documents with no username
             minlength: 3,
             maxlength: 20,
             match: /^(?!_+$)[a-zA-Z0-9_]+$/

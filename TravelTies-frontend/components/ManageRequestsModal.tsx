@@ -1,6 +1,6 @@
 import { View, Text, Modal, Pressable, Image, Platform, TouchableOpacity, Switch, Alert, FlatList } from 'react-native';
 import React, { useEffect, useMemo, useState } from 'react';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { JoinRequestsWithProfile, TripParticipant, TripParticipantWithProfile } from '@/types/trips';
 import { Divider } from 'react-native-paper';
@@ -13,9 +13,11 @@ type ManageRequestsProps = {
     isVisible: boolean,
     id: string, 
     closeModal: () => void,
+    addBuddies: (participants: TripParticipantWithProfile[]) => void;
 }
 
-const ManageRequestsModal = ({isVisible, id, closeModal} : ManageRequestsProps) => {
+const ManageRequestsModal = ({isVisible, id, closeModal, addBuddies} : ManageRequestsProps) => {
+    const insets = useSafeAreaInsets();
     const {user, getUserIdToken} = useAuth();
     const HEADER_HEIGHT = Platform.OS === "ios" ? 44 : 56;
     const [requests, setRequests] = useState<JoinRequestsWithProfile[]>([]);
@@ -25,10 +27,11 @@ const ManageRequestsModal = ({isVisible, id, closeModal} : ManageRequestsProps) 
             [acceptedBuddies]);
     const [declinedUids, setDeclinedUids] = useState<string[]>([]);
     const [loading, setLoading] = useState(false);
+    const [refreshing, setRefreshing] = useState(false);
     const [hasError, setHasError] = useState(false);
 
     const loadJoinRequests = async () => {
-        setLoading(true);
+        setRefreshing(true);
         try {
             const token = await getUserIdToken(user);
             const joinRequests = await getRequests({token, id});
@@ -38,11 +41,13 @@ const ManageRequestsModal = ({isVisible, id, closeModal} : ManageRequestsProps) 
             console.log(e);
             setHasError(true);
         } finally {
+            setRefreshing(false);
             setLoading(false);
         }
     }
 
     useEffect(() => {
+        setLoading(true);
         loadJoinRequests();
     }, [])
 
@@ -113,6 +118,7 @@ const ManageRequestsModal = ({isVisible, id, closeModal} : ManageRequestsProps) 
             if (!res) {
                 throw new Error("No trip is found");
             }
+            addBuddies(acceptedBuddies);
             closeModal();
         } catch (e) {
             console.log(e);
@@ -124,13 +130,12 @@ const ManageRequestsModal = ({isVisible, id, closeModal} : ManageRequestsProps) 
 
   return (
     <Modal visible={isVisible} animationType="slide">
-        <SafeAreaView className="flex-1 bg-header">
-            <StatusBar 
-                translucent
-                backgroundColor="transparent"
-                style="light"
-            />
-
+        <StatusBar 
+            translucent
+            backgroundColor="transparent"
+            style="light"
+        />
+        <View className="flex-1 bg-header" style={{paddingTop: insets.top}}>
             {/* header */}
             <View style={{paddingHorizontal: 16, height: HEADER_HEIGHT, width: "100%"}}
             className="flex-row items-center justify-between">
@@ -163,7 +168,7 @@ const ManageRequestsModal = ({isVisible, id, closeModal} : ManageRequestsProps) 
                     </Text>
                 </View>
             ) : (
-                <View className="flex-1 bg-white">
+                <View className="flex-1 bg-white" style={{paddingBottom: insets.bottom}}>
                     {/* requests list */}
                     <FlatList
                     data={requests}
@@ -172,9 +177,9 @@ const ManageRequestsModal = ({isVisible, id, closeModal} : ManageRequestsProps) 
                         <View className="flex flex-row w-full justify-between items-center">
                             <View className="flex flex-row justify-start items-center gap-2"> 
                                 <Image source={!item.profilePicUrl 
-                                ? require("../../../assets/images/default-user-profile-pic.png")
+                                ? require("../assets/images/default-user-profile-pic.png")
                                 : item.profilePicUrl === "Failed to load" 
-                                ? require("../../../assets/images/image-error-icon.png")
+                                ? require("../assets/images/image-error-icon.png")
                                 : {uri: item.profilePicUrl}}
                                 className="border-neutral-400 border-2 w-[40px] h-[40px] rounded-[20px]" />
                                 <Text className="font-medium text-base text-black">
@@ -205,7 +210,7 @@ const ManageRequestsModal = ({isVisible, id, closeModal} : ManageRequestsProps) 
                                 ) : (
                                     <View className="flex flex-row gap-2">
                                         {/* admin toggle */}
-                                        <View className="flex flex-row gap-1">
+                                        <View className="flex flex-row gap-1 items-center">
                                             <Text className="font-medium text-base text-gray-500">
                                                 {"Admin: "}
                                             </Text>
@@ -239,10 +244,11 @@ const ManageRequestsModal = ({isVisible, id, closeModal} : ManageRequestsProps) 
                     contentContainerStyle={{flexGrow: 1, paddingHorizontal: 20, paddingVertical: 20}}
                     ItemSeparatorComponent={() => <Divider />}
                     onRefresh={loadJoinRequests}
+                    refreshing={refreshing}
                     />
                 </View>
             )}
-        </SafeAreaView>
+        </View>
     </Modal>
   )
 }

@@ -21,6 +21,7 @@ const EditProfile = () => {
     const [loading, setLoading] = useState(false);
     const [updateLoading, setUpdateLoading] = useState(false);
     const {user, getUserIdToken} = useAuth();
+    const [currentUsername, setCurrentUsername] = useState("");
     const [username, setUsername] = useState("");
     const [profilePicUrl, setProfilePicUrl] = useState("");
     const [menuOpen, setMenuOpen] = useState(false);
@@ -38,6 +39,7 @@ const EditProfile = () => {
     const [needCreateAccount, setNeedCreateAccount] = useState<boolean | null>(null);
     const [stripeHasOnboard, setStripeHasOnboard] = useState<boolean | null>(null);
     const [accountId, setAccountId] = useState("");
+    const [stripeLoading, setStripeLoading] = useState(false);
     const router = useRouter();
 
     // get current user's profile 
@@ -48,6 +50,7 @@ const EditProfile = () => {
         try {
             const token = await getUserIdToken(user);
             const profile = await getProfileWithUrl(token);
+            setCurrentUsername(profile.username);
             setUsername(profile.username);
             if (profile.profilePicUrl) {
                 setProfilePicUrl(profile.profilePicUrl);
@@ -71,6 +74,14 @@ const EditProfile = () => {
             } 
         } catch (e) {
             console.log(e);
+            if (isAxiosError(e)) {
+                console.error('Axios error:', {
+                    message: e.message,
+                    status: e.response?.status,
+                    data: e.response?.data,
+                    config: e.config,
+                })
+            }
             Alert.alert("Profile", 
             "Unable to load profile details",
             [{
@@ -278,13 +289,16 @@ const EditProfile = () => {
             }
         }
 
-        const updateUsernameRes = await updateUsernameToDb(token);
-        if (!updateUsernameRes) {
-            setUpdateLoading(false);
-            return; // exit if fail to update username to database
+        if (username !== currentUsername) {
+            const updateUsernameRes = await updateUsernameToDb(token);
+            if (!updateUsernameRes) {
+                setUpdateLoading(false);
+                return; // exit if fail to update username to database
+            }
+            setCurrentUsername(username);
         }
-
         setUpdateLoading(false);
+        Alert.alert("Your profile is successfully updated!")
     }
 
     const handleConnectWithStripe = async () => {
@@ -302,6 +316,13 @@ const EditProfile = () => {
             }
         } catch (e) {
             console.log(e);
+            if (isAxiosError(e)) {
+                console.error('Axios error:', {
+                    message: e.message,
+                    status: e.response?.status,
+                    data: e.response?.data,
+                });
+            }
             Alert.alert("Connect with Stripe", "Unable to connect with Stripe - please try again later");
         }
     }
@@ -341,6 +362,32 @@ const EditProfile = () => {
         }
     }
 
+    const checkUpdatedStripe = async () => {
+        setStripeLoading(true);
+        try {
+            const token = await getUserIdToken(user);
+            const account = await getStripeAccount(token);
+            if (account?.hasStripeAccount === false) {
+                setNeedCreateAccount(true);
+                setStripeHasOnboard(false);
+            } else if (account?.hasStripeAccount === true) {
+                setNeedCreateAccount(false);
+                if (account?.hasOnboard === false) {
+                    setStripeHasOnboard(false);
+                    setAccountId(account?.accountId || "");
+                } else if (account?.hasOnboard === true) {
+                    setStripeHasOnboard(true);
+                    setAccountId(account?.accountId || "")
+                }
+            } 
+        } catch (e) {
+            console.log(e);
+            Alert.alert("Profile", "Unable to load Stripe account status - please try again later")
+        } finally {
+            setStripeLoading(false);
+        }
+    }
+
     return (
         <>
         <StatusBar 
@@ -348,12 +395,18 @@ const EditProfile = () => {
             backgroundColor="transparent"
             style="light"
         />
-    <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+        {loading ? (
+            <View className="flex-1 justify-center items-center px-5 bg-white">
+                <Loading size={hp(12)} />
+            </View>
+        ) : (
+        <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
         <KeyboardAvoidingView behavior={ios? 'padding': 'height'} style={{flex: 1}}>
-        <ScrollView className="flex-1 flex-col gap-10 items-center justify-start px-5 pt-4 bg-white" 
-        contentContainerStyle={{paddingBottom: insets.bottom}} 
+        <ScrollView className="flex-1 flex-col px-5 pt-6 bg-white" 
+        contentContainerStyle={{paddingBottom: insets.bottom, alignItems: "center", 
+            justifyContent:"center", rowGap: 60}} 
         keyboardShouldPersistTaps="handled">
-            <View className="flex flex-col gap-4">
+            <View className="flex flex-col gap-4 justify-center items-center">
                 {/* display profile pic */}
                 <Pressable onPress={() => setDisplayModalOpen(true)}>
                     <Image source={croppedPicUri ? ({uri: croppedPicUri}) : 
@@ -393,7 +446,7 @@ const EditProfile = () => {
                     </View>
                     <View className="gap-3 justify-center items-center">
                         {/* username input */}
-                        <View className={`flex flex-row items-center justify-start bg-white border 
+                        <View className={`flex items-start justify-center bg-white border 
                         px-4 rounded-[5px] h-[50px] w-full ${usernameErr ? "border-red-500" : "border-black"}`}>
                             <TextInput
                                 autoCapitalize="none"
@@ -447,11 +500,18 @@ const EditProfile = () => {
             </View>
 
             {/* link Stripe */}
-            <View className="flex flex-col gap-4">
-                <Text className="font-semibold text-black text-left text-lg">
-                    Payout account to receive payments
-                </Text>
-                {stripeHasOnboard ? (          
+            <View className="flex flex-col gap-7 w-full">
+                <View className="flex items-start">
+                    <Text className="font-semibold text-black text-left text-lg">
+                        Payout account to receive payments
+                    </Text>
+                </View>
+                {stripeLoading ? (
+                    <View className="flex-row justify-center">
+                        <Loading size={hp(8)} />
+                    </View>
+                ) : stripeHasOnboard ?
+                (          
                     <View className="flex flex-row gap-2 items-center">
                         <Text className="text-neutral-500 italic font-medium text-xs">
                             Connected to Stripe
@@ -472,13 +532,20 @@ const EditProfile = () => {
                         </TouchableOpacity>
                     </View>
                 ) : (
-                    <TouchableOpacity onPress={handleConnectWithStripe} 
-                    className='justify-center items-center border shadow-sm h-[44px] px-6 rounded-[30px]'
-                    style={{backgroundColor: "#635BFF", borderColor: "#4F4ACC"}}>
-                        <Text className='text-white font-semibold tracking-wider text-sm'>
-                            Connect with Stripe
-                        </Text>
-                    </TouchableOpacity>
+                    <View className="flex flex-col gap-5 items-center justify-center">
+                        <TouchableOpacity onPress={handleConnectWithStripe} 
+                        className='justify-center items-center border shadow-sm h-[44px] px-6 rounded-[30px]'
+                        style={{backgroundColor: "#635BFF", borderColor: "#4F4ACC"}}>
+                            <Text className='text-white font-semibold tracking-wider text-sm'>
+                                Connect with Stripe
+                            </Text>
+                        </TouchableOpacity>
+                        <Pressable onPress={checkUpdatedStripe} hitSlop={14}>
+                            <Text className="font-bold text-blue-500 text-sm">
+                                {"I've completed onboarding in Stripe"}
+                            </Text>
+                        </Pressable>
+                    </View>
                 )}
             </View>
             <DisplayPicModal isVisible={displayModalOpen} picUri={croppedPicUri || profilePicUrl} 
@@ -491,6 +558,7 @@ const EditProfile = () => {
         </ScrollView>
         </KeyboardAvoidingView>
         </TouchableWithoutFeedback>
+        )}
         </>
     )
 }

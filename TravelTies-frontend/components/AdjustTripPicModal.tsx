@@ -142,9 +142,9 @@ const AdjustPicModal : React.FC<AdjustPicModalProps> = ({isVisible, picUri, widt
   return (
     <View className="flex-1">
         <StatusBar 
-                translucent
-                backgroundColor="transparent"
-                style="dark"
+            translucent
+            backgroundColor="transparent"
+            style="light"
         />
         <Modal visible={isVisible} animationType="slide">
             <View className="absolute top-0 bottom-0 left-0 right-0 bg-black">

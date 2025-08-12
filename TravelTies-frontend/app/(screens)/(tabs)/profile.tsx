@@ -118,9 +118,9 @@ const Profile = () => {
       </View>
     ) : (
     <>
-    <View className="flex flex-col items-center justify-center w-full px-6 pb-5 gap-5" 
+    <View className="flex flex-col items-center justify-center w-full px-6 pb-7 gap-7" 
     style={{paddingTop: insets.top, backgroundColor: "#6495ED"}}>
-      <View className="flex flex-row justify-between items-center px-1 pt-5">
+      <View className="flex flex-row justify-between items-center px-1 pt-5 w-full">
         <View className="flex flex-row items-center justify-start gap-4">
           {/* profile picture */}
           <Image source={!profilePicUrl 
@@ -141,7 +141,7 @@ const Profile = () => {
       </View>
 
       {/* trips stats */}
-      <View className="flex flex-row bg-white px-3 py-3 gap-3 items-center justify-center rounded-xl">
+      <View className="flex flex-row bg-white px-3 py-3 gap-8 items-center justify-center rounded-xl w-full">
         <View className="flex flex-col items-center justify-center gap-1">
           <Text className="font-semibold text-black text-base text-center">
             Planning
@@ -175,15 +175,15 @@ const Profile = () => {
       </View>
     </View>
 
-    <ScrollView className="flex-1 py-5">
-      <View className="items-center justify-center gap-[1px]">
+    <ScrollView className="flex-1 py-5 px-6">
+      <View className="items-center justify-center gap-[2px]">
         {/* friends */}
         <Pressable onPress={() => router.push("/settings/friends")} 
         className="bg-white px-5 py-4 flex flex-row justify-between items-center w-full rounded-tl-xl 
         rounded-tr-xl">
           <View className="flex flex-row gap-4 items-center justify-center">
-            <FontAwesome5 name="user-friends" size={22} color="black" />
-            <Text className="font-semibold text-black text-base text-center">
+            <FontAwesome5 name="user-friends" size={18} color="black" />
+            <Text className="font-semibold text-black text-base">
               Friends
             </Text>
           </View>
@@ -195,7 +195,7 @@ const Profile = () => {
         className="bg-white px-5 py-4 flex flex-row justify-between items-center w-full">
           <View className="flex flex-row gap-4 items-center justify-center">
             <Ionicons name="add-circle-outline" size={22} color="black" />
-            <Text className="font-semibold text-black text-base text-center">
+            <Text className="font-semibold text-black text-base">
               Join a trip
             </Text>
           </View>
@@ -207,7 +207,7 @@ const Profile = () => {
         className="bg-white px-5 py-4 flex flex-row justify-between items-center w-full">
           <View className="flex flex-row gap-4 items-center justify-center">
             <MaterialCommunityIcons name="lock-reset" size={22} color="black" />
-            <Text className="font-semibold text-black text-base text-center">
+            <Text className="font-semibold text-black text-base">
               Reset password
             </Text>
           </View>
@@ -219,7 +219,7 @@ const Profile = () => {
         className="bg-white px-5 py-4 flex flex-row justify-between items-center w-full">
           <View className="flex flex-row gap-4 items-center justify-center">
             <MaterialCommunityIcons name="bell" size={22} color="black" />
-            <Text className="font-semibold text-black text-base text-center">
+            <Text className="font-semibold text-black text-base">
               Notifications
             </Text>
           </View>
@@ -236,15 +236,15 @@ const Profile = () => {
             </Text>
           </View>
           <Dropdown
-          style={{height: 22, backgroundColor: "white", paddingHorizontal: 16, borderRadius: 2,
+          style={{height: 22, width: 115, backgroundColor: "white", paddingHorizontal: 16, borderRadius: 2,
           borderColor: "black", borderWidth: 1}}
           data={themeData}
           labelField="label"
           valueField="value"
           placeholder="Select theme"
           placeholderStyle={{color: "gray"}}
-          selectedTextStyle={{fontWeight: "600", color: "black", fontSize: 16}}
-          inputSearchStyle={{fontWeight: "600", color: "black", fontSize: 16}}
+          selectedTextStyle={{fontWeight: "600", color: "black", fontSize: 14}}
+          inputSearchStyle={{fontWeight: "600", color: "black", fontSize: 14}}
           value={theme}
           onChange={item => setTheme(item.value)}
           />
@@ -255,7 +255,7 @@ const Profile = () => {
         className="bg-white px-5 py-4 flex flex-row justify-between items-center w-full">
           <View className="flex flex-row gap-4 items-center justify-center">
             <MaterialCommunityIcons name="help-rhombus-outline" size={22} color="black" />
-            <Text className="font-semibold text-black text-base text-center">
+            <Text className="font-semibold text-black text-base">
               Tutorial & Support
             </Text>
           </View>
@@ -267,8 +267,8 @@ const Profile = () => {
         className="bg-white px-5 py-4 flex flex-row justify-between items-center w-full">
           <View className="flex flex-row gap-4 items-center justify-center">
             <MaterialCommunityIcons name="file-document-outline" size={22} color="black" />
-            <Text className="font-semibold text-black text-base text-center">
-              View privacy policy
+            <Text className="font-semibold text-black text-base">
+              {"Privacy policy"}
             </Text>
           </View>
           <Ionicons name="chevron-forward" size={22} color="gray" />
@@ -279,7 +279,7 @@ const Profile = () => {
         className="bg-white px-5 py-4 flex flex-row justify-between items-center w-full">
           <View className="flex flex-row gap-4 items-center justify-center">
             <Ionicons name="star" size={22} color="black" />
-            <Text className="font-semibold text-black text-base text-center">
+            <Text className="font-semibold text-black text-base">
               Rate us
             </Text>
           </View>

@@ -8,14 +8,14 @@
       "developmentClient": true,
       "distribution": "internal",
       "env": {
-        "EXPO_PUBLIC_BACKEND_URL": "https://travelties.onrender.com",
+        "EXPO_PUBLIC_BACKEND_URL": "https://travelties-1.onrender.com",
         "EXPO_PUBLIC_WEB_CLIENT_ID": "304571751866-qeej2t9d8l76kg6e3729q7lou0t035o5.apps.googleusercontent.com"
       }
     },
     "preview": {
       "distribution": "internal",
       "env": {
-        "EXPO_PUBLIC_BACKEND_URL": "https://travelties.onrender.com",
+        "EXPO_PUBLIC_BACKEND_URL": "https://travelties-1.onrender.com",
         "EXPO_PUBLIC_WEB_CLIENT_ID": "304571751866-qeej2t9d8l76kg6e3729q7lou0t035o5.apps.googleusercontent.com"
       }
     },
@@ -25,7 +25,7 @@
         "buildType": "apk"
       },
       "env": {
-        "EXPO_PUBLIC_BACKEND_URL": "https://travelties.onrender.com",
+        "EXPO_PUBLIC_BACKEND_URL": "https://travelties-1.onrender.com",
         "EXPO_PUBLIC_WEB_CLIENT_ID": "304571751866-qeej2t9d8l76kg6e3729q7lou0t035o5.apps.googleusercontent.com"
       }
     }

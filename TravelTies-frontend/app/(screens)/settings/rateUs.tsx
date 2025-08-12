@@ -19,6 +19,8 @@ const RateUs = () => {
         try {
             const token = await getUserIdToken(user);
             await submitRating({token, rating});
+            Alert.alert("Thanks for your feedback. We really appreciate it :)");
+            setRating(0);
         } catch (e) {
             console.log(e);
             Alert.alert("Submit rating", "Failed to submit rating - please try again later");

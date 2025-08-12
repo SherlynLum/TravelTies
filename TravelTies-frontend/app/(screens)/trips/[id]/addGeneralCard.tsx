@@ -23,6 +23,7 @@ import { Divider, Menu } from 'react-native-paper';
 import { Doc, DocWithType } from '@/types/cards';
 import { getDocumentAsync } from 'expo-document-picker';
 import { handleDelete } from '@/utils/handleDelete';
+import "react-native-get-random-values";
 import { v4 as uuidv4 } from "uuid";
 
 const AddGeneralCard = () => {
@@ -71,17 +72,15 @@ const AddGeneralCard = () => {
     const [imageLoading, setImageLoading] = useState(false);
     const [displayModalOpen, setDisplayModalOpen] = useState(false);
     const [displayUri, setDisplayUri] = useState("");
-    const [uploadSomePicErr, setUploadSomePicErr] = useState(false); // if certain images failed to upload, will allow user proceed to finish creating card
-    const [uploadAllPicErr, setUploadAllPicErr] = useState(false); // if the outer try block for uploadImages fail, not allow user proceed to create the card
+    const [uploadPicSuccess, setUploadPicSuccess] = useState(false);
     const [picIds, setPicIds] = useState<string[]>([]);
 
     const [urls, setUrls] = useState<{id: string, url: string}[]>([]);
 
     const [docsWithType, setDocsWithType] = useState<DocWithType[]>([]);
     const [docLoading, setDocLoading] = useState(false);
-    const [uploadSomeDocErr, setUploadSomeDocErr] = useState(false); // if certain docs failed to upload, will allow user proceed to finish creating card
-    const [uploadAllDocErr, setUploadAllDocErr] = useState(false); // if the outer try block for uploadFiles fail, not allow user proceed to create the card
     const [docs, setDocs] = useState<Doc[]>([]);
+    const [uploadDocSuccess, setUploadDocSuccess] = useState(false);
 
     useEffect(() => {
         if (!startDateToggleOn) {
@@ -293,6 +292,7 @@ const AddGeneralCard = () => {
     const uploadImages = async () => {
         try{
             const token = await getUserIdToken(user);
+            let hasSomeErr = false;
             const keys = await Promise.all(images.map(async (image) => {
                 try {
                     const {key, url} = await getUploadPicUrl({token, mimeType: image.mimeType});
@@ -313,20 +313,20 @@ const AddGeneralCard = () => {
                     }
                     return key;
                 } catch {
-                    setUploadSomePicErr(true);
+                    hasSomeErr = true;
                     return null;
                 }
             }));
             const successfulKeys = keys.filter(key => key !== null);
             const picIdsRes = await uploadPhotos({token, tripId: id, keys: successfulKeys});
             setPicIds(picIdsRes);
-            setUploadAllPicErr(false);
-            return true;
+            setUploadPicSuccess(true);
+            return {picIdsRes, hasSomeErr};
         } catch (e) {
             console.log(e);
-            setUploadAllPicErr(true);
             Alert.alert("Failed to upload all selected photos", "Please try again later");
-            return false;
+            setUploadPicSuccess(false)
+            return;
         }
     }
 
@@ -355,6 +355,7 @@ const AddGeneralCard = () => {
             multiple: true
         });
         if (res.canceled) {
+            setDocLoading(false);
             return;
         }
         const newDocs = res.assets.map(doc => ({uri: doc.uri, name: doc.name, mimeType: doc.mimeType}));
@@ -367,6 +368,7 @@ const AddGeneralCard = () => {
                 const nonRepeatDocs = docsWithType.filter(doc => !existingUris.has(doc.uri));
                 return [...prev, ...nonRepeatDocs];
             });
+            setDocLoading(false);
             return;
         }
         const docsWithTypeGuard = newDocs.map(doc => ({...doc, mimeType: doc.mimeType!}));
@@ -413,6 +415,7 @@ const AddGeneralCard = () => {
     const uploadFiles = async () => {
         try{
             const token = await getUserIdToken(user);
+            let hasSomeErr = false;
             const documents = await Promise.all(docsWithType.map(async (doc) => {
                 try {
                     const {key, url} = await getUploadDocUrl({token, mimeType: doc.mimeType});
@@ -433,19 +436,19 @@ const AddGeneralCard = () => {
                     }
                     return {name: doc.name, key};
                 } catch {
-                    setUploadSomeDocErr(true);
+                    hasSomeErr = true;
                     return null;
                 }
             }));
             const successfulDocs = documents.filter(doc => doc !== null);
             setDocs(successfulDocs);
-            setUploadAllDocErr(false);
-            return true;
+            setUploadDocSuccess(true);
+            return {successfulDocs, hasSomeErr};
         } catch (e) {
             console.log(e);
-            setUploadAllDocErr(true);
             Alert.alert("Failed to upload all documents", "Please try again later");
-            return false;
+            setUploadDocSuccess(false);
+            return;
         }
     }
 
@@ -453,21 +456,22 @@ const AddGeneralCard = () => {
         try {
             setCreateLoading(true);
             const token = await getUserIdToken(user);
-            if (uploadAllPicErr) {
+            let imageIds = picIds, imageErr, files = docs, filesErr;
+            if (!uploadPicSuccess && images.length !== 0) {
                 const uploadPicRes = await uploadImages();
                 if (!uploadPicRes) {
-                    throw new Error("Failed to create destination card due to failure in uploading photos");
+                    throw new Error("Failed to create General card due to failure in uploading photos");
                 }
+                imageIds = uploadPicRes.picIdsRes;
+                imageErr = uploadPicRes.hasSomeErr;
             }
-            if (uploadAllDocErr) {
+            if (!uploadDocSuccess && docsWithType.length !== 0) {
                 const uploadDocRes = await uploadFiles();
                 if (!uploadDocRes) {
-                    throw new Error("Failed to create destination card due to failure in uploading documents");
+                    throw new Error("Failed to create General card due to failure in uploading documents");
                 }
-            }
-            if (uploadSomePicErr || uploadSomeDocErr) {
-                Alert.alert("Upload photos and documents", 
-                "Some photos and documents couldn't be uploaded and were skipped. You can try adding them again from the card detail page.")
+                files = uploadDocRes.successfulDocs;
+                filesErr = uploadDocRes.hasSomeErr;
             }
             const card = await createGeneralCard({token, tripId: id, title, cardType, 
                 generalAddress: generalAddress,
@@ -476,26 +480,30 @@ const AddGeneralCard = () => {
                 endDate: endDate || undefined,
                 endTime: endTimeStr || undefined,
                 description: description || undefined,
-                picIds: picIds,
-                docs,
-                webUrls: urls
+                picIds: imageIds,
+                docs: files,
+                webUrls: urls.map(obj => obj.url)
             });
             if (!card) {
                 throw new Error("No card is created");
+            }
+            if (imageErr || filesErr) {
+                Alert.alert("Upload photos and documents", 
+                "Some photos and documents couldn't be uploaded and were skipped. You can try adding them again from the card detail page.")
             }
             router.replace(`/trips/${id}/itinerary`);
         } catch (e) {
             console.log(e);
             if (isAxiosError(e) && e.response?.data?.timeErr) {
-                Alert.alert("Failed to create destination card", e.response.data.message);
+                Alert.alert("Failed to create General card", e.response.data.message);
                 return;
             }
-            Alert.alert("Failed to create destination card", "Please try again later");
+            Alert.alert("Failed to create General card", "Please try again later");
         } finally {
             setCreateLoading(false);
         }
     }, [title, cardType, generalAddress, description, startDate, startTimeStr, endDate, endTimeStr,
-        picIds, docs, urls])
+        picIds, images, docs, docsWithType, urls])
     
     const handleCreate = useCallback(async () => {
         if (!title) {
@@ -540,8 +548,8 @@ const AddGeneralCard = () => {
         </View>
     ) : (
     <KeyboardAvoidingView behavior={ios? 'padding': 'height'} style={{flex: 1}}>
-        <ScrollView className="flex-1 px-5 pt-3 bg-white" 
-        contentContainerStyle={{paddingBottom: insets.bottom}}
+        <ScrollView className="px-5 pt-3 bg-white" 
+        contentContainerStyle={{paddingBottom: insets.bottom, flexGrow: 1}}
         keyboardShouldPersistTaps="handled">
             <View className="flex flex-col gap-5">
                 {/* card title input */}
@@ -596,7 +604,7 @@ const AddGeneralCard = () => {
                   <Text className="font-semibold text-lg text-left">
                       Address
                   </Text>
-                  <View className="bg-white border border-black px-4 rounded-[5px] h-[50px]">
+                  <View className="bg-white border border-black px-4 rounded-[5px] h-[50px] flex-row items-center">
                     <TextInput
                       multiline
                       value={generalAddress}
@@ -793,7 +801,8 @@ const AddGeneralCard = () => {
                     <Text className="font-semibold text-lg text-left">
                         Description
                     </Text>
-                    <View className="bg-white border border-black px-4 py-4 rounded-[5px]">
+                    <View className="bg-white border border-black px-4 py-3 rounded-[5px]"
+                    style={{minHeight: 200}}>
                         <TextInput
                             multiline
                             numberOfLines={8}
@@ -801,7 +810,7 @@ const AddGeneralCard = () => {
                             autoCapitalize="none"
                             onChangeText={setDescription}
                             className="flex-1 font-medium text-black text-base"
-                            style={{textAlignVertical: "top"}}
+                            style={{textAlignVertical: "top", minHeight: 200}}
                         />
                     </View>
                 </View>
@@ -814,8 +823,9 @@ const AddGeneralCard = () => {
                         </Text>
                         <Menu visible={menuOpen} onDismiss={() => setMenuOpen(false)}
                         anchor={
-                            <Pressable onPress={() => setMenuOpen(true)} hitSlop={10}>
-                                <Ionicons name="add-circle" size={24} color="#3B82F6" />
+                            <Pressable onPress={() => setMenuOpen(true)} hitSlop={10}
+                            disabled={uploadPicSuccess}>
+                                <Ionicons name="add-circle" size={24} color={uploadPicSuccess ? "gray" : "#3B82F6"}/>
                             </Pressable>
                         }
                         contentStyle={{borderRadius: 10, backgroundColor: "white", elevation: 3}}>
@@ -828,9 +838,9 @@ const AddGeneralCard = () => {
                     data={images}
                     numColumns={3}
                     keyExtractor={(item) => item.uri}
-                    columnWrapperClassName="justify-between mb-3"
+                    columnWrapperClassName="items-center justify-start mb-3"
                     renderItem={({item}) => (
-                        <TouchableOpacity className="relative" onPress={() => openDisplayModal(item.uri)}>
+                        <TouchableOpacity className="relative mr-3" onPress={() => openDisplayModal(item.uri)}>
                             <Image
                             source={{uri: item.uri}}
                             className="w-[100px] h-[100px] border-neutral-400 border-2"
@@ -838,12 +848,14 @@ const AddGeneralCard = () => {
                             <Pressable
                             onPress={() => handleDeletePhoto(item.uri)}
                             className="absolute top-0 right-0 w-6 h-6 bg-neutral-400 flex justify-center 
-                            items-center" hitSlop={10}>
+                            items-center" hitSlop={10}
+                            disabled={uploadPicSuccess}>
                                 <Entypo name="cross" size={20} color="white"/>
                             </Pressable>
                         </TouchableOpacity>
                     )}
-                    showsVerticalScrollIndicator={false}/> 
+                    showsVerticalScrollIndicator={false}
+                    scrollEnabled={false}/> 
                     { imageLoading &&
                         <Loading size={hp(8)} /> 
                     }   
@@ -870,6 +882,9 @@ const AddGeneralCard = () => {
                                     onChangeText={(text) => updateUrl(text, obj.id)}
                                     className="flex-1 font-medium text-black text-base"
                                     style={{textAlignVertical: "center"}}
+                                    multiline={false}
+                                    numberOfLines={1}
+                                    scrollEnabled={true}
                                 />
                             </View>
                             <Pressable hitSlop={10} onPress={() => handleDeleteUrl(obj.id)}>
@@ -885,8 +900,8 @@ const AddGeneralCard = () => {
                         <Text className="font-semibold text-lg text-left">
                             Documents
                         </Text>
-                        <Pressable hitSlop={10} onPress={addDoc}>
-                            <Ionicons name="add-circle" size={24} color="#3B82F6" />
+                        <Pressable hitSlop={10} onPress={addDoc} disabled={uploadDocSuccess}>
+                            <Ionicons name="add-circle" size={24} color={uploadDocSuccess ? "gray" : "#3B82F6"}/>
                         </Pressable>
                     </View>
                     {docsWithType.map((doc) => (
@@ -901,8 +916,9 @@ const AddGeneralCard = () => {
                                     </Text>
                                 )}
                             </Pressable>
-                            <Pressable hitSlop={10} onPress={() => handleDeleteDoc(doc.uri, doc.name)}>
-                                <Entypo name="circle-with-cross" size={24} color="red"/>
+                            <Pressable hitSlop={10} onPress={() => handleDeleteDoc(doc.uri, doc.name)}
+                            disabled={uploadDocSuccess}>
+                                <Entypo name="circle-with-cross" size={24} color={uploadDocSuccess ? "gray" : "red"}/>
                             </Pressable>
                         </View>
                     ))}    

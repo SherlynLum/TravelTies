@@ -77,7 +77,7 @@ const DisplayTripInfo = () => {
                   
                   {/* copy button */}
                   <TouchableOpacity hitSlop={14} onPress={copy}>
-                    <AntDesign name="copy1" size={24} color="gray" />
+                    <AntDesign name="copy1" size={18} color="gray" />
                   </TouchableOpacity>
                 </View>
 
@@ -86,7 +86,7 @@ const DisplayTripInfo = () => {
                   <Text className="font-medium text-lg self-start">
                     Trip QR code:
                   </Text>
-                  <QRCode value={joinCode} size={QR_SIZE} />
+                  {joinCode && <QRCode value={joinCode} size={QR_SIZE} />}
                 </View>
               </View>
             </ScrollView>

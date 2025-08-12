@@ -82,10 +82,10 @@ const ResetPassword = () => {
             backgroundColor="transparent"
             style="light"
         />
-        <CustomKeyboardView>
+        <CustomKeyboardView >
             <TouchableWithoutFeedback onPress={Keyboard.dismiss}> 
                 <View style={{paddingBottom: insets.bottom}}
-                className="flex-1 gap-7 px-5 bg-white items-center justify-center">
+                className="flex-1 gap-10 px-5 bg-white items-center justify-center pt-6">
                     {/* email input */}
                     <Text className="text-black text-base font-medium text-center"> 
                         Please enter the email address you used during sign-up. 

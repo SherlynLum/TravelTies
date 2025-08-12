@@ -30,7 +30,6 @@ const DestinationCard = ({tab, tripId, _id, title, startDate, startTime, endDate
             }
         }
 
-        const dayNumberStr = tab.split(" ")[1]; // current tab's day number as string type, undefined for tab "unscheduled"
         if (tab === "unscheduled") { // unscheduled tab have startDate or endDate means it is out of bound and date(s) will be displayed
             if (hasStart && !hasEnd) {
                 setTimeStr("Starts from " + (startDate ? `Day ${startDate} ` : "")
@@ -45,8 +44,7 @@ const DestinationCard = ({tab, tripId, _id, title, startDate, startTime, endDate
             } else {
                 setTimeStr("");
             }
-        } else if (startDate && endDate && startDate !== endDate && Number(dayNumberStr) !== startDate 
-            && Number(dayNumberStr) !== endDate) { // if the card spans for a few days and is not under unscheduled tab and is one of the middle days, date(s) will be displayed
+        } else if (startDate && endDate && startDate !== endDate) { // if the card spans for a few days and is not under unscheduled tab, date(s) will be displayed
             setTimeStr((startDate ? `Day ${startDate} ` : "") + (startTime ? `${startTime} ` : "")
                 + "- " + (endDate ? `Day ${endDate} ` : "") + (endTime ? `${endTime} ` : "")
             )
@@ -64,7 +62,7 @@ const DestinationCard = ({tab, tripId, _id, title, startDate, startTime, endDate
         setLoading(true);
         try {
             const token = await getUserIdToken(user);
-            await deleteCard({token, _id});
+            await deleteCard(token, _id);
             removeFromTab(_id);
         } catch (e) {
             console.log(e);
@@ -91,7 +89,7 @@ const DestinationCard = ({tab, tripId, _id, title, startDate, startTime, endDate
     }
 
   return (
-    <Link href={`/trips/${tripId}/${_id}`} asChild>
+    <Link href={`/trips/${tripId}/${_id}/cardDetails`} asChild>
         <TouchableOpacity className="rounded-xl items-center">
             <View className="pb-5" style={{paddingHorizontal: 18}}>
                 <Card style={{padding: 0, borderRadius: 16, width: coverWidth}}>

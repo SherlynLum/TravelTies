@@ -12,8 +12,9 @@ const UnableResetPassword = () => {
             backgroundColor="transparent"
             style="light"
         />
-        <ScrollView className="flex-1 flex-col gap-14 items-start justify-center px-5 pt-3 bg-white" 
-        contentContainerStyle={{paddingBottom: insets.bottom}}>
+        <ScrollView className="flex-1 flex-col px-5 pt-3 bg-white" 
+        contentContainerStyle={{paddingBottom: insets.bottom, alignItems: "flex-start", 
+            justifyContent:"center", rowGap: 56}}>
             <View className="flex flex-col gap-7 items-start justify-center w-full">
                 <Text className="text-base text-black font-semibold text-start">
                     You cannot reset your password here

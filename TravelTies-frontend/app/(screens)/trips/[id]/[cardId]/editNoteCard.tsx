@@ -488,7 +488,8 @@ const EditNoteCard = () => {
                         <Text className="font-semibold text-lg text-left">
                             Description
                         </Text>
-                        <View className="bg-white border border-black px-4 py-4 rounded-[5px]">
+                        <View className="bg-white border border-black px-4 py-3 rounded-[5px]"
+                        style={{minHeight: 200}}>
                             <TextInput
                                 multiline
                                 numberOfLines={8}
@@ -496,7 +497,7 @@ const EditNoteCard = () => {
                                 autoCapitalize="none"
                                 onChangeText={setDescription}
                                 className="flex-1 font-medium text-black text-base"
-                                style={{textAlignVertical: "top"}}
+                                style={{textAlignVertical: "top", minHeight: 200}}
                             />
                         </View>
                     </View>

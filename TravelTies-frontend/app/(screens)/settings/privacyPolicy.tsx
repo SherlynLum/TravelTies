@@ -12,12 +12,13 @@ const PrivacyPolicy = () => {
             backgroundColor="transparent"
             style="light"
         />
-        <ScrollView className="flex-1 flex-col gap-4 items-start justify-start px-5 pt-3 bg-white" 
-        contentContainerStyle={{paddingBottom: insets.bottom}}>
+        <ScrollView className="flex-1 flex-col px-5 pt-3 bg-white" 
+        contentContainerStyle={{paddingBottom: insets.bottom, alignItems: "flex-start", 
+            justifyContent:"center", rowGap: 20}}>
             <Text className="text-2xl text-black font-semibold text-start tracking-wide">
                 Privacy policy
             </Text>
-            <View className="flex-1 flex-col gap-2">
+            <View className="flex-1 flex-col gap-7">
                 <Text className="text-base text-black font-medium text-start">
                     Effective date: 28/07/2025
                 </Text>
@@ -55,7 +56,7 @@ const PrivacyPolicy = () => {
                     We may occasionally update this policy, and will notify you of any significant changes through TravelTies.
                 </Text>
                 <Text className="text-base text-black font-medium text-start">
-                    We sincerecely hope you enjoy using TravelTies.
+                    We sincerely hope you enjoy using TravelTies.
                 </Text>
             </View>
         </ScrollView>

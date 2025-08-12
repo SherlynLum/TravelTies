@@ -17,7 +17,7 @@ const itemSchema = new mongoose.Schema({
         required: true
     },
 
-    creatorUid: { // meaningless to track creator if item is a group item, so left empty in that case
+    creatorUid: { 
         type: String
     },
 
@@ -38,6 +38,9 @@ const itemSchema = new mongoose.Schema({
         type: String
     },
 
+    notificationId: { // only for type="task"
+        type: String
+    },
 
     earlyReminderDate: { // only for type="task"
         type: String

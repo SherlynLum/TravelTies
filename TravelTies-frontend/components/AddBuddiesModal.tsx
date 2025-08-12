@@ -1,6 +1,6 @@
 import { View, Text, Modal, Pressable, Image, Platform, TouchableOpacity, Switch, TextInput, Alert, FlatList } from 'react-native';
 import React, { useEffect, useMemo, useState } from 'react';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { TripParticipantWithProfile } from '@/types/trips';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
@@ -19,6 +19,7 @@ type AddBuddiesProps = {
 }
 
 const AddBuddiesModal = ({isVisible, buddies, closeModal, complete} : AddBuddiesProps) => {
+    const insets = useSafeAreaInsets();
     const HEADER_HEIGHT = Platform.OS === "ios" ? 44 : 56;
     const [updatedBuddies, setUpdatedBuddies] = useState(buddies);
     const [searchTerm, setSearchTerm] = useState("");
@@ -110,13 +111,12 @@ const AddBuddiesModal = ({isVisible, buddies, closeModal, complete} : AddBuddies
 
   return (
     <Modal visible={isVisible} animationType="slide">
-        <SafeAreaView className="flex-1 bg-header">
-            <StatusBar 
-                translucent
-                backgroundColor="transparent"
-                style="light"
-            />
-
+        <StatusBar 
+            translucent
+            backgroundColor="transparent"
+            style="light"
+        />
+        <View className="flex-1 bg-header" style={{paddingTop: insets.top}}>
             {/* header */}
             <View style={{paddingHorizontal: 16, height: HEADER_HEIGHT, width: "100%"}}
             className="flex-row items-center justify-between">
@@ -137,101 +137,103 @@ const AddBuddiesModal = ({isVisible, buddies, closeModal, complete} : AddBuddies
                 </Pressable>
             </View>
 
-            {/* search bar */}
-            <View className="px-5 py-5 items-center justify-center bg-white">
-                <View className="flex flex-row items-center justify-start px-4 bg-gray-200 h-11
-                rounded-5 gap-4">
-                    <FontAwesome name="search" size={15} color="#9CA3AF"/>
-                    <TextInput
-                        autoCapitalize="none"
-                        value={searchTerm}
-                        onChangeText={value => setSearchTerm(value)}
-                        className='flex-1 font-medium text-black text-base'
-                        placeholder='Search by username'
-                        placeholderTextColor={'gray'}
-                        clearButtonMode="while-editing"
-                    />
+            <View className="bg-white flex-1" style={{paddingBottom: insets.bottom}}>
+                {/* search bar */}
+                <View className="px-5 py-5 items-center justify-center bg-white">
+                    <View className="flex flex-row items-center justify-start px-4 bg-gray-200 h-11
+                    rounded-5 gap-4">
+                        <FontAwesome name="search" size={15} color="#9CA3AF"/>
+                        <TextInput
+                            autoCapitalize="none"
+                            value={searchTerm}
+                            onChangeText={value => setSearchTerm(value)}
+                            className='flex-1 font-medium text-black text-base'
+                            placeholder='Search by username'
+                            placeholderTextColor={'gray'}
+                            clearButtonMode="while-editing"
+                        />
+                    </View>
                 </View>
-            </View>
 
-            {/* friends list */}
-            {loading ? (
-                <View className="flex-1 justify-center items-center px-5 bg-white">
-                    <Loading size={hp(12)} />
-                </View>
-            ) : hasError ? (
-                <View className="flex-1 justify-center items-center px-5 bg-white"> 
-                    <Text className="text-center text-base font-medium italic text-gray-500">
-                    {"An error occurred when loading your friends list.\nPlease try again later."}
-                    </Text>
-                </View>
-            ) : (
-                <View className="flex-1 bg-white">
-                    <FlatList
-                    data={friends}
-                    renderItem={({item}) => {
-                        return (
-                        <View className="flex flex-row w-full justify-between items-center">
-                            <View className="flex flex-row justify-start items-center gap-2"> 
-                                <Image source={!item.profilePicUrl 
-                                ? require("../../../assets/images/default-user-profile-pic.png")
-                                : item.profilePicUrl === "Failed to load" 
-                                ? require("../../../assets/images/image-error-icon.png")
-                                : {uri: item.profilePicUrl}}
-                                className="border-neutral-400 border-2 w-[40px] h-[40px] rounded-[20px]" />
-                                <Text className="font-medium text-base text-black">
-                                    {item.username}
-                                </Text>
-                            </View>
-                            {
-                                !uid_set.has(item.uid) ? (
-                                    <TouchableOpacity onPress={() => handleAdd(item)} hitSlop={10}
-                                    className='bg-blue-500 justify-center items-center border 
-                                    border-blue-600 shadow-sm h-[30px] px-8 rounded-[30px]'>
-                                        <Text className='text-white font-semibold tracking-wider text-sm'>
-                                            Add to trip
-                                        </Text>
-                                    </TouchableOpacity>
-                                ) : (
-                                    <View className="flex flex-row gap-2">
-                                        {/* admin toggle */}
-                                        <View className="flex flex-row gap-1">
-                                            <Text className="font-medium text-base text-gray-500">
-                                                {"Admin: "}
-                                            </Text>
-                                            <Switch 
-                                            value={isAdmin(item.uid)}
-                                            onValueChange={() => toggleAdmin(item.uid)}
-                                            />
-                                        </View>
-
-                                        {/* remove button */}
-                                        <TouchableOpacity hitSlop={10} onPress={() => handleRemove(item.uid, item.username)}
-                                        className='bg-red-600 justify-center items-center border 
-                                        border-red-700 shadow-sm h-[30px] px-8 rounded-[30px]'>
+                {/* friends list */}
+                {loading ? (
+                    <View className="flex-1 justify-center items-center px-5 bg-white">
+                        <Loading size={hp(12)} />
+                    </View>
+                ) : hasError ? (
+                    <View className="flex-1 justify-center items-center px-5 bg-white"> 
+                        <Text className="text-center text-base font-medium italic text-gray-500">
+                        {"An error occurred when loading your friends list.\nPlease try again later."}
+                        </Text>
+                    </View>
+                ) : (
+                    <View className="flex-1 bg-white">
+                        <FlatList
+                        data={friends}
+                        renderItem={({item}) => {
+                            return (
+                            <View className="flex flex-row w-full justify-between items-center py-3">
+                                <View className="flex flex-row justify-start items-center gap-2"> 
+                                    <Image source={!item.profilePicUrl 
+                                    ? require("../assets/images/default-user-profile-pic.png")
+                                    : item.profilePicUrl === "Failed to load" 
+                                    ? require("../assets/images/image-error-icon.png")
+                                    : {uri: item.profilePicUrl}}
+                                    className="border-neutral-400 border-2 w-[40px] h-[40px] rounded-[20px]" />
+                                    <Text className="font-medium text-base text-black">
+                                        {item.username}
+                                    </Text>
+                                </View>
+                                {
+                                    !uid_set.has(item.uid) ? (
+                                        <TouchableOpacity onPress={() => handleAdd(item)} hitSlop={10}
+                                        className='bg-blue-500 justify-center items-center border 
+                                        border-blue-600 shadow-sm h-[30px] px-8 rounded-[30px]'>
                                             <Text className='text-white font-semibold tracking-wider text-sm'>
-                                                Remove
+                                                Add to trip
                                             </Text>
                                         </TouchableOpacity>
-                                    </View>
-                                )
-                            }
-                        </View> 
-                    )}}
-                    keyExtractor={(item) => item.uid}
-                    ListEmptyComponent={
-                        <View className="flex-1 justify-center items-center"> 
-                            <Text className="text-center text-base font-medium italic text-gray-500">
-                            {"No friends found"}
-                            </Text>
-                        </View>
-                    }
-                    contentContainerStyle={{flexGrow: 1, paddingHorizontal: 20, paddingVertical: 20}}
-                    ItemSeparatorComponent={() => <Divider />}
-                    />
-                </View>
-            )}
-        </SafeAreaView>
+                                    ) : (
+                                        <View className="flex flex-row gap-2">
+                                            {/* admin toggle */}
+                                            <View className="flex flex-row gap-1 items-center">
+                                                <Text className="font-medium text-base text-gray-500">
+                                                    {"Admin: "}
+                                                </Text>
+                                                <Switch 
+                                                value={isAdmin(item.uid)}
+                                                onValueChange={() => toggleAdmin(item.uid)}
+                                                />
+                                            </View>
+
+                                            {/* remove button */}
+                                            <TouchableOpacity hitSlop={10} onPress={() => handleRemove(item.uid, item.username)}
+                                            className='bg-red-600 justify-center items-center border 
+                                            border-red-700 shadow-sm h-[30px] px-8 rounded-[30px]'>
+                                                <Text className='text-white font-semibold tracking-wider text-sm'>
+                                                    Remove
+                                                </Text>
+                                            </TouchableOpacity>
+                                        </View>
+                                    )
+                                }
+                            </View> 
+                        )}}
+                        keyExtractor={(item) => item.uid}
+                        ListEmptyComponent={
+                            <View className="flex-1 justify-center items-center"> 
+                                <Text className="text-center text-base font-medium italic text-gray-500">
+                                {"No friends found"}
+                                </Text>
+                            </View>
+                        }
+                        contentContainerStyle={{flexGrow: 1, paddingHorizontal: 20}}
+                        ItemSeparatorComponent={() => <Divider />}
+                        />
+                    </View>
+                )}
+            </View>
+        </View>
     </Modal>
   )
 }

@@ -24,7 +24,6 @@ const Itinerary = () => {
   const [cards, setCards] = useState<CardPreview[]>([]);
   const [hasError, setHasError] = useState(false);
   const router = useRouter();
-  const [searchModalOpen, setSearchModalOpen] = useState(false);
 
   useFocusEffect(
     useCallback(() => {
@@ -91,30 +90,35 @@ const Itinerary = () => {
     <View className="flex-1 bg-white" style={{paddingBottom: insets.bottom}}>
       {/* tabs */}
       {tabsLoading ? (
-        <View className="justify-center items-center">
-          <Loading size={hp(7)} />
+        <View className="flex-1 justify-center items-center">
+          <Loading size={hp(12)} />
         </View>
       ) : (
         <View className="flex-1 flex-col py-4 w-full">
-          <FlatList
-          data={tabs}
-          renderItem={({item}) => (
-            <TouchableOpacity
-            onPress={() => setTab(item)} hitSlop={5}
-            className={`bg-white justify-center items-center shadow-sm h-[35px] px-8 rounded-[30px]
-            ${tab === item ? "border-blue-500 border-2" : "border-gray-500 border"}`}>
-              <Text className={`font-semibold text-sm ${tab === item ? "text-blue-500" : "text-gray-500"}`}>
-                {item.charAt(0).toUpperCase() + item.slice(1)}
-              </Text>
-            </TouchableOpacity>
-          )}
-          keyExtractor={(item) => item}
-          horizontal
-          ItemSeparatorComponent={() => (
-            <View className="w-[12px]"/>
-          )}
-          contentContainerStyle={{paddingVertical: 15}}
-          />
+          <View className="flex">
+            {/* tabs */}
+            <FlatList
+            data={tabs}
+            renderItem={({item}) => (
+              <TouchableOpacity
+              onPress={() => setTab(item)} hitSlop={5}
+              className={`bg-white justify-center items-center shadow-sm h-[35px] px-8 rounded-[30px]
+              ${tab === item ? "border-blue-500 border-2" : "border-gray-500 border"}`}>
+                <Text className={`font-semibold text-sm ${tab === item ? "text-blue-500" : "text-gray-500"}`}>
+                  {item.charAt(0).toUpperCase() + item.slice(1)}
+                </Text>
+              </TouchableOpacity>
+            )}
+            keyExtractor={(item) => item}
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            ItemSeparatorComponent={() => (
+              <View className="w-[12px]"/>
+            )}
+            contentContainerStyle={{paddingHorizontal: 20, height: 50}}
+            />
+          </View>
+          {/* cards */}
           {cardsLoading ? (
             <View className="flex-1 justify-center items-center">
               <Loading size={hp(12)} />
